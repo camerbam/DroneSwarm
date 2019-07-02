@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING
   "Choose the type of build, options are: Debug Release"
   FORCE)
 project(DroneSwarm)
-set(externprolite_REV 19.06.2)
+set(externprolite_REV 19.06.4)
 find_package(externprolite REQUIRED)
 xpSetFlags()
 set(CMAKE_CXX_STANDARD 14)
