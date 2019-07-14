@@ -2,7 +2,7 @@
 
 #include <boost/asio/buffers_iterator.hpp>
 
-AutoConsumedQueue::AutoConsumedQueue(std::function<void(std::string&)> handler)
+AutoConsumedQueue::AutoConsumedQueue(std::function<void(std::string const&)> handler)
   : m_running(false),
     m_handler(handler),
     m_ctx(),
@@ -18,10 +18,10 @@ AutoConsumedQueue::~AutoConsumedQueue()
   m_runningThread.join();
 }
 
-void AutoConsumedQueue::addBytes(boost::asio::streambuf& buf)
+void AutoConsumedQueue::addBytes(std::vector<char>& buf)
 {
-  m_buffer.append(boost::asio::buffers_begin(buf.data()),
-                  boost::asio::buffers_end(buf.data()));
+  std::copy(buf.begin(), buf.end(), std::back_inserter(m_buffer));
+
   if (!m_running)
   {
     m_running = true;

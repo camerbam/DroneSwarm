@@ -6,24 +6,21 @@
 BOOST_AUTO_TEST_CASE(ACQ)
 {
   std::string end;
-  std::function<void(std::string&)> handler([&end](std::string& toParse) {
+  std::function<void(std::string const&)> handler([&end](std::string const& toParse) {
     end += toParse;
-    toParse = "";
   });
 
   AutoConsumedQueue acq(handler);
-  boost::asio::streambuf buf;
-  boost::asio::streambuf b;
-  std::ostream os(&b);
+  std::vector<char> b;
   std::string first("Hello ");
   std::string second("World!");
-  os << first;
+  std::copy(first.begin(), first.end(), std::back_inserter(b));
 
   acq.addBytes(b);
   while (acq.isConsuming())
     std::this_thread::yield();
   BOOST_CHECK(end == first);
-  os << second;
+  std::copy(second.begin(), second.end(), std::back_inserter(b));
   acq.addBytes(b);
   while (acq.isConsuming())
     std::this_thread::yield();
