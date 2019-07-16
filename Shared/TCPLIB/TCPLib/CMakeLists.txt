@@ -1,5 +1,7 @@
 set(lib_name TCP)
 set(${lib_name}_srcs
+  TCPClient.cpp
+  TCPClient.hpp
   TCPServer.cpp
   TCPServer.hpp
   TCPTools.cpp

@@ -2,7 +2,7 @@
 
 #include <boost/asio/buffers_iterator.hpp>
 
-AutoConsumedQueue::AutoConsumedQueue(std::function<void(std::string const&)> handler)
+AutoConsumedQueue::AutoConsumedQueue(std::function<void(std::string&)> handler)
   : m_running(false),
     m_handler(handler),
     m_ctx(),

@@ -26,10 +26,9 @@ boost::asio::ip::tcp::socket& tcp::TcpServer::TcpConnection::socket()
 
 void tcp::TcpServer::TcpConnection::send(std::string message)
 {
-  auto pMessage = std::make_shared<std::string>(message);
-  boost::asio::async_write(
-    m_socket,
-    boost::asio::buffer(*pMessage, pMessage.get()->size()),
+  auto pMessage = std::make_shared<std::string>(tcp::getProcessedString(message));
+  std::cout << "sending" << std::endl;
+  m_socket.async_write_some(boost::asio::buffer(*pMessage, pMessage.get()->size()),
     [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
 }
 
@@ -45,11 +44,11 @@ tcp::TcpServer::TcpConnection::TcpConnection(
     m_closedSignal(),
     m_threadPool(pool),
     m_parser(parser),
-    m_inputBuffer(128),
+    m_inputBuffer(1024),
     m_handlers(handlers),
     m_acq([m_threadPool = &m_threadPool,
            m_parser = &m_parser,
-           m_handlers = &m_handlers](const std::string& input) {
+           m_handlers = &m_handlers](std::string& input) {
       static std::string inputBuffer;
       auto msg = tcp::getNextStringMessage(inputBuffer, input);
       if (!msg) return;
@@ -73,6 +72,7 @@ void tcp::TcpServer::TcpConnection::startRead()
 void tcp::TcpServer::TcpConnection::handleWrite(
   const boost::system::error_code& ec, size_t bt)
 {
+  std::cout << "wrote" << bt << std::endl;
   if (ec) m_closedSignal(m_id);
 }
 
@@ -139,6 +139,8 @@ void tcp::TcpServer::handleAccept(std::shared_ptr<TcpConnection> newConnection,
 {
   if (!error)
   {
+    std::cout << "connected" << std::endl;
+    newConnection->startRead();
     m_connections[newConnection->getId()] = newConnection;
     newConnection->registerDisconnect([m_connections = &m_connections](int id) {
       m_connections->erase(id);

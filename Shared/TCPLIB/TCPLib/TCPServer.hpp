@@ -30,11 +30,6 @@ namespace tcp
         std::function<msg::BaseMsg(std::string)> parser,
         std::map<std::string, std::function<void(std::shared_ptr<msg::BaseMsg>)>>& handlers);
 
-      ~TcpConnection()
-      {
-        std::cout << "ut" << std::endl;
-      }
-
       boost::asio::ip::tcp::socket& socket();
 
       void send(std::string message);

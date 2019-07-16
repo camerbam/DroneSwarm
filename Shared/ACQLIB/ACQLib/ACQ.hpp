@@ -11,7 +11,7 @@
 class AutoConsumedQueue
 {
 public:
-  AutoConsumedQueue(std::function<void(std::string const&)> handler);
+  AutoConsumedQueue(std::function<void(std::string&)> handler);
 
   ~AutoConsumedQueue();
 
@@ -21,7 +21,7 @@ public:
 
 private:
   std::atomic<bool> m_running;
-  std::function<void(std::string const&)> m_handler;
+  std::function<void(std::string&)> m_handler;
   boost::asio::io_context m_ctx;
   boost::optional<boost::asio::io_context::work> m_optCork;
   std::string m_buffer;

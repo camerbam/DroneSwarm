@@ -1,6 +1,6 @@
 #include "BaseMsg.hpp"
 
-msg::BaseMsg::BaseMsg(const std::string& name) {}
+msg::BaseMsg::BaseMsg(const std::string& name) : m_name(name) {}
 
 msg::BaseMsg::~BaseMsg() {}
 

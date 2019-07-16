@@ -13,10 +13,10 @@ namespace tcp
   const size_t SIZE_OF_SIZE(5);
   const size_t SIZE_OF_HEADER(SIZE_OF_SIZE + sizeof(char));
 
-  // std::string getProcessedString(std::string toSend);
+   std::string getProcessedString(std::string toSend);
 
   boost::optional<std::string> getNextStringMessage(std::string& buffer,
-                                                    const std::string& input);
+                                                    std::string& input);
 } // namespace tcp
 
 #endif
