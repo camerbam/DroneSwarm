@@ -3,9 +3,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR} CACHE PATH
   "Locaction for installation"
   FORCE)
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-  "Choose the type of build, options are: Debug Release"
-  FORCE)
+if(CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_CONFIGURATION_TYPES Debug Release)
+  set(CMAKE_BUILD_TYPE "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
+    "Choose the type to build, options are: Debug Release" FORCE)
+endif()
 project(DroneSwarm)
 set(externprolite_REV 19.06.4)
 find_package(externprolite REQUIRED)
