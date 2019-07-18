@@ -1,8 +1,13 @@
 #define BOOST_TEST_MODULE JSONTest
+#include <iostream>
+
 #include <boost/test/unit_test.hpp>
 
-#include "JSONLib/Serialize.hpp"
 #include "JSONLib/Deserialize.hpp"
+#include "JSONLib/Serialize.hpp"
+
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
 
 BOOST_AUTO_TEST_CASE(JSON_OBJECT)
 {
@@ -30,85 +35,73 @@ BOOST_AUTO_TEST_CASE(JSON_OBJECT)
   BOOST_CHECK(json::getNumber(v, second) == 2);
   BOOST_CHECK(json::getNumber(v, first) == 1);
 
-  BOOST_CHECK(json::getBool(v2, third) == true);
-  BOOST_CHECK(json::getBool(v2, fourth) == false);
-  BOOST_CHECK(json::getString(v2, sixth) == std::string("Hello World"));
-  BOOST_CHECK(json::getNumber(v2, second) == 2);
+  auto obj = json::getObjectOrArray(v, seventh);
+  BOOST_CHECK(obj);
+
+  BOOST_CHECK(json::getBool(obj.get(), third) == true);
+  BOOST_CHECK(json::getBool(obj.get(), fourth) == false);
+  BOOST_CHECK(json::getString(obj.get(), sixth) == std::string("Hello World"));
+  BOOST_CHECK(json::getNumber(obj.get(), second) == 2);
   BOOST_CHECK(json::getNumber(v, first) == 1);
-  BOOST_CHECK(json::getObjectOrArray(v, seventh) == v2);
+}
+
+BOOST_AUTO_TEST_CASE(JSON_DOCUMENT)
+{
+  rapidjson::Document doc(rapidjson::kObjectType);
+
+  std::string first("first"), second("second"), third("third"),
+    fourth("fourth"), fifth("fifth"), sixth("sixth"), seventh("seventh");
+  json::addNumberToDoc(doc, first, 1);
+  json::addNumberToDoc(doc, second, 2);
+  json::addBoolToDoc(doc, third, true);
+  json::addBoolToDoc(doc, fourth, false);
+  json::addStringToDoc(doc, sixth, std::string("Hello World"));
+
+  BOOST_CHECK(json::getBool(doc, third) == true);
+  BOOST_CHECK(json::getBool(doc, fourth) == false);
+  BOOST_CHECK(json::getString(doc, sixth) == std::string("Hello World"));
+  BOOST_CHECK(json::getNumber(doc, second) == 2);
+  BOOST_CHECK(json::getNumber(doc, first) == 1);
 }
 
 BOOST_AUTO_TEST_CASE(JSON_ARRAY)
 {
-  rapidjson::Document doc;
-  rapidjson::Value v(rapidjson::kArrayType);
-  json::addNumberToArray(doc, v, 1);
-  json::addNumberToArray(doc, v, 2);
-  json::addBoolToArray(doc, v, true);
-  json::addBoolToArray(doc, v, false);
-  json::addStringToArray(doc, v, std::string("Hello World"));
+  rapidjson::Document doc(rapidjson::kObjectType);
+  rapidjson::Value stringArray(rapidjson::kArrayType);
+  rapidjson::Value doubleArray(rapidjson::kArrayType);
+  rapidjson::Value boolArray(rapidjson::kArrayType);
+  std::string first("first"), second("second"), third("third");
 
-  QVERIFY(int1 == 1);
-  QVERIFY(int2 == 1);
-  QVERIFY(bool1 == 1);
-  QVERIFY(bool2 == 1);
-  QVERIFY(null1 == 1);
-  QVERIFY(string1 == 1);
-}
+  json::addStringToArray(doc, stringArray, "a");
+  json::addStringToArray(doc, stringArray, "b");
+  json::addStringToArray(doc, stringArray, "c");
+  json::addStringToArray(doc, stringArray, "d");
+  json::addStringToArray(doc, stringArray, "e");
 
-void MessagesTest::testAddToDoc()
-{
-  rapidjson::Document d;
-  d.SetObject();
-  std::string first("first"), second("second"), third("third"),
-    fourth("fourth"), fifth("fifth"), sixth("sixth");
-  json::addIntToDoc(d, first, 1);
-  json::addIntToDoc(d, second, 2);
-  json::addBoolToDoc(d, third, true);
-  json::addBoolToDoc(d, fourth, false);
-  json::addNullToDoc(d, fifth);
-  json::addStringToDoc(d, sixth, std::string("Hello World"));
+  json::addArrayToDoc(doc, first, stringArray);
 
-  json::JSONParser parser(d);
-  auto map = parser.getMap();
+  auto stringResult = json::getVectorString(doc, first);
+  BOOST_CHECK(stringResult[0] == "a");
+  BOOST_CHECK(stringResult[1] == "b");
+  BOOST_CHECK(stringResult[2] == "c");
+  BOOST_CHECK(stringResult[3] == "d");
+  BOOST_CHECK(stringResult[4] == "e");
 
-  int int1(0), int2(0), bool1(0), bool2(0), null1(0), string1(0);
+  json::addBoolToArray(doc, boolArray, true);
+  json::addBoolToArray(doc, boolArray, false);
 
-  for (auto&& value : map)
-  {
-    if (value.first == "/first" && value.second == "1") int1 += 1;
-    if (value.first == "/second" && value.second == "2") int2 += 1;
-    if (value.first == "/third" && value.second == "true") bool1 += 1;
-    if (value.first == "/fourth" && value.second == "false") bool2 += 1;
-    if (value.first == "/fifth" && value.second == "null") null1 += 1;
-    if (value.first == "/sixth" && value.second == "Hello World") string1 += 1;
-  }
+  json::addArrayToDoc(doc, second, boolArray);
 
-  QVERIFY(int1 == 1);
-  QVERIFY(int2 == 1);
-  QVERIFY(bool1 == 1);
-  QVERIFY(bool2 == 1);
-  QVERIFY(null1 == 1);
-  QVERIFY(string1 == 1);
-}
+  auto boolResult = json::getVectorBool(doc, second);
+  BOOST_CHECK(boolResult[0] == true);
+  BOOST_CHECK(boolResult[1] == false);
 
-void MessagesTest::testJSONToString()
-{
-  rapidjson::Document d;
-  d.SetObject();
-  std::string first("first"), second("second"), third("third"),
-    fourth("fourth"), fifth("fifth"), sixth("sixth");
-  json::addIntToDoc(d, first, 1);
-  json::addIntToDoc(d, second, 2);
-  json::addBoolToDoc(d, third, true);
-  json::addBoolToDoc(d, fourth, false);
-  json::addNullToDoc(d, fifth);
-  json::addStringToDoc(d, sixth, std::string("Hello World"));
+  for (auto i = 0; i < 5; i++)
+    json::addNumberToArray(doc, doubleArray, i);
 
-  std::string expected("{\"first\":1,\"second\":2,\"third\":true,\"fourth\":"
-    "false,\"fifth\":null,\"sixth\":\"Hello World\"}");
+  json::addArrayToDoc(doc, third, doubleArray);
 
-  auto jsonString = json::jsonToString(d);
-
-  QVERIFY(expected == jsonString);
+  auto doubleResult = json::getVectorDouble(doc, third);
+  for (auto i = 0; i < 5; i++)
+    BOOST_CHECK(doubleResult[i] == i);
 }

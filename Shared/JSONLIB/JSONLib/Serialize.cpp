@@ -6,7 +6,7 @@
 namespace
 {
   template<class T>
-  addBool(rapidjson::Document& doc, T& obj, const std::string& key, const bool value)
+  void addBool(rapidjson::Document& doc, T& obj, const std::string& key, const bool value)
   {
     rapidjson::Value rapidValue(value);
     rapidjson::Value index(
@@ -15,17 +15,17 @@ namespace
   }
 
   template<class T>
-  addObjectOrArray(rapidjson::Document& doc, T& obj, const std::string& key, rapidjson::Value& value)
+  void addObjectOrArray(rapidjson::Document& doc, T& obj, const std::string& key, rapidjson::Value& value)
   {
     rapidjson::Value rapidValue(rapidjson::kObjectType);
     rapidValue = value;
     rapidjson::Value index(
-      member.c_str(), static_cast<int>(member.size()), doc.GetAllocator());
+      key.c_str(), static_cast<int>(key.size()), doc.GetAllocator());
     obj.AddMember(index, rapidValue, doc.GetAllocator());
   }
 
   template<class T>
-  addString(rapidjson::Document& doc, T& obj, const std::string& key, const std::string& value)
+  void addString(rapidjson::Document& doc, T& obj, const std::string& key, const std::string& value)
   {
     rapidjson::Value rapidValue(
       value.c_str(), static_cast<int>(value.size()), doc.GetAllocator());
@@ -35,23 +35,34 @@ namespace
   }
 
   template<class T>
-  addNumber(rapidjson::Document& doc, T& obj, const std::string& key, const double& value)
+  void addNumber(rapidjson::Document& doc, T& obj, const std::string& key, const double& value)
   {
-    rapidjson::Value rapidValue;
+    rapidjson::Value rapidValue(rapidjson::kNumberType);
     rapidValue.SetDouble(value);
     rapidjson::Value index(
       key.c_str(), static_cast<int>(key.size()), doc.GetAllocator());
     obj.AddMember(index, rapidValue, doc.GetAllocator());
   }
+
+  template<class T>
+  std::string jsonToString(T& doc)
+  {
+    rapidjson::StringBuffer buffer;
+    buffer.Clear();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+    return std::string(buffer.GetString());
+  }
 }
 
-std::string json::jsonToString(const rapidjson::Document& doc)
+std::string json::jsonToString(rapidjson::Document& doc)
 {
-  rapidjson::StringBuffer buffer;
-  buffer.Clear();
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-  doc.Accept(writer);
-  return std::string(buffer.GetString());
+  return ::jsonToString(doc);
+}
+
+std::string json::jsonToString(rapidjson::Value& obj)
+{
+  return ::jsonToString(obj);
 }
 
 void json::addBoolToDoc(rapidjson::Document& doc,

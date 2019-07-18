@@ -1,6 +1,10 @@
 #ifndef JSON_DESERIALIZE_HPP
 #define JSON_DESERIALIZE_HPP
 
+#include <vector>
+
+#include <boost/optional.hpp>
+
 #include <rapidjson/document.h>
 
 namespace json
@@ -9,10 +13,10 @@ namespace json
 
   bool getBool(rapidjson::Value& obj, const std::string& key);
 
-  rapidjson::Value& getObjectOrArray(rapidjson::Document& doc,
+  boost::optional<rapidjson::Value&> getObjectOrArray(rapidjson::Document& doc,
                                      const std::string& key);
 
-  rapidjson::Value& getObjectOrArray(rapidjson::Value& doc,
+  boost::optional<rapidjson::Value&> getObjectOrArray(rapidjson::Value& doc,
                                      const std::string& key);
 
   std::string getString(rapidjson::Document& doc, const std::string& key);
@@ -23,7 +27,11 @@ namespace json
 
   double getNumber(rapidjson::Value& obj, const std::string& key);
 
-  //How to handle array
+  std::vector<std::string> getVectorString(rapidjson::Document& doc, const std::string& key);
+
+  std::vector<bool> getVectorBool(rapidjson::Document& doc, const std::string& key);
+
+  std::vector<double> getVectorDouble(rapidjson::Document& doc, const std::string& key);
 } // namespace json
 
 #endif

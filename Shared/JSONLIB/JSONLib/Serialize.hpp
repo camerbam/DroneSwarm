@@ -5,7 +5,8 @@
 
 namespace json
 {
-  std::string jsonToString(const rapidjson::Document& doc);
+  std::string jsonToString(rapidjson::Document& doc);
+  std::string jsonToString(rapidjson::Value& doc);
 
   void addBoolToDoc(rapidjson::Document& doc,
                     const std::string& key,
