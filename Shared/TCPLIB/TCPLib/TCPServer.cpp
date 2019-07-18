@@ -7,18 +7,6 @@
 
 #include "TCPTools.hpp"
 
-std::shared_ptr<tcp::TcpServer::TcpConnection> tcp::TcpServer::TcpConnection::
-  create(boost::asio::io_context& ctx,
-         int id,
-         boost::asio::thread_pool& pool,
-         std::function<msg::BaseMsg(std::string)> parser,
-         std::map<std::string,
-                  std::function<void(std::shared_ptr<msg::BaseMsg>)>>& handlers)
-{
-  return std::shared_ptr<TcpServer::TcpConnection>(
-    new TcpServer::TcpConnection(ctx, id, pool, parser, handlers));
-}
-
 boost::asio::ip::tcp::socket& tcp::TcpServer::TcpConnection::socket()
 {
   return m_socket;
@@ -30,34 +18,6 @@ void tcp::TcpServer::TcpConnection::send(std::string message)
   std::cout << "sending" << std::endl;
   m_socket.async_write_some(boost::asio::buffer(*pMessage, pMessage.get()->size()),
     [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
-}
-
-tcp::TcpServer::TcpConnection::TcpConnection(
-  boost::asio::io_context& ctx,
-  int id,
-  boost::asio::thread_pool& pool,
-  std::function<msg::BaseMsg(std::string)> parser,
-  std::map<std::string, std::function<void(std::shared_ptr<msg::BaseMsg>)>>&
-    handlers)
-  : m_socket(ctx),
-    m_id(id),
-    m_closedSignal(),
-    m_threadPool(pool),
-    m_parser(parser),
-    m_inputBuffer(1024),
-    m_handlers(handlers),
-    m_acq([m_threadPool = &m_threadPool,
-           m_parser = &m_parser,
-           m_handlers = &m_handlers](std::string& input) {
-      static std::string inputBuffer;
-      auto msg = tcp::getNextStringMessage(inputBuffer, input);
-      if (!msg) return;
-      boost::asio::post(*m_threadPool, [msg, m_parser, m_handlers]() {
-        auto pMsg = std::make_shared<msg::BaseMsg>((*m_parser)(msg.get()));
-        m_handlers->find(pMsg->getName())->second(pMsg);
-      });
-    })
-{
 }
 
 void tcp::TcpServer::TcpConnection::startRead()
@@ -99,21 +59,6 @@ void tcp::TcpServer::TcpConnection::registerDisconnect(
   m_closedSignal.connect(slot);
 }
 
-tcp::TcpServer::TcpServer(unsigned short port,
-                          boost::asio::thread_pool& pool,
-                          std::function<msg::BaseMsg(std::string)> parser)
-  : m_ctx(),
-    m_optCork(m_ctx),
-    m_iocThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
-    m_pAcceptor(
-      m_ctx, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-    m_connections(),
-    m_threadPool(pool),
-    m_parser(parser)
-{
-  startAccept();
-}
-
 tcp::TcpServer::~TcpServer()
 {
   m_optCork = boost::none;
@@ -148,13 +93,6 @@ void tcp::TcpServer::handleAccept(std::shared_ptr<TcpConnection> newConnection,
     });
   }
   startAccept();
-}
-
-void tcp::TcpServer::registerHandler(
-  const std::string& key,
-  std::function<void(std::shared_ptr<msg::BaseMsg>)> handler)
-{
-  m_handlers[key] = handler;
 }
 
 void tcp::TcpServer::sendToAll(const std::string& message)
