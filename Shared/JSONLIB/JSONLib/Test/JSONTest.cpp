@@ -1,4 +1,5 @@
 #define BOOST_TEST_MODULE JSONTest
+
 #include <iostream>
 
 #include <boost/test/unit_test.hpp>
@@ -8,6 +9,11 @@
 
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
+
+bool compareDoubles(const double& a, const double& b)
+{
+  return std::abs(a - b) < .25;
+}
 
 BOOST_AUTO_TEST_CASE(JSON_OBJECT)
 {
@@ -32,8 +38,8 @@ BOOST_AUTO_TEST_CASE(JSON_OBJECT)
   BOOST_CHECK(json::getBool(v, third) == true);
   BOOST_CHECK(json::getBool(v, fourth) == false);
   BOOST_CHECK(json::getString(v, sixth) == std::string("Hello World"));
-  BOOST_CHECK(json::getNumber(v, second) == 2);
-  BOOST_CHECK(json::getNumber(v, first) == 1);
+  BOOST_CHECK(compareDoubles(json::getNumber(v, second), 2));
+  BOOST_CHECK(compareDoubles(json::getNumber(v, first), 1));
 
   auto obj = json::getObjectOrArray(v, seventh);
   BOOST_CHECK(obj);
@@ -41,8 +47,8 @@ BOOST_AUTO_TEST_CASE(JSON_OBJECT)
   BOOST_CHECK(json::getBool(obj.get(), third) == true);
   BOOST_CHECK(json::getBool(obj.get(), fourth) == false);
   BOOST_CHECK(json::getString(obj.get(), sixth) == std::string("Hello World"));
-  BOOST_CHECK(json::getNumber(obj.get(), second) == 2);
-  BOOST_CHECK(json::getNumber(v, first) == 1);
+  BOOST_CHECK(compareDoubles(json::getNumber(obj.get(), second), 2));
+  BOOST_CHECK(compareDoubles(json::getNumber(v, first), 1));
 }
 
 BOOST_AUTO_TEST_CASE(JSON_DOCUMENT)
@@ -60,8 +66,8 @@ BOOST_AUTO_TEST_CASE(JSON_DOCUMENT)
   BOOST_CHECK(json::getBool(doc, third) == true);
   BOOST_CHECK(json::getBool(doc, fourth) == false);
   BOOST_CHECK(json::getString(doc, sixth) == std::string("Hello World"));
-  BOOST_CHECK(json::getNumber(doc, second) == 2);
-  BOOST_CHECK(json::getNumber(doc, first) == 1);
+  BOOST_CHECK(compareDoubles(json::getNumber(doc, second), 2));
+  BOOST_CHECK(compareDoubles(json::getNumber(doc, first), 1));
 }
 
 BOOST_AUTO_TEST_CASE(JSON_ARRAY)
@@ -102,6 +108,7 @@ BOOST_AUTO_TEST_CASE(JSON_ARRAY)
   json::addArrayToDoc(doc, third, doubleArray);
 
   auto doubleResult = json::getVectorDouble(doc, third);
-  for (auto i = 0; i < 5; i++)
-    BOOST_CHECK(doubleResult[i] == i);
+  size_t j = 0;
+  for (double i = 0; i < 5; i++, j++)
+    BOOST_CHECK(compareDoubles(doubleResult[j], i));
 }
