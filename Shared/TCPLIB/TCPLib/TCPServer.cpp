@@ -14,9 +14,11 @@ boost::asio::ip::tcp::socket& tcp::TcpServer::TcpConnection::socket()
 
 void tcp::TcpServer::TcpConnection::send(std::string message)
 {
-  auto pMessage = std::make_shared<std::string>(tcp::getProcessedString(message));
+  auto pMessage =
+    std::make_shared<std::string>(tcp::getProcessedString(message));
   std::cout << "sending" << std::endl;
-  m_socket.async_write_some(boost::asio::buffer(*pMessage, pMessage.get()->size()),
+  m_socket.async_write_some(
+    boost::asio::buffer(*pMessage, pMessage.get()->size()),
     [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
 }
 
@@ -68,12 +70,8 @@ tcp::TcpServer::~TcpServer()
 void tcp::TcpServer::startAccept()
 {
   static int m_nextId = 0;
-  std::shared_ptr<TcpConnection> newConnection =
-    TcpConnection::create(m_pAcceptor.get_io_service(),
-                          m_nextId++,
-                          m_threadPool,
-                          m_parser,
-                          m_handlers);
+  std::shared_ptr<TcpConnection> newConnection = TcpConnection::create(
+    m_pAcceptor.get_io_service(), m_nextId++, m_threadPool, m_handlers);
   m_pAcceptor.async_accept(
     newConnection->socket(),
     [&, newConnection](auto ec) { handleAccept(newConnection, ec); });

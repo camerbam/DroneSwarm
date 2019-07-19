@@ -1,16 +1,19 @@
 #ifndef TCP_SERVER_HPP
 #define TCP_SERVER_HPP
 
-#include <string>
 #include <iostream>
+#include <string>
 #include <thread>
 
+#include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/thread_pool.hpp>
-#include <boost/asio/buffer.hpp>
 #include <boost/optional.hpp>
 #include <boost/signals2.hpp>
+
+#include "Handler.hpp"
+#include "TCPTools.hpp"
 
 #include "ACQLib/ACQ.hpp"
 
@@ -22,16 +25,14 @@ namespace tcp
     class TcpConnection : public std::enable_shared_from_this<TcpConnection>
     {
     public:
-      template <class T>
       static std::shared_ptr<TcpConnection> create(
         boost::asio::io_context& ctx,
         int id,
         boost::asio::thread_pool& pool,
-        std::function<T(std::string)> parser,
-        std::map<std::string, std::function<void()>>& handlers)
+        tcp::HandlerMap& handlers)
       {
         return std::shared_ptr<TcpServer::TcpConnection>(
-          new TcpServer::TcpConnection(ctx, id, pool, parser, handlers));
+          new TcpServer::TcpConnection(ctx, id, pool, handlers));
       }
 
       boost::asio::ip::tcp::socket& socket();
@@ -49,31 +50,27 @@ namespace tcp
                       std::size_t bytes_transferred);
 
     private:
-      template <class T>
-      TcpConnection(
-        boost::asio::io_context& ctx,
-        int id,
-        boost::asio::thread_pool& pool,
-        std::function<T(std::string)> parser,
-        std::map<std::string, std::function<void()>>& handlers)
+      TcpConnection(boost::asio::io_context& ctx,
+                    int id,
+                    boost::asio::thread_pool& pool,
+                    tcp::HandlerMap& handlers)
         : m_socket(ctx),
-        m_id(id),
-        m_closedSignal(),
-        m_threadPool(pool),
-        m_parser(parser),
-        m_inputBuffer(1024),
-        m_handlers(handlers),
-        m_acq([m_threadPool = &m_threadPool,
-          m_parser = &m_parser,
-          m_handlers = &m_handlers](std::string& input) {
-        static std::string inputBuffer;
-        auto msg = tcp::getNextStringMessage(inputBuffer, input);
-        if (!msg) return;
-        boost::asio::post(*m_threadPool, [msg, m_parser, m_handlers]() {
-          T pMsg = (*m_parser)(msg.get());
-          m_handlers->find(pMsg->getName())->second();
-        });
-      })
+          m_id(id),
+          m_closedSignal(),
+          m_threadPool(pool),
+          m_inputBuffer(1024),
+          m_handlers(handlers),
+          m_acq([ m_threadPool = &m_threadPool,
+                  m_handlers = &m_handlers ](std::string & input) {
+            static std::string inputBuffer;
+            auto msg = tcp::getNextStringMessage(inputBuffer, input);
+            if (!msg) return;
+            boost::asio::post(*m_threadPool, [msg, m_handlers]() {
+              // TODO
+              // T pMsg = (*m_parser)(msg.get());
+              // m_handlers->find(pMsg->getName())->second();
+            });
+          })
       {
       }
 
@@ -83,26 +80,22 @@ namespace tcp
       int m_id;
       boost::signals2::signal<void(int)> m_closedSignal;
       boost::asio::thread_pool& m_threadPool;
-      std::map<std::string, std::function<void()>>& m_handlers;
-      template <class T>
-      std::function<T(std::string)> m_parser;
+      tcp::HandlerMap& m_handlers;
       std::vector<char> m_inputBuffer;
       AutoConsumedQueue m_acq;
     };
 
   public:
-    template <class T>
-    TcpServer(unsigned short port,
-              boost::asio::thread_pool& pool,
-              std::function<T(std::string)> parser)
+    TcpServer(unsigned short port, boost::asio::thread_pool& pool)
       : m_ctx(),
-      m_optCork(m_ctx),
-      m_iocThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
-      m_pAcceptor(
-        m_ctx, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-      m_connections(),
-      m_threadPool(pool),
-      m_parser(parser)
+        m_optCork(m_ctx),
+        m_iocThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
+        m_pAcceptor(
+          m_ctx,
+          boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+        m_connections(),
+        m_threadPool(pool),
+        m_handlers()
     {
       startAccept();
     }
@@ -115,12 +108,17 @@ namespace tcp
                       const boost::system::error_code& error);
 
     template <class T>
-    boost::signals2::connection registerHandler(
-      const std::string& key,
-      function<void(T)> handler)
+    boost::signals2::scoped_connection registerHandler(
+      std::function<void(T)> handler)
     {
-      auto poster = [&m_threadPool](T msg, function<void(T)> f) { m_threadPool.post([msg, f]() {f(msg); }; };
-      m_handlers[key].connect([poster, handler]() {poster(); });
+      auto poster = [&m_threadPool](T msg, function<void(T)> f) {
+        m_threadPool.post([msg, f]() {
+          f(msg); });
+      };
+      boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
+        poster(msg, handler);
+      };
+      return m_handlers.getOrNew(T::name()).connect(slot);
     }
 
     void sendToAll(const std::string& message);
@@ -132,9 +130,7 @@ namespace tcp
     boost::asio::ip::tcp::acceptor m_pAcceptor;
     std::map<int, std::shared_ptr<TcpConnection>> m_connections;
     boost::asio::thread_pool& m_threadPool;
-    template <class T>
-    std::function<T(std::string)> m_parser;
-    std::map<std::string, boost::signals2::signal<void()>> m_handlers;
+    tcp::HandlerMap m_handlers;
   };
 } // namespace tcp
 

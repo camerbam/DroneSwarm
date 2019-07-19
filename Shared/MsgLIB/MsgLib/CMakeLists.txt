@@ -1,7 +1,5 @@
 set(lib_name Msg)
 set(${lib_name}_srcs
-  BaseMsg.cpp
-  BaseMsg.hpp
   StringMsg.cpp
   StringMsg.hpp
   )
