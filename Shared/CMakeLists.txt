@@ -4,6 +4,7 @@ set_property(GLOBAL PROPERTY FOLDER Shared)
 ##################################
 # No Dependency
 add_subdirectory(ACQLIB/ACQLib)
+add_subdirectory(JSONLIB/JSONLib)
 add_subdirectory(LoggerLIB/LoggerLib)
 add_subdirectory(ProtoLIB/ProtoLib)
 ##################################
