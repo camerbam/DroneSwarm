@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <thread>
+#include <mutex>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/streambuf.hpp>
@@ -11,7 +12,7 @@
 class AutoConsumedQueue
 {
 public:
-  AutoConsumedQueue(std::function<void(std::string&)> handler);
+  AutoConsumedQueue(std::function<void(std::string&, std::mutex&)> handler);
 
   ~AutoConsumedQueue();
 
@@ -21,9 +22,10 @@ public:
 
 private:
   std::atomic<bool> m_running;
-  std::function<void(std::string&)> m_handler;
+  std::function<void(std::string&, std::mutex&)> m_handler;
   boost::asio::io_context m_ctx;
   boost::optional<boost::asio::io_context::work> m_optCork;
+  std::mutex m_bufferMutex;
   std::string m_buffer;
   std::thread m_runningThread;
 };

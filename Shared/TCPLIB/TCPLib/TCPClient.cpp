@@ -6,57 +6,10 @@
 
 #include "TCPTools.hpp"
 
-tcp::TcpClient::TcpClient(std::string hostname,
-                          std::string port,
-                          boost::asio::thread_pool& pool,
-                          std::function<msg::BaseMsg(std::string)> parser)
-  : m_ctx(),
-    m_optCork(m_ctx),
-    m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
-    m_threadPool(pool),
-    m_socket(m_ctx),
-    m_inputBuffer(1024),
-    m_parser(parser),
-    m_handlers(),
-    m_acq([m_threadPool = &m_threadPool,
-           m_parser = &m_parser,
-           m_handlers = &m_handlers](std::string& input) {
-      static std::string inputBuffer;
-      auto msg = tcp::getNextStringMessage(inputBuffer, input);
-      if (!msg) return;
-      boost::asio::post(*m_threadPool, [msg, m_parser, m_handlers]() {
-        auto pMsg = std::make_shared<msg::BaseMsg>((*m_parser)(msg.get()));
-        m_handlers->find(pMsg->getName())->second(pMsg);
-      });
-    })
+tcp::TcpClient::~TcpClient()
 {
-  boost::asio::ip::tcp::resolver r(m_ctx);
-
-  startConnect(r.resolve(boost::asio::ip::tcp::resolver::query(
-    boost::asio::ip::tcp::v4(), hostname, port)));
-}
-
-tcp::TcpClient::~TcpClient() {
   m_optCork = boost::none;
   m_ctxThread.join();
-}
-
-void tcp::TcpClient::registerHandler(
-  const std::string& key,
-  std::function<void(std::shared_ptr<msg::BaseMsg>)> handler)
-{
-  m_handlers[key] = handler;
-}
-
-void tcp::TcpClient::send(const std::string& message)
-{
-  auto toSend = std::make_shared<std::string>(tcp::getProcessedString(message));
-  m_socket.async_write_some(boost::asio::buffer(*toSend, toSend.get()->size()),
-                            [](const boost::system::error_code& ec, std::size_t) {
-                              // TODO
-                              if (!ec) return;
-                              std::cout << "Failed to send" << std::endl;
-                            });
 }
 
 void tcp::TcpClient::startConnect(
@@ -80,6 +33,13 @@ void tcp::TcpClient::startConnect(
     // TODO
     std::cout << "No more endpoints to try" << std::endl;
   }
+}
+
+void tcp::TcpClient::handleWrite(
+  const boost::system::error_code& ec, size_t bt)
+{
+  std::cout << "wrote" << bt << std::endl;
+  //if (ec) m_closedSignal(m_id); // TODO What to do here
 }
 
 void tcp::TcpClient::handleConnect(
@@ -122,19 +82,21 @@ void tcp::TcpClient::handleConnect(
 
 void tcp::TcpClient::startRead()
 {
-  m_socket.async_receive(
-    boost::asio::buffer(m_inputBuffer),
-    [this](const boost::system::error_code& ec, std::size_t bt) { handleRead(ec, bt); });
+  m_socket.async_receive(boost::asio::buffer(m_inputBuffer),
+                         [this](const boost::system::error_code& ec,
+                                std::size_t bt) { handleRead(ec, bt); });
 }
 
-void tcp::TcpClient::handleRead(const boost::system::error_code& ec, std::size_t bt)
+void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
+                                std::size_t bt)
 {
   std::cout << "read some" << bt << std::endl;
   if (!ec)
   {
-    // Extract the newline-delimited message from the buffer.
-    m_acq.addBytes(m_inputBuffer);
-    // Empty messages are heartbeats and so ignored.
+    std::vector<char> toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + bt);
+    m_acq.addBytes(toAdd);
+    m_inputBuffer.clear();
+    m_inputBuffer.resize(1024);
 
     startRead();
   }

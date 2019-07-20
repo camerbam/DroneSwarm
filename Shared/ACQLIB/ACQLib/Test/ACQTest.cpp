@@ -6,9 +6,11 @@
 BOOST_AUTO_TEST_CASE(ACQ)
 {
   std::string end;
-  std::function<void(std::string const&)> handler([&end](std::string const& toParse) {
-    end += toParse;
-  });
+  std::function<void(std::string const&, std::mutex&)> handler(
+    [&end](std::string const& toParse, std::mutex& mutex) {
+      std::lock_guard<std::mutex> lock(mutex);
+      end += toParse;
+    });
 
   AutoConsumedQueue acq(handler);
   std::vector<char> b;

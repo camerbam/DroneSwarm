@@ -3,27 +3,25 @@
 
 #include "TCPLib/TCPClient.hpp"
 
-#include "MsgLib/BaseMsg.hpp"
 #include "MsgLib/StringMsg.hpp"
 
 int main()
 {
   boost::asio::thread_pool pool(1);
-  std::function<msg::BaseMsg(std::string)> parser([](std::string msg) {
-    return msg::StringMsg(msg);
-  });
+  std::vector<boost::signals2::scoped_connection> connections;
 
-  tcp::TcpClient client("localhost", "8080", pool, parser);
+  tcp::TcpClient client("localhost", "8080", pool);
 
-  std::function<void(std::shared_ptr<msg::BaseMsg>)> handler(
-    [](std::shared_ptr<msg::BaseMsg> msg) {
-      auto pMsg = std::static_pointer_cast<msg::StringMsg>(msg);
-      std::cout << pMsg->m_msg << std::endl;
-    });
+  connections.push_back(client.registerHandler<msg::StringMsg>(
+    [](msg::StringMsg msg) { std::cout << msg.m_msg << std::endl; }));
 
-  client.registerHandler("StringMsg", handler);
-
-  //pool.join();
+  std::string line;
+  while (line != "quit")
+  {
+    std::getline(std::cin, line);
+    msg::StringMsg msg{line};
+    client.send(msg, tcp::FORMAT::PROTOBUF);
+  }
 
   return 0;
 }

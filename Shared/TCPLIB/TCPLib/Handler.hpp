@@ -31,6 +31,8 @@ namespace tcp
       m_signal(msg);
     }
 
+    boost::signals2::signal<void(T)>& signal() { return m_signal; }
+
   private:
     boost::signals2::signal<void(T)> m_signal;
   };
@@ -38,9 +40,9 @@ namespace tcp
   class HandlerMap
   {
   public:
-    std::shared_ptr<HandlerBase>& getOrNew(const std::string& name)
+    void add(const std::string& name, std::shared_ptr<HandlerBase> handle)
     {
-      return m_handlers[name];
+      m_handlers[name] = handle;
     }
 
     std::shared_ptr<HandlerBase> get(const std::string& name)

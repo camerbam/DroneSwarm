@@ -5,21 +5,12 @@
 #include <boost/asio.hpp>
 #include <boost/asio/write.hpp>
 
+#include "BaseMsg.hpp"
 #include "TCPTools.hpp"
 
 boost::asio::ip::tcp::socket& tcp::TcpServer::TcpConnection::socket()
 {
   return m_socket;
-}
-
-void tcp::TcpServer::TcpConnection::send(std::string message)
-{
-  auto pMessage =
-    std::make_shared<std::string>(tcp::getProcessedString(message));
-  std::cout << "sending" << std::endl;
-  m_socket.async_write_some(
-    boost::asio::buffer(*pMessage, pMessage.get()->size()),
-    [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
 }
 
 void tcp::TcpServer::TcpConnection::startRead()
@@ -43,8 +34,11 @@ void tcp::TcpServer::TcpConnection::handleRead(
 {
   if (!ec)
   {
-    // Extract the newline-delimited message from the buffer.
-    m_acq.addBytes(m_inputBuffer);
+    std::vector<char> toAdd(
+      m_inputBuffer.begin(), m_inputBuffer.begin() + bytes_transferred);
+    m_acq.addBytes(toAdd);
+    m_inputBuffer.clear();
+    m_inputBuffer.resize(1024);
 
     startRead();
   }
@@ -91,12 +85,4 @@ void tcp::TcpServer::handleAccept(std::shared_ptr<TcpConnection> newConnection,
     });
   }
   startAccept();
-}
-
-void tcp::TcpServer::sendToAll(const std::string& message)
-{
-  for (auto&& connection : m_connections)
-  {
-    connection.second->send(message);
-  }
 }

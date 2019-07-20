@@ -1,10 +1,27 @@
 #include "StringMsg.hpp"
 
-msg::StringMsg::StringMsg(const std::string& msg)
-  :BaseMsg("StringMsg"), m_msg(msg)
+// todo Finish this
+
+bool msg::StringMsg::parseString(std::string msg)
 {
+  m_msg = msg;
+  return true;
 }
 
-msg::StringMsg::~StringMsg()
+std::string msg::StringMsg::toString()
 {
+  return m_msg;
+}
+
+std::string msg::StringMsg::toJsonString()
+{
+  return m_msg;
+}
+std::string msg::StringMsg::toProtobufString()
+{
+  return m_msg;
+}
+std::string msg::StringMsg::toXMLString()
+{
+  return m_msg;
 }

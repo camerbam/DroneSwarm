@@ -5,6 +5,7 @@
 
 #include <iomanip>
 #include <iostream>
+#include <string>
 
 namespace
 {
@@ -19,12 +20,8 @@ std::string tcp::getProcessedString(std::string msg)
   return ss.str();
 }
 
-boost::optional<std::string> tcp::getNextStringMessage(std::string& buffer,
-                                                       std::string& input)
+boost::optional<std::string> tcp::getNextStringMessage(std::string& buffer)
 {
-  input.erase(std::find(input.begin() + tcp::SIZE_OF_HEADER, input.end(), '\0'),
-              input.end());
-  buffer.append(input);
   if (buffer.size() < tcp::SIZE_OF_HEADER) return boost::none;
   size_t first = buffer.find_first_of(tcp::SYNC_WORD);
   size_t size;
@@ -39,5 +36,14 @@ boost::optional<std::string> tcp::getNextStringMessage(std::string& buffer,
     return boost::none;
   }
   if (buffer.size() < tcp::SIZE_OF_HEADER + size) return boost::none;
-  return buffer.substr(tcp::SIZE_OF_HEADER, size);
+  auto toReturn = buffer.substr(tcp::SIZE_OF_HEADER, size);
+  buffer.erase(buffer.begin(), buffer.begin() + tcp::SIZE_OF_HEADER + size);
+  return toReturn;
+}
+
+tcp::FORMAT tcp::getMsgFormat(std::string& msg)
+{
+  auto toReturn = static_cast<tcp::FORMAT>((int)msg[0]);
+  msg.erase(0, 1);
+  return toReturn;
 }

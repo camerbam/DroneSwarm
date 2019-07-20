@@ -3,17 +3,21 @@
 
 #include <string>
 
-#include "BaseMsg.hpp"
-
 namespace msg
 {
-  class StringMsg : public BaseMsg
+  class StringMsg
   {
   public:
+    // Necessary parts TODO use virtual functions to enforce this
     static std::string name() { return "StringMsg"; };
-    StringMsg(const std::string& msg);
+    bool parseString(std::string msg);
 
-    ~StringMsg();
+    std::string toString();
+
+    std::string toJsonString();
+    std::string toProtobufString();
+    std::string toXMLString();
+    // End necessary Parts
 
     std::string m_msg;
   };

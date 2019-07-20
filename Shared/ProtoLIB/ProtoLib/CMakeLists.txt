@@ -1,8 +1,9 @@
 set(lib_name Proto)
 set(${lib_name}_srcs
+  BaseMsg.proto
   StringMsg.proto
   )
-source_group("" FILES ${${lib_name}_srcs})
+source_group("proto" FILES ${${lib_name}_srcs})
 list(APPEND ${lib_name}_proto_srcs ${${lib_name}_srcs})
 xpFindPkg(PKGS protobuf)
 PROTOBUF_GENERATE_CPP(${lib_name}_cpp ${lib_name}_hpp ${${lib_name}_proto_srcs})
