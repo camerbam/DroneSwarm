@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package msg;
+
+message BaseMsg {
+  string type = 1;
+  bytes msg = 2;
+}

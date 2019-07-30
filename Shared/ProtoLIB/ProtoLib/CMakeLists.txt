@@ -1,5 +1,6 @@
 set(lib_name Proto)
 set(${lib_name}_srcs
+  BaseMsg.proto
   StringMsg.proto
   )
 source_group("proto" FILES ${${lib_name}_srcs})
