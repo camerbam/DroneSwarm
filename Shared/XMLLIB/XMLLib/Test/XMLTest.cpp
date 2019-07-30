@@ -36,16 +36,16 @@ BOOST_AUTO_TEST_CASE(XML_OBJECT)
   auto pRespNode = xml::getObject(pDoc, "myNode");
 
   BOOST_CHECK(xml::getString(pRespNode, first) == first);
-  BOOST_CHECK(xml::getNumber(pRespNode, second) == 0.0);
+  BOOST_CHECK(compareDoubles(xml::getNumber(pRespNode, second), 0.0));
   BOOST_CHECK(xml::getBool(pRespNode, third) == true);
   BOOST_CHECK(xml::getBool(pRespNode, fourth) == false);
-  BOOST_CHECK(xml::getNumber(pRespNode, fifth) == 1.1);
+  BOOST_CHECK(compareDoubles(xml::getNumber(pRespNode, fifth), 1.1));
   BOOST_CHECK(xml::getVectorString(pRespNode, sixth)[0] == happy);
   BOOST_CHECK(xml::getVectorString(pRespNode, sixth)[1] == birthday);
   BOOST_CHECK(xml::getVectorBool(pRespNode, seventh)[0] == true);
   BOOST_CHECK(xml::getVectorBool(pRespNode, seventh)[1] == true);
-  BOOST_CHECK(xml::getVectorDouble(pRespNode, eighth)[0] == 2.1);
-  BOOST_CHECK(xml::getVectorDouble(pRespNode, eighth)[1] == 2.2);
+  BOOST_CHECK(compareDoubles(xml::getVectorDouble(pRespNode, eighth)[0], 2.1));
+  BOOST_CHECK(compareDoubles(xml::getVectorDouble(pRespNode, eighth)[1], 2.2));
 }
 
 BOOST_AUTO_TEST_CASE(XML_DOCUMENT)
@@ -66,14 +66,14 @@ BOOST_AUTO_TEST_CASE(XML_DOCUMENT)
   auto response = xml::xmlToString(pDoc);
 
   BOOST_CHECK(xml::getString(pDoc, first) == first);
-  BOOST_CHECK(xml::getNumber(pDoc, second) == 0.0);
+  BOOST_CHECK(compareDoubles(xml::getNumber(pDoc, second), 0.0));
   BOOST_CHECK(xml::getBool(pDoc, third) == true);
   BOOST_CHECK(xml::getBool(pDoc, fourth) == false);
-  BOOST_CHECK(xml::getNumber(pDoc, fifth) == 1.1);
+  BOOST_CHECK(compareDoubles(xml::getNumber(pDoc, fifth), 1.1));
   BOOST_CHECK(xml::getVectorString(pDoc, sixth)[0] == happy);
   BOOST_CHECK(xml::getVectorString(pDoc, sixth)[1] == birthday);
   BOOST_CHECK(xml::getVectorBool(pDoc, seventh)[0] == true);
   BOOST_CHECK(xml::getVectorBool(pDoc, seventh)[1] == true);
-  BOOST_CHECK(xml::getVectorDouble(pDoc, eighth)[0] == 2.1);
-  BOOST_CHECK(xml::getVectorDouble(pDoc, eighth)[1] == 2.2);
+  BOOST_CHECK(compareDoubles(xml::getVectorDouble(pDoc, eighth)[0], 2.1));
+  BOOST_CHECK(compareDoubles(xml::getVectorDouble(pDoc, eighth)[1], 2.2));
 }

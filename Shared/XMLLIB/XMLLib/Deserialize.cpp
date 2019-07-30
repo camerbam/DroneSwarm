@@ -62,7 +62,6 @@ namespace
     std::vector<bool> toReturn;
     while (pNodeFound)
     {
-      bool value(false);
       if (pNodeFound->value() == std::string("true"))
         toReturn.push_back(true);
       else
@@ -79,7 +78,6 @@ namespace
     std::vector<double> toReturn;
     while (pNodeFound)
     {
-      double value(0);
       try
       {
         toReturn.push_back(std::stod(pNodeFound->value()));
