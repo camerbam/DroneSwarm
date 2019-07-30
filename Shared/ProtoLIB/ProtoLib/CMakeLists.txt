@@ -1,4 +1,4 @@
-set(lib_name proto)
+set(lib_name Proto)
 set(${lib_name}_srcs
   BaseMsg.proto
   StringMsg.proto

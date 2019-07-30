@@ -11,7 +11,7 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
-#include "ProtoLib/BaseMsg.pb.h"
+#include "ProtoLib/StringMsg.pb.h"
 #pragma warning(pop)
 
 #include "XMLLib/Deserialize.hpp"
@@ -80,7 +80,7 @@ bool msg::StringMsg::parseFromJson(const std::string& msg)
 
 bool msg::StringMsg::parseFromProto(const std::string& msg)
 {
-  proto::BaseMsg m;
+  proto::StringMsg m;
   m.ParseFromString(msg.c_str());
   m_msg = m.msg();
   return true;
@@ -105,7 +105,7 @@ std::string msg::StringMsg::toJsonString()
 
 std::string msg::StringMsg::toProtoString()
 {
-  proto::BaseMsg msg;
+  proto::StringMsg msg;
   msg.set_msg(m_msg);
   return (char)m_format + msg.SerializeAsString();
 }
