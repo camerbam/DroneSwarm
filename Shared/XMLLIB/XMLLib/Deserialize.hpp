@@ -1,6 +1,7 @@
 #ifndef XML_DESERIALIZE_HPP
 #define XML_DESERIALIZE_HPP
 
+#include <string>
 #include <vector>
 
 #include <rapidxml/rapidxml.hpp>
