@@ -23,59 +23,17 @@ namespace
   const std::string N_MSG("msg");
 } // namespace
 
-msg::BaseMsg::BaseMsg(const FORMAT& format,
-                      const std::string& type,
+msg::BaseMsg::BaseMsg(const std::string& type,
                       const std::string& msg)
-  : m_format(format), m_type(type), m_msg(msg)
+  : m_type(type), m_msg(msg)
 {
 }
 
-msg::BaseMsg::BaseMsg() : m_format(), m_type(), m_msg() {}
-
-// TODO refactor this function
-bool msg::BaseMsg::parseString(std::string& msg)
-{
-  m_format = getMsgFormat(msg);
-
-  switch (m_format)
-  {
-  case msg::FORMAT::JSON:
-    parseFromJson(msg);
-    return true;
-  case msg::FORMAT::PROTOBUF:
-    parseFromProto(msg);
-    return true;
-  case msg::FORMAT::XML:
-    parseFromXml(msg);
-    return true;
-  default:
-    return false;
-    break;
-  }
-}
-
-std::string msg::BaseMsg::toString()
-{
-  switch (m_format)
-  {
-  case msg::FORMAT::JSON:
-    return toJsonString();
-    break;
-  case msg::FORMAT::PROTOBUF:
-    return toProtoString();
-    break;
-  case msg::FORMAT::XML:
-    return toXMLString();
-    break;
-  default:
-    return std::string();
-    break;
-  }
-}
+msg::BaseMsg::BaseMsg() : m_type(), m_msg() {}
 
 bool msg::BaseMsg::parseFromJson(const std::string& msg)
 {
-  rapidjson::Document json;
+  rapidjson::Document json(rapidjson::kObjectType);
   json.Parse(msg.c_str());
   m_type = json::getString(json, N_TYPE);
   m_msg = json::getString(json, N_MSG);
@@ -102,26 +60,26 @@ bool msg::BaseMsg::parseFromXml(const std::string& msg)
   return true;
 }
 
-std::string msg::BaseMsg::toJsonString()
+std::string msg::BaseMsg::toJsonString() const
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_TYPE, m_type);
   json::addStringToDoc(doc, N_MSG, m_msg);
-  return (char)m_format + json::jsonToString(doc);
+  return msg::formatToChar(msg::FORMAT::JSON) + json::jsonToString(doc);
 }
 
-std::string msg::BaseMsg::toProtoString()
+std::string msg::BaseMsg::toProtoString() const
 {
   proto::BaseMsg msg;
   msg.set_type(m_type);
   msg.set_msg(m_msg);
-  return (char)m_format + msg.SerializeAsString();
+  return msg::formatToChar(msg::FORMAT::PROTOBUF) + msg.SerializeAsString();
 }
 
-std::string msg::BaseMsg::toXMLString()
+std::string msg::BaseMsg::toXMLString() const
 {
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_TYPE, m_type);
   xml::addDataToNode(pDoc, N_MSG, m_msg);
-  return (char)m_format + xml::xmlToString(pDoc);
+  return msg::formatToChar(msg::FORMAT::XML) + xml::xmlToString(pDoc);
 }

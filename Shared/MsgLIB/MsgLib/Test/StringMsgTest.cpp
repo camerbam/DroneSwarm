@@ -6,13 +6,11 @@ void testStringMsg(const msg::FORMAT& format)
 {
   msg::StringMsg stringMsg;
   stringMsg.msg("test");
-  stringMsg.format(format);
 
   msg::StringMsg answerMsg;
-  auto msgAsString = stringMsg.toString();
-  answerMsg.parseString(msgAsString);
+  auto msgAsString = msg::toString(stringMsg, format);
+  msg::parseString(answerMsg, msgAsString, format);
   BOOST_CHECK(stringMsg.msg() == answerMsg.msg());
-  BOOST_CHECK(stringMsg.format() == answerMsg.format());
 }
 
 BOOST_AUTO_TEST_CASE(StringMsgTest)
