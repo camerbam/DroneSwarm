@@ -41,7 +41,7 @@ rapidxml::xml_node<>* xml::addDataToNode(rapidxml::xml_node<>* obj,
 std::string xml::xmlToString(rapidxml::xml_node<>* obj)
 {
   std::stringstream ss;
-  ss << *obj->first_node();
+  ss << *obj;
   return ss.str();
 }
 

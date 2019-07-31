@@ -1,5 +1,6 @@
 set(lib_name Proto)
 set(${lib_name}_srcs
+  BaseMsg.proto
   StringMsg.proto
   )
 source_group("proto" FILES ${${lib_name}_srcs})
@@ -18,6 +19,6 @@ elseif(CMAKE_COMPILER_IS_GNUXX AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6
 endif()
 add_library(${lib_name} STATIC ${${lib_name}_cpp} ${${lib_name}_hpp} ${${lib_name}_proto_srcs})
 target_include_directories(${lib_name} PUBLIC ${Shared_BINARY_DIR}/${lib_name}LIB)
-xpTargetExtern(${lib_name} PRIVATE protobuf)
+xpTargetExtern(${lib_name} PUBLIC protobuf)
 set_property(TARGET ${lib_name} PROPERTY FOLDER ${folder})
 xpSourceListAppend("${${lib_name}_proto_srcs}")
