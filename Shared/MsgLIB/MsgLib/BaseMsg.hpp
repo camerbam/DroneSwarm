@@ -11,11 +11,21 @@ namespace msg
   {
   public:
     BaseMsg();
-    BaseMsg(const FORMAT& format, const std::string& type, const std::string& msg);
+    BaseMsg(const FORMAT& format,
+            const std::string& type,
+            const std::string& msg);
     static std::string name() { return "BaseMsg"; }
     bool parseString(std::string& msg);
 
     std::string toString();
+
+    FORMAT format() { return m_format; }
+    std::string type() { return m_type; }
+    std::string msg() { return m_msg; }
+
+    void format(const FORMAT& format) { m_format = format; }
+    void type(const std::string& type) { m_type = type; }
+    void msg(const std::string& msg) { m_msg = msg; }
 
   private:
     bool parseFromJson(const std::string& msg);

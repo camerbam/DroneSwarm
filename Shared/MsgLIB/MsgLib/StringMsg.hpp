@@ -17,6 +17,12 @@ namespace msg
 
     std::string toString();
 
+    FORMAT format() { return m_format; }
+    std::string msg() { return m_msg; }
+
+    void format(const FORMAT& format) { m_format = format; }
+    void msg(const std::string& msg) { m_msg = msg; }
+
   private:
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
