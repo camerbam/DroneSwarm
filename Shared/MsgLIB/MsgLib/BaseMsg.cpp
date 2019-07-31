@@ -1,13 +1,5 @@
-#include "StringMsg.hpp"
+#include "BaseMsg.hpp"
 
-<<<<<<< HEAD
-// todo Finish this
-
-bool msg::StringMsg::parseString(std::string msg)
-{
-  m_msg = msg;
-  return true;
-=======
 #include <iostream>
 #include <string>
 
@@ -19,7 +11,7 @@ bool msg::StringMsg::parseString(std::string msg)
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
-#include "ProtoLib/StringMsg.pb.h"
+#include "ProtoLib/BaseMsg.pb.h"
 #pragma warning(pop)
 
 #include "XMLLib/Deserialize.hpp"
@@ -27,18 +19,21 @@ bool msg::StringMsg::parseString(std::string msg)
 
 namespace
 {
+  const std::string N_TYPE("type");
   const std::string N_MSG("msg");
 } // namespace
 
-msg::StringMsg::StringMsg(const FORMAT& format, const std::string& msg)
-  : m_format(format), m_msg(msg)
+msg::BaseMsg::BaseMsg(const FORMAT& format,
+                      const std::string& type,
+                      const std::string& msg)
+  : m_format(format), m_type(type), m_msg(msg)
 {
 }
 
-msg::StringMsg::StringMsg() : m_format(), m_msg() {}
+msg::BaseMsg::BaseMsg() : m_format(), m_type(), m_msg() {}
 
 // TODO refactor this function
-bool msg::StringMsg::parseString(std::string& msg)
+bool msg::BaseMsg::parseString(std::string& msg)
 {
   m_format = getMsgFormat(msg);
 
@@ -57,14 +52,10 @@ bool msg::StringMsg::parseString(std::string& msg)
     return false;
     break;
   }
->>>>>>> cameron/development
 }
 
-std::string msg::StringMsg::toString()
+std::string msg::BaseMsg::toString()
 {
-<<<<<<< HEAD
-  return m_msg;
-=======
   switch (m_format)
   {
   case msg::FORMAT::JSON:
@@ -82,62 +73,55 @@ std::string msg::StringMsg::toString()
   }
 }
 
-bool msg::StringMsg::parseFromJson(const std::string& msg)
+bool msg::BaseMsg::parseFromJson(const std::string& msg)
 {
   rapidjson::Document json;
   json.Parse(msg.c_str());
+  m_type = json::getString(json, N_TYPE);
   m_msg = json::getString(json, N_MSG);
   return true;
 }
 
-bool msg::StringMsg::parseFromProto(const std::string& msg)
+bool msg::BaseMsg::parseFromProto(const std::string& msg)
 {
-  proto::StringMsg m;
+  proto::BaseMsg m;
   m.ParseFromString(msg.c_str());
+  m_type = m.type();
   m_msg = m.msg();
   return true;
 }
 
-bool msg::StringMsg::parseFromXml(const std::string& msg)
+bool msg::BaseMsg::parseFromXml(const std::string& msg)
 {
   auto pDoc = new rapidxml::xml_document<>;
   char* cstr = new char[msg.size() + 1];
   strcpy(cstr, msg.c_str());
   pDoc->parse<0>(cstr);
+  m_type = xml::getString(pDoc, N_TYPE);
   m_msg = xml::getString(pDoc, N_MSG);
   return true;
->>>>>>> cameron/development
 }
 
-std::string msg::StringMsg::toJsonString()
+std::string msg::BaseMsg::toJsonString()
 {
-<<<<<<< HEAD
-  return m_msg;
-}
-std::string msg::StringMsg::toProtobufString()
-{
-  return m_msg;
-}
-std::string msg::StringMsg::toXMLString()
-{
-  return m_msg;
-=======
   rapidjson::Document doc(rapidjson::kObjectType);
+  json::addStringToDoc(doc, N_TYPE, m_type);
   json::addStringToDoc(doc, N_MSG, m_msg);
   return (char)m_format + json::jsonToString(doc);
 }
 
-std::string msg::StringMsg::toProtoString()
+std::string msg::BaseMsg::toProtoString()
 {
-  proto::StringMsg msg;
+  proto::BaseMsg msg;
+  msg.set_type(m_type);
   msg.set_msg(m_msg);
   return (char)m_format + msg.SerializeAsString();
 }
 
-std::string msg::StringMsg::toXMLString()
+std::string msg::BaseMsg::toXMLString()
 {
   auto pDoc = new rapidxml::xml_document<>;
+  xml::addDataToNode(pDoc, N_TYPE, m_type);
   xml::addDataToNode(pDoc, N_MSG, m_msg);
   return (char)m_format + xml::xmlToString(pDoc);
->>>>>>> cameron/development
 }

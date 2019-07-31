@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package msg;
+package proto;
 
 message StringMsg {
   string msg = 1;

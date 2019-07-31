@@ -8,6 +8,7 @@ add_subdirectory(LoggerLIB/LoggerLib)
 add_subdirectory(ProtoLIB/ProtoLib)
 add_subdirectory(JSONLIB/JSONLib)
 add_subdirectory(XMLLIB/XMLLib)
+<<<<<<< HEAD
 add_subdirectory(JSONLIB/JSONLib)
 add_subdirectory(LoggerLIB/LoggerLib)
 add_subdirectory(ProtoLIB/ProtoLib)
@@ -17,3 +18,7 @@ add_subdirectory(MsgLIB/MsgLib)
 ##################################
 # Third Layer Dependency
 add_subdirectory(TCPLIB/TCPLib)
+=======
+##################################
+add_subdirectory(MsgLIB/MsgLib)
+>>>>>>> cameron/development
