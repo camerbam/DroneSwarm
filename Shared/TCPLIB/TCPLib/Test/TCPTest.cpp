@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
     [&connections,
      &server](std::shared_ptr<tcp::TcpServer::TcpConnection> pConnection) {
       connections.push_back(pConnection->registerHandler<msg::StringMsg>(
-        [&server](msg::StringMsg msg) {
+        [pConnection](msg::StringMsg msg) {
           static size_t msgsLeft = 3;
           static std::vector<std::string> msgsToGet{
             "json test", "protobuf test", "xml test"};
@@ -108,10 +108,11 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
             msgsToGet.end());
           BOOST_CHECK(msgsLeft == msgsToGet.size());
           std::cout << "verified" << std::endl;
-          if (msgsLeft == 0) server.close();
+          if (msgsLeft == 0) pConnection->close();
         }));
     });
 
   auto pThread = startClientToSend();
   pThread->join();
+  server.close();
 }

@@ -55,6 +55,8 @@ namespace tcp
 
       void startRead();
 
+      void close();
+
       void handleRead(const boost::system::error_code& ec,
                       std::size_t bytes_transferred);
 

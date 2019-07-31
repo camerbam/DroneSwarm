@@ -28,6 +28,11 @@ void tcp::TcpServer::TcpConnection::handleWrite(
   if (ec) m_closedSignal(m_id);
 }
 
+void tcp::TcpServer::TcpConnection::close()
+{
+  m_socket.close();
+}
+
 void tcp::TcpServer::TcpConnection::handleRead(
   const boost::system::error_code& ec, std::size_t bytes_transferred)
 {
