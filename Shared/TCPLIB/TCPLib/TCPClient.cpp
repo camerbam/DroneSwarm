@@ -9,7 +9,8 @@
 tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
-  m_ctxThread.join();
+  // m_ctx.stop();
+  if (m_ctxThread.joinable()) m_ctxThread.join();
 }
 
 void tcp::TcpClient::startConnect(
@@ -28,18 +29,14 @@ void tcp::TcpClient::startConnect(
   }
   else
   {
-    // There are no more endpoints to try. Shut down the client.
-    // stop();
-    // TODO
     std::cout << "No more endpoints to try" << std::endl;
+    // close();
   }
 }
 
-void tcp::TcpClient::handleWrite(
-  const boost::system::error_code& ec, size_t bt)
+void tcp::TcpClient::handleWrite(const boost::system::error_code&, size_t)
 {
-  std::cout << "wrote" << bt << std::endl;
-  //if (ec) m_closedSignal(m_id); // TODO What to do here
+  // if (ec) m_closedSignal(m_id); // TODO What to do here
 }
 
 void tcp::TcpClient::handleConnect(
@@ -90,7 +87,6 @@ void tcp::TcpClient::startRead()
 void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
                                 std::size_t bt)
 {
-  std::cout << "read some" << bt << std::endl;
   if (!ec)
   {
     std::vector<char> toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + bt);
@@ -106,4 +102,11 @@ void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
 
     // stop(); // TODO
   }
+}
+
+void tcp::TcpClient::close()
+{
+  m_optCork = boost::none;
+  m_ctx.stop();
+  //if (m_ctxThread.joinable()) m_ctxThread.join();
 }

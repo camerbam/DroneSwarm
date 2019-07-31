@@ -12,6 +12,8 @@ namespace msg
     XML
   };
 
+  char formatToChar(const FORMAT format);
+
   msg::FORMAT getMsgFormat(std::string& msg);
 }
 

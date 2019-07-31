@@ -6,8 +6,6 @@
 
 #include <boost/signals2/signal.hpp>
 
-// TODO Break out into two files
-
 namespace tcp
 {
   class HandlerBase
@@ -20,7 +18,6 @@ namespace tcp
   class Handler : public HandlerBase
   {
   public:
-    // TODO handle bad messages
     void execute(const std::string& data)
     {
       std::string name = T::name();
@@ -40,17 +37,9 @@ namespace tcp
   class HandlerMap
   {
   public:
-    void add(const std::string& name, std::shared_ptr<HandlerBase> handle)
-    {
-      m_handlers[name] = handle;
-    }
+    void add(const std::string& name, std::shared_ptr<HandlerBase> handle);
 
-    std::shared_ptr<HandlerBase> get(const std::string& name)
-    {
-      auto toReturn = m_handlers.find(name);
-      if (toReturn == m_handlers.end()) return std::shared_ptr<HandlerBase>();
-      return toReturn->second;
-    }
+    std::shared_ptr<HandlerBase> get(const std::string& name);
 
   private:
     std::map<std::string, std::shared_ptr<HandlerBase>> m_handlers;

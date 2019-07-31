@@ -18,8 +18,8 @@
 #include <boost/signals2.hpp>
 
 #include "ACQLib/ACQ.hpp"
-#include "MsgLib/BaseMsg.hpp"
 #include "Handler.hpp"
+#include "MsgLib/BaseMsg.hpp"
 
 namespace tcp
 {
@@ -39,21 +39,23 @@ namespace tcp
         m_acq([m_threadPool = &m_threadPool, m_handlers = &m_handlers](
                 std::string& input, std::mutex& mutex) {
           std::lock_guard<std::mutex> lock(mutex);
-          auto optMsg = tcp::getNextStringMessage(input);
-          if (!optMsg) return;
-          boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
-            msg::BaseMsg receivedMsg;
-            // TODO: Check return bool
-            auto msg = optMsg.get();
-            receivedMsg.parseString(msg);
-            auto handle = m_handlers->get(receivedMsg.type());
-            if (!handle)
-            {
-              std::cout << "Received unknown message" << std::endl;
-              return;
-            }
-            handle->execute(receivedMsg.msg());
-          });
+          while (true)
+          {
+            auto optMsg = tcp::getNextStringMessage(input);
+            if (!optMsg) return;
+            boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
+              msg::BaseMsg receivedMsg;
+              auto msg = optMsg.get();
+              receivedMsg.parseString(msg);
+              auto handle = m_handlers->get(receivedMsg.type());
+              if (!handle)
+              {
+                std::cout << "Received unknown message" << std::endl;
+                return;
+              }
+              handle->execute(receivedMsg.msg());
+            });
+          }
         })
     {
       boost::asio::ip::tcp::resolver r(m_ctx);
@@ -68,7 +70,6 @@ namespace tcp
     boost::signals2::scoped_connection registerHandler(
       std::function<void(T)> handler)
     {
-      // TODO I don't like capturing this
       auto poster = [this](T msg, std::function<void(T)> f) {
         boost::asio::post(m_threadPool, [msg, f]() { f(msg); });
       };
@@ -104,6 +105,8 @@ namespace tcp
     void startRead();
 
     void handleRead(const boost::system::error_code& ec, std::size_t bt);
+
+    void close();
 
   private:
     boost::asio::io_context m_ctx;

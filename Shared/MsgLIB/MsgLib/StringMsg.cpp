@@ -29,7 +29,6 @@ msg::StringMsg::StringMsg(const FORMAT& format, const std::string& msg)
 
 msg::StringMsg::StringMsg() : m_format(), m_msg() {}
 
-// TODO refactor this function
 bool msg::StringMsg::parseString(std::string msg)
 {
   m_format = getMsgFormat(msg);
@@ -72,7 +71,7 @@ std::string msg::StringMsg::toString()
 
 bool msg::StringMsg::parseFromJson(const std::string& msg)
 {
-  rapidjson::Document json;
+  rapidjson::Document json(rapidjson::kObjectType);
   json.Parse(msg.c_str());
   m_msg = json::getString(json, N_MSG);
   return true;
@@ -100,18 +99,19 @@ std::string msg::StringMsg::toJsonString()
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_MSG, m_msg);
-  return (char)m_format + json::jsonToString(doc);
+  return msg::formatToChar(m_format) + json::jsonToString(doc);
 }
+
 std::string msg::StringMsg::toProtoString()
 {
   proto::StringMsg msg;
   msg.set_msg(m_msg);
-  return (char)m_format + msg.SerializeAsString();
+  return msg::formatToChar(m_format) + msg.SerializeAsString();
 }
 
 std::string msg::StringMsg::toXMLString()
 {
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_MSG, m_msg);
-  return (char)m_format + xml::xmlToString(pDoc);
+  return msg::formatToChar(m_format) + xml::xmlToString(pDoc);
 }

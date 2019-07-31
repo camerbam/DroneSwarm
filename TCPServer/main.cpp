@@ -7,22 +7,22 @@
 
 int main()
 {
-  boost::asio::thread_pool pool(1);
+  //boost::asio::thread_pool pool(1);
 
-  std::vector<boost::signals2::scoped_connection> connections;
+  //std::vector<boost::signals2::scoped_connection> connections;
 
-  tcp::TcpServer server(8080, pool);
+  //tcp::TcpServer server(8080, pool);
 
-  connections.push_back(server.registerHandler<msg::StringMsg>(
-    [](msg::StringMsg msg) { std::cout << msg.msg() << std::endl; }));
+  //connections.push_back(server.registerHandler<msg::StringMsg>(
+  //  [](msg::StringMsg msg) { std::cout << msg.msg() << std::endl; }));
 
-  std::string line;
-  while (line != "quit")
-  {
-    std::getline(std::cin, line);
-    msg::StringMsg msg(msg::FORMAT::PROTOBUF, line);
-    server.sendToAll(msg);
-  }
+  //std::string line;
+  //while (line != "quit")
+  //{
+  //  std::getline(std::cin, line);
+  //  msg::StringMsg msg(msg::FORMAT::PROTOBUF, line);
+  //  server.sendToAll(msg);
+  //}
 
   return 0;
 }

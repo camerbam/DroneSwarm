@@ -4,7 +4,6 @@
 #include <string>
 
 #include "MsgTypes.hpp"
-#include "BaseMsg.hpp"
 
 namespace msg
 {

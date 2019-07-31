@@ -12,8 +12,8 @@
 #include <boost/optional.hpp>
 #include <boost/signals2.hpp>
 
-#include "MsgLib/BaseMsg.hpp"
 #include "Handler.hpp"
+#include "MsgLib/BaseMsg.hpp"
 #include "TCPTools.hpp"
 
 #include "ACQLib/ACQ.hpp"
@@ -22,18 +22,15 @@ namespace tcp
 {
   class TcpServer
   {
-  private:
+  public:
     class TcpConnection : public std::enable_shared_from_this<TcpConnection>
     {
     public:
       static std::shared_ptr<TcpConnection> create(
-        boost::asio::io_context& ctx,
-        int id,
-        boost::asio::thread_pool& pool,
-        tcp::HandlerMap& handlers)
+        boost::asio::io_context& ctx, int id, boost::asio::thread_pool& pool)
       {
         return std::shared_ptr<TcpServer::TcpConnection>(
-          new TcpServer::TcpConnection(ctx, id, pool, handlers));
+          new TcpServer::TcpConnection(ctx, id, pool));
       }
 
       boost::asio::ip::tcp::socket& socket();
@@ -62,31 +59,50 @@ namespace tcp
       void handleRead(const boost::system::error_code& ec,
                       std::size_t bytes_transferred);
 
+      template <class T>
+      boost::signals2::scoped_connection registerHandler(
+        std::function<void(T)> handler)
+      {
+        // TODO I don't like capturing this
+        auto poster = [this](T msg, std::function<void(T)> f) {
+          boost::asio::post(m_threadPool, [msg, f]() { f(msg); });
+        };
+        boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
+          poster(msg, handler);
+        };
+        auto pHandle = std::make_shared<Handler<T>>();
+        m_handlers.add(T::name(), pHandle);
+        return pHandle->signal().connect(slot);
+      }
+
     private:
       TcpConnection(boost::asio::io_context& ctx,
                     int id,
-                    boost::asio::thread_pool& pool,
-                    tcp::HandlerMap& handlers)
+                    boost::asio::thread_pool& pool)
         : m_socket(ctx),
           m_id(id),
           m_closedSignal(),
           m_threadPool(pool),
           m_inputBuffer(1024),
-          m_handlers(handlers),
+          m_handlers(),
           m_acq([m_threadPool = &m_threadPool, m_handlers = &m_handlers](
                   std::string& input, std::mutex& mutex) {
             std::lock_guard<std::mutex> lock(mutex);
-            auto optMsg = tcp::getNextStringMessage(input);
-            if (!optMsg) return;
-            boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
-              msg::BaseMsg receivedMsg;
-              // TODO: Check return bool
-              auto msg = optMsg.get();
-              receivedMsg.parseString(msg);
-              auto handle = m_handlers->get(receivedMsg.type());
-              if (!handle) std::cout << "Received unknown message" << std::endl;
-              handle->execute(receivedMsg.msg());
-            });
+            while (true)
+            {
+              auto optMsg = tcp::getNextStringMessage(input);
+              if (!optMsg) return;
+              boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
+                msg::BaseMsg receivedMsg;
+                // TODO: Check return bool
+                auto msg = optMsg.get();
+                receivedMsg.parseString(msg);
+                auto handle = m_handlers->get(receivedMsg.type());
+                if (!handle)
+                  std::cout << "Received unknown message" << std::endl;
+                handle->execute(receivedMsg.msg());
+              });
+            }
           })
       {
       }
@@ -97,8 +113,8 @@ namespace tcp
       int m_id;
       boost::signals2::signal<void(int)> m_closedSignal;
       boost::asio::thread_pool& m_threadPool;
-      tcp::HandlerMap& m_handlers;
       std::vector<char> m_inputBuffer;
+      tcp::HandlerMap m_handlers;
       AutoConsumedQueue m_acq;
     };
 
@@ -111,8 +127,7 @@ namespace tcp
           m_ctx,
           boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
         m_connections(),
-        m_threadPool(pool),
-        m_handlers()
+        m_threadPool(pool)
     {
       startAccept();
     }
@@ -124,21 +139,13 @@ namespace tcp
     void handleAccept(std::shared_ptr<TcpConnection> newConnection,
                       const boost::system::error_code& error);
 
-    template <class T>
-    boost::signals2::scoped_connection registerHandler(
-      std::function<void(T)> handler)
+    void registerConnection(
+      std::function<void(std::shared_ptr<TcpConnection>)> handler)
     {
-      // TODO I don't like capturing this
-      auto poster = [this](T msg, std::function<void(T)> f) {
-        boost::asio::post(m_threadPool, [msg, f]() { f(msg); });
-      };
-      boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
-        poster(msg, handler);
-      };
-      auto pHandle = std::make_shared<Handler<T>>();
-      m_handlers.add(T::name(), pHandle);
-      return pHandle->signal().connect(slot);
+      m_connectionHandler = handler;
     }
+
+    void close();
 
     template <class T>
     void sendToAll(const T& message)
@@ -155,8 +162,8 @@ namespace tcp
     std::thread m_iocThread;
     boost::asio::ip::tcp::acceptor m_pAcceptor;
     std::map<int, std::shared_ptr<TcpConnection>> m_connections;
+    std::function<void(std::shared_ptr<TcpConnection>)> m_connectionHandler;
     boost::asio::thread_pool& m_threadPool;
-    tcp::HandlerMap m_handlers;
   };
 } // namespace tcp
 
