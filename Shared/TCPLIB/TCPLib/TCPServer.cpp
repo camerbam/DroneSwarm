@@ -5,7 +5,7 @@
 #include <boost/asio.hpp>
 #include <boost/asio/write.hpp>
 
-#include "BaseMsg.hpp"
+#include "MsgLib/BaseMsg.hpp"
 #include "TCPTools.hpp"
 
 boost::asio::ip::tcp::socket& tcp::TcpServer::TcpConnection::socket()

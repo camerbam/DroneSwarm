@@ -12,7 +12,7 @@
 #include <boost/optional.hpp>
 #include <boost/signals2.hpp>
 
-#include "BaseMsg.hpp"
+#include "MsgLib/BaseMsg.hpp"
 #include "Handler.hpp"
 #include "TCPTools.hpp"
 
@@ -39,10 +39,10 @@ namespace tcp
       boost::asio::ip::tcp::socket& socket();
 
       template <class T>
-      void send(T message, const FORMAT& format)
+      void send(T message)
       {
-        tcp::BaseMsg msg;
-        msg.format(format);
+        msg::BaseMsg msg;
+        msg.format(message.format());
         msg.msg(message.toString());
         msg.type(T::name());
         auto pMessage = std::make_shared<std::string>(
@@ -76,12 +76,13 @@ namespace tcp
           m_acq([m_threadPool = &m_threadPool, m_handlers = &m_handlers](
                   std::string& input, std::mutex& mutex) {
             std::lock_guard<std::mutex> lock(mutex);
-            auto msg = tcp::getNextStringMessage(input);
-            if (!msg) return;
-            boost::asio::post(*m_threadPool, [msg, &m_handlers]() {
-              tcp::BaseMsg receivedMsg;
+            auto optMsg = tcp::getNextStringMessage(input);
+            if (!optMsg) return;
+            boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
+              msg::BaseMsg receivedMsg;
               // TODO: Check return bool
-              receivedMsg.parseString(msg.get());
+              auto msg = optMsg.get();
+              receivedMsg.parseString(msg);
               auto handle = m_handlers->get(receivedMsg.type());
               if (!handle) std::cout << "Received unknown message" << std::endl;
               handle->execute(receivedMsg.msg());
@@ -140,11 +141,11 @@ namespace tcp
     }
 
     template <class T>
-    void sendToAll(const T& message, const FORMAT& format)
+    void sendToAll(const T& message)
     {
       for (auto&& connection : m_connections)
       {
-        connection.second->send(message, format);
+        connection.second->send(message);
       }
     }
 

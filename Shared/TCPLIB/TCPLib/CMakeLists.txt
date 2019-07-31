@@ -1,7 +1,5 @@
 set(lib_name TCP)
 set(${lib_name}_srcs
-  BaseMsg.cpp
-  BaseMsg.hpp
   Handler.cpp
   Handler.hpp
   TCPClient.cpp

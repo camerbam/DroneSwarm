@@ -1,13 +1,5 @@
 #include "StringMsg.hpp"
 
-<<<<<<< HEAD
-// todo Finish this
-
-bool msg::StringMsg::parseString(std::string msg)
-{
-  m_msg = msg;
-  return true;
-=======
 #include <iostream>
 #include <string>
 
@@ -38,7 +30,7 @@ msg::StringMsg::StringMsg(const FORMAT& format, const std::string& msg)
 msg::StringMsg::StringMsg() : m_format(), m_msg() {}
 
 // TODO refactor this function
-bool msg::StringMsg::parseString(std::string& msg)
+bool msg::StringMsg::parseString(std::string msg)
 {
   m_format = getMsgFormat(msg);
 
@@ -57,14 +49,10 @@ bool msg::StringMsg::parseString(std::string& msg)
     return false;
     break;
   }
->>>>>>> cameron/development
 }
 
 std::string msg::StringMsg::toString()
 {
-<<<<<<< HEAD
-  return m_msg;
-=======
   switch (m_format)
   {
   case msg::FORMAT::JSON:
@@ -106,27 +94,14 @@ bool msg::StringMsg::parseFromXml(const std::string& msg)
   pDoc->parse<0>(cstr);
   m_msg = xml::getString(pDoc, N_MSG);
   return true;
->>>>>>> cameron/development
 }
 
 std::string msg::StringMsg::toJsonString()
 {
-<<<<<<< HEAD
-  return m_msg;
-}
-std::string msg::StringMsg::toProtobufString()
-{
-  return m_msg;
-}
-std::string msg::StringMsg::toXMLString()
-{
-  return m_msg;
-=======
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_MSG, m_msg);
   return (char)m_format + json::jsonToString(doc);
 }
-
 std::string msg::StringMsg::toProtoString()
 {
   proto::StringMsg msg;
@@ -139,5 +114,4 @@ std::string msg::StringMsg::toXMLString()
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_MSG, m_msg);
   return (char)m_format + xml::xmlToString(pDoc);
->>>>>>> cameron/development
 }

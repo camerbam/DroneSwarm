@@ -18,7 +18,7 @@
 #include <boost/signals2.hpp>
 
 #include "ACQLib/ACQ.hpp"
-#include "BaseMsg.hpp"
+#include "MsgLib/BaseMsg.hpp"
 #include "Handler.hpp"
 
 namespace tcp
@@ -39,12 +39,13 @@ namespace tcp
         m_acq([m_threadPool = &m_threadPool, m_handlers = &m_handlers](
                 std::string& input, std::mutex& mutex) {
           std::lock_guard<std::mutex> lock(mutex);
-          auto msg = tcp::getNextStringMessage(input);
-          if (!msg) return;
-          boost::asio::post(*m_threadPool, [msg, &m_handlers]() {
-            tcp::BaseMsg receivedMsg;
+          auto optMsg = tcp::getNextStringMessage(input);
+          if (!optMsg) return;
+          boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
+            msg::BaseMsg receivedMsg;
             // TODO: Check return bool
-            receivedMsg.parseString(msg.get());
+            auto msg = optMsg.get();
+            receivedMsg.parseString(msg);
             auto handle = m_handlers->get(receivedMsg.type());
             if (!handle)
             {
@@ -80,10 +81,10 @@ namespace tcp
     }
 
     template <class T>
-    void send(T message, const FORMAT& format)
+    void send(T message)
     {
-      tcp::BaseMsg msg;
-      msg.format(format);
+      msg::BaseMsg msg;
+      msg.format(message.format());
       msg.msg(message.toString());
       msg.type(T::name());
       auto pMessage =

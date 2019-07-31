@@ -14,14 +14,14 @@ int main()
   tcp::TcpServer server(8080, pool);
 
   connections.push_back(server.registerHandler<msg::StringMsg>(
-    [](msg::StringMsg msg) { std::cout << msg.m_msg << std::endl; }));
+    [](msg::StringMsg msg) { std::cout << msg.msg() << std::endl; }));
 
   std::string line;
   while (line != "quit")
   {
     std::getline(std::cin, line);
-    msg::StringMsg msg{ line };
-    server.sendToAll(msg, tcp::FORMAT::PROTOBUF);
+    msg::StringMsg msg(msg::FORMAT::PROTOBUF, line);
+    server.sendToAll(msg);
   }
 
   return 0;

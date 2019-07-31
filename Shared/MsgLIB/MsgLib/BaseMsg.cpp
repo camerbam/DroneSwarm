@@ -33,7 +33,7 @@ msg::BaseMsg::BaseMsg(const FORMAT& format,
 msg::BaseMsg::BaseMsg() : m_format(), m_type(), m_msg() {}
 
 // TODO refactor this function
-bool msg::BaseMsg::parseString(std::string& msg)
+bool msg::BaseMsg::parseString(std::string msg)
 {
   m_format = getMsgFormat(msg);
 
