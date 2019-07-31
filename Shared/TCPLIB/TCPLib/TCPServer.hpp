@@ -39,10 +39,10 @@ namespace tcp
       void send(T message, const msg::FORMAT& format)
       {
         msg::BaseMsg msg;
-        msg.msg(message.toString(format));
+        msg.msg(msg::toString(message, format));
         msg.type(T::name());
         auto pMessage = std::make_shared<std::string>(
-          tcp::getProcessedString(msg.toString(format)));
+          tcp::getProcessedString(msg::toString(msg, format)));
         m_socket.async_write_some(
           boost::asio::buffer(*pMessage, pMessage.get()->size()),
           [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
@@ -96,7 +96,7 @@ namespace tcp
                 // TODO: Check return bool
                 auto msg = optMsg.get();
                 auto format = msg::getMsgFormat(msg);
-                receivedMsg.parseString(msg, format);
+                msg::parseString(receivedMsg, msg, format);
                 auto handle = m_handlers->get(receivedMsg.type());
                 if (!handle)
                   std::cout << "Received unknown message" << std::endl;

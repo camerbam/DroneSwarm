@@ -20,6 +20,7 @@
 #include "ACQLib/ACQ.hpp"
 #include "Handler.hpp"
 #include "MsgLib/BaseMsg.hpp"
+#include "MsgLib/SerializeDeserialize.hpp"
 
 namespace tcp
 {
@@ -47,7 +48,7 @@ namespace tcp
               msg::BaseMsg receivedMsg;
               auto msg = optMsg.get();
               auto format = msg::getMsgFormat(msg);
-              receivedMsg.parseString(msg, format);
+              parseString(receivedMsg, msg, format);
               auto handle = m_handlers->get(receivedMsg.type());
               if (!handle)
               {
@@ -86,10 +87,10 @@ namespace tcp
     void send(T message, const msg::FORMAT& format)
     {
       msg::BaseMsg msg;
-      msg.msg(message.toString(format));
+      msg.msg(msg::toString(message, format));
       msg.type(T::name());
       auto pMessage =
-        std::make_shared<std::string>(tcp::getProcessedString(msg.toString(format)));
+        std::make_shared<std::string>(tcp::getProcessedString(toString(msg, format)));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });

@@ -4,6 +4,7 @@ set(${lib_name}_srcs
   BaseMsg.hpp
   MsgTypes.cpp
   MsgTypes.hpp
+  SerializeDeserialize.hpp
   StringMsg.cpp
   StringMsg.hpp
   )

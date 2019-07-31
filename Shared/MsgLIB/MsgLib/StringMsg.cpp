@@ -29,44 +29,6 @@ msg::StringMsg::StringMsg(const std::string& msg)
 
 msg::StringMsg::StringMsg() : m_msg() {}
 
-bool msg::StringMsg::parseString(const std::string& msg, const msg::FORMAT& format)
-{
-  switch (format)
-  {
-  case msg::FORMAT::JSON:
-    parseFromJson(msg);
-    return true;
-  case msg::FORMAT::PROTOBUF:
-    parseFromProto(msg);
-    return true;
-  case msg::FORMAT::XML:
-    parseFromXml(msg);
-    return true;
-  default:
-    return false;
-    break;
-  }
-}
-
-std::string msg::StringMsg::toString(const msg::FORMAT& format)
-{
-  switch (format)
-  {
-  case msg::FORMAT::JSON:
-    return toJsonString();
-    break;
-  case msg::FORMAT::PROTOBUF:
-    return toProtoString();
-    break;
-  case msg::FORMAT::XML:
-    return toXMLString();
-    break;
-  default:
-    return std::string();
-    break;
-  }
-}
-
 bool msg::StringMsg::parseFromJson(const std::string& msg)
 {
   rapidjson::Document json(rapidjson::kObjectType);
@@ -93,21 +55,21 @@ bool msg::StringMsg::parseFromXml(const std::string& msg)
   return true;
 }
 
-std::string msg::StringMsg::toJsonString()
+std::string msg::StringMsg::toJsonString() const
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_MSG, m_msg);
   return json::jsonToString(doc);
 }
 
-std::string msg::StringMsg::toProtoString()
+std::string msg::StringMsg::toProtoString() const
 {
   proto::StringMsg msg;
   msg.set_msg(m_msg);
   return msg.SerializeAsString();
 }
 
-std::string msg::StringMsg::toXMLString()
+std::string msg::StringMsg::toXMLString() const
 {
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_MSG, m_msg);

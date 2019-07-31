@@ -8,8 +8,8 @@ void testStringMsg(const msg::FORMAT& format)
   stringMsg.msg("test");
 
   msg::StringMsg answerMsg;
-  auto msgAsString = stringMsg.toString(format);
-  answerMsg.parseString(msgAsString, format);
+  auto msgAsString = msg::toString(stringMsg, format);
+  msg::parseString(answerMsg, msgAsString, format);
   BOOST_CHECK(stringMsg.msg() == answerMsg.msg());
 }
 

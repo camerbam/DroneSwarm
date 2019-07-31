@@ -9,9 +9,10 @@ void testBaseMsg(const msg::FORMAT& format)
   baseMsg.type("base");
 
   msg::BaseMsg answerMsg;
-  auto msgAsString = baseMsg.toString(format);
+
+  auto msgAsString = msg::toString(baseMsg, format);
   auto answerFormat = msg::getMsgFormat(msgAsString);
-  answerMsg.parseString(msgAsString, answerFormat);
+  parseString(answerMsg, msgAsString, answerFormat);
   BOOST_CHECK(answerFormat == format);
   BOOST_CHECK(baseMsg.msg() == answerMsg.msg());
   BOOST_CHECK(baseMsg.type() == answerMsg.type());

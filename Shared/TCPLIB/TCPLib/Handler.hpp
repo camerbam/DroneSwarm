@@ -25,7 +25,7 @@ namespace tcp
       std::string name = T::name();
 
       T msg;
-      bool success = msg.parseString(data, format);
+      bool success = msg::parseString(msg, data, format);
       if (!success) std::cout << "Could not parse data" << std::endl;
       m_signal(msg);
     }

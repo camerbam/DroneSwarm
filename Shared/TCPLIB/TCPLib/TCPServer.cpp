@@ -92,5 +92,4 @@ void tcp::TcpServer::close()
 {
   m_optCork = boost::none;
   m_ctx.stop();
-  //if (m_iocThread.joinable()) m_iocThread.join();
 }
