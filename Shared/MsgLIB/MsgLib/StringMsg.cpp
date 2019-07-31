@@ -98,7 +98,7 @@ bool msg::StringMsg::parseFromXml(const std::string& msg)
 
 std::string msg::StringMsg::toJsonString()
 {
-  rapidjson::Document doc;
+  rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_MSG, m_msg);
   return (char)m_format + json::jsonToString(doc);
 }
