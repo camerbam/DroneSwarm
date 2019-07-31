@@ -2,6 +2,7 @@ set(lib_name Msg)
 set(${lib_name}_srcs
   BaseMsg.cpp
   BaseMsg.hpp
+  MsgTypes.cpp
   MsgTypes.hpp
   StringMsg.cpp
   StringMsg.hpp

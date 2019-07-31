@@ -1,6 +1,8 @@
 #ifndef MsgTypes_HPP
 #define MsgTypes_HPP
 
+#include <string>
+
 namespace msg
 {
   enum class FORMAT
@@ -10,12 +12,7 @@ namespace msg
     XML
   };
 
-  static msg::FORMAT getMsgFormat(std::string& msg)
-  {
-    auto toReturn = static_cast<msg::FORMAT>((int)msg[0]);
-    msg.erase(0, 1);
-    return toReturn;
-  }
+  msg::FORMAT getMsgFormat(std::string& msg);
 }
 
 #endif
