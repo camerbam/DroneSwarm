@@ -14,12 +14,13 @@ std::shared_ptr<std::thread> startClientToRecieve()
 
     tcp::TcpClient client("localhost", "8080", pool);
 
-    std::atomic<size_t> msgsLeft = 3;
 
     connections.push_back(client.registerHandler<msg::StringMsg>(
-      [&msgsLeft, &client](msg::StringMsg msg) {
+      [&client](msg::StringMsg msg) {
         static std::vector<std::string> msgsToGet{
           "json test", "protobuf test", "xml test"};
+        static size_t msgsLeft = 3;
+
         msgsLeft--;
         std::vector<std::string>::iterator found =
           std::find(msgsToGet.begin(), msgsToGet.end(), msg.msg());
@@ -46,7 +47,6 @@ BOOST_AUTO_TEST_CASE(TCPServerSend)
      &server](std::shared_ptr<tcp::TcpServer::TcpConnection> pConnection) {
       std::vector<std::string> msgsToSend{
         "json test", "protobuf test", "xml test"};
-      std::atomic<size_t> msgsLeft = 3;
 
       msg::StringMsg msg1(msgsToSend[0]);
       pConnection->send(msg1, msg::FORMAT::JSON);
@@ -69,7 +69,6 @@ std::shared_ptr<std::thread> startClientToSend()
 
     tcp::TcpClient client("localhost", "8080", pool);
 
-    std::atomic<size_t> msgsLeft = 3;
     std::vector<std::string> msgsToSend{
       "json test", "protobuf test", "xml test"};
 
