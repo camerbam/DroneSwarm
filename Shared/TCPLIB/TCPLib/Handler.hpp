@@ -6,24 +6,26 @@
 
 #include <boost/signals2/signal.hpp>
 
+#include "MsgLib/MsgTypes.hpp"
+
 namespace tcp
 {
   class HandlerBase
   {
   public:
-    virtual void execute(const std::string& data) = 0;
+    virtual void execute(const std::string& data, const msg::FORMAT& format) = 0;
   };
 
   template <class T>
   class Handler : public HandlerBase
   {
   public:
-    void execute(const std::string& data)
+    void execute(const std::string& data, const msg::FORMAT& format)
     {
       std::string name = T::name();
 
       T msg;
-      bool success = msg.parseString(data);
+      bool success = msg.parseString(data, format);
       if (!success) std::cout << "Could not parse data" << std::endl;
       m_signal(msg);
     }

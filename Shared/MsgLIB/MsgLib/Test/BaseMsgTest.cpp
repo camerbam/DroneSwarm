@@ -7,14 +7,14 @@ void testBaseMsg(const msg::FORMAT& format)
   msg::BaseMsg baseMsg;
   baseMsg.msg("test");
   baseMsg.type("base");
-  baseMsg.format(format);
 
   msg::BaseMsg answerMsg;
-  auto msgAsString = baseMsg.toString();
-  answerMsg.parseString(msgAsString);
+  auto msgAsString = baseMsg.toString(format);
+  auto answerFormat = msg::getMsgFormat(msgAsString);
+  answerMsg.parseString(msgAsString, answerFormat);
+  BOOST_CHECK(answerFormat == format);
   BOOST_CHECK(baseMsg.msg() == answerMsg.msg());
   BOOST_CHECK(baseMsg.type() == answerMsg.type());
-  BOOST_CHECK(baseMsg.format() == answerMsg.format());
 }
 
 BOOST_AUTO_TEST_CASE(BaseMsgTest)

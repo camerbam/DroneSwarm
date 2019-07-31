@@ -46,14 +46,15 @@ namespace tcp
             boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
               msg::BaseMsg receivedMsg;
               auto msg = optMsg.get();
-              receivedMsg.parseString(msg);
+              auto format = msg::getMsgFormat(msg);
+              receivedMsg.parseString(msg, format);
               auto handle = m_handlers->get(receivedMsg.type());
               if (!handle)
               {
                 std::cout << "Received unknown message" << std::endl;
                 return;
               }
-              handle->execute(receivedMsg.msg());
+              handle->execute(receivedMsg.msg(), format);
             });
           }
         })
@@ -82,14 +83,13 @@ namespace tcp
     }
 
     template <class T>
-    void send(T message)
+    void send(T message, const msg::FORMAT& format)
     {
       msg::BaseMsg msg;
-      msg.format(message.format());
-      msg.msg(message.toString());
+      msg.msg(message.toString(format));
       msg.type(T::name());
       auto pMessage =
-        std::make_shared<std::string>(tcp::getProcessedString(msg.toString()));
+        std::make_shared<std::string>(tcp::getProcessedString(msg.toString(format)));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });

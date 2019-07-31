@@ -4,13 +4,13 @@
 
 namespace
 {
-  std::map<msg::FORMAT, char> formatToChar{{msg::FORMAT::JSON, 'A'},
-                                           {msg::FORMAT::PROTOBUF, 'B'},
-                                           {msg::FORMAT::XML, 'C'}};
+  std::map<msg::FORMAT, char> formatToChar{{msg::FORMAT::JSON, 'J'},
+                                           {msg::FORMAT::PROTOBUF, 'P'},
+                                           {msg::FORMAT::XML, 'X'}};
 
-  std::map<char, msg::FORMAT> charToFormat{{'A', msg::FORMAT::JSON},
-                                           {'B', msg::FORMAT::PROTOBUF},
-                                           {'C', msg::FORMAT::XML}};
+  std::map<char, msg::FORMAT> charToFormat{{'J', msg::FORMAT::JSON},
+                                           {'P', msg::FORMAT::PROTOBUF},
+                                           {'X', msg::FORMAT::XML}};
 
 } // namespace
 

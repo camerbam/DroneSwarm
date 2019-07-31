@@ -26,5 +26,5 @@ BOOST_AUTO_TEST_CASE(ACQ)
   acq.addBytes(b);
   while (acq.isConsuming())
     std::this_thread::yield();
-  BOOST_CHECK(end == first + first + second);
+  BOOST_CHECK(end == first + first + first + second);
 }

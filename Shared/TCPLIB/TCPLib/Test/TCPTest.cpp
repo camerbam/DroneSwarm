@@ -48,12 +48,12 @@ BOOST_AUTO_TEST_CASE(TCPServerSend)
         "json test", "protobuf test", "xml test"};
       std::atomic<size_t> msgsLeft = 3;
 
-      msg::StringMsg msg1(msg::FORMAT::JSON, msgsToSend[0]);
-      pConnection->send(msg1);
-      msg::StringMsg msg2(msg::FORMAT::PROTOBUF, msgsToSend[1]);
-      pConnection->send(msg2);
-      msg::StringMsg msg3(msg::FORMAT::XML, msgsToSend[2]);
-      pConnection->send(msg3);
+      msg::StringMsg msg1(msgsToSend[0]);
+      pConnection->send(msg1, msg::FORMAT::JSON);
+      msg::StringMsg msg2(msgsToSend[1]);
+      pConnection->send(msg2, msg::FORMAT::PROTOBUF);
+      msg::StringMsg msg3(msgsToSend[2]);
+      pConnection->send(msg3, msg::FORMAT::XML);
     });
 
   auto pThread = startClientToRecieve();
@@ -73,16 +73,13 @@ std::shared_ptr<std::thread> startClientToSend()
     std::vector<std::string> msgsToSend{
       "json test", "protobuf test", "xml test"};
 
-    msg::StringMsg msg1(msg::FORMAT::JSON, msgsToSend[0]);
-    client.send(msg1);
-    msg::StringMsg msg2(msg::FORMAT::PROTOBUF, msgsToSend[1]);
-    client.send(msg2);
-    msg::StringMsg msg3(msg::FORMAT::XML, msgsToSend[2]);
-    client.send(msg3);
+    msg::StringMsg msg1(msgsToSend[0]);
+    client.send(msg1, msg::FORMAT::JSON);
+    msg::StringMsg msg2(msgsToSend[1]);
+    client.send(msg2, msg::FORMAT::PROTOBUF);
+    msg::StringMsg msg3(msgsToSend[2]);
+    client.send(msg3, msg::FORMAT::XML);
 
-    // Tricky. Since there are no pings going back and forth, the client
-    // Does not know when the connection ends.
-    std::this_thread::sleep_for(std::chrono::seconds(1));
     client.close();
   });
 }

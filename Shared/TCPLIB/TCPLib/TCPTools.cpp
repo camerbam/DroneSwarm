@@ -1,4 +1,4 @@
-#include "TcpTools.hpp"
+#include "TCPTools.hpp"
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/asio.hpp>
@@ -38,12 +38,5 @@ boost::optional<std::string> tcp::getNextStringMessage(std::string& buffer)
   if (buffer.size() < tcp::SIZE_OF_HEADER + size) return boost::none;
   auto toReturn = buffer.substr(tcp::SIZE_OF_HEADER, size);
   buffer.erase(buffer.begin(), buffer.begin() + tcp::SIZE_OF_HEADER + size);
-  return toReturn;
-}
-
-tcp::FORMAT tcp::getMsgFormat(std::string& msg)
-{
-  auto toReturn = static_cast<tcp::FORMAT>((int)msg[0]);
-  msg.erase(0, 1);
   return toReturn;
 }

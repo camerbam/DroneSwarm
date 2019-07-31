@@ -23,20 +23,18 @@ namespace
   const std::string N_MSG("msg");
 } // namespace
 
-msg::BaseMsg::BaseMsg(const FORMAT& format,
-                      const std::string& type,
+msg::BaseMsg::BaseMsg(const std::string& type,
                       const std::string& msg)
-  : m_format(format), m_type(type), m_msg(msg)
+  : m_type(type), m_msg(msg)
 {
 }
 
-msg::BaseMsg::BaseMsg() : m_format(), m_type(), m_msg() {}
+msg::BaseMsg::BaseMsg() : m_type(), m_msg() {}
 
-bool msg::BaseMsg::parseString(std::string msg)
+//TODO I would like to be able to pass this be ref
+bool msg::BaseMsg::parseString(std::string msg, const msg::FORMAT& format)
 {
-  m_format = getMsgFormat(msg);
-
-  switch (m_format)
+  switch (format)
   {
   case msg::FORMAT::JSON:
     parseFromJson(msg);
@@ -53,9 +51,9 @@ bool msg::BaseMsg::parseString(std::string msg)
   }
 }
 
-std::string msg::BaseMsg::toString()
+std::string msg::BaseMsg::toString(const msg::FORMAT& format)
 {
-  switch (m_format)
+  switch (format)
   {
   case msg::FORMAT::JSON:
     return toJsonString();
@@ -106,7 +104,7 @@ std::string msg::BaseMsg::toJsonString()
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_TYPE, m_type);
   json::addStringToDoc(doc, N_MSG, m_msg);
-  return msg::formatToChar(m_format) + json::jsonToString(doc);
+  return msg::formatToChar(msg::FORMAT::JSON) + json::jsonToString(doc);
 }
 
 std::string msg::BaseMsg::toProtoString()
@@ -114,7 +112,7 @@ std::string msg::BaseMsg::toProtoString()
   proto::BaseMsg msg;
   msg.set_type(m_type);
   msg.set_msg(m_msg);
-  return msg::formatToChar(m_format) + msg.SerializeAsString();
+  return msg::formatToChar(msg::FORMAT::PROTOBUF) + msg.SerializeAsString();
 }
 
 std::string msg::BaseMsg::toXMLString()
@@ -122,5 +120,5 @@ std::string msg::BaseMsg::toXMLString()
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_TYPE, m_type);
   xml::addDataToNode(pDoc, N_MSG, m_msg);
-  return msg::formatToChar(m_format) + xml::xmlToString(pDoc);
+  return msg::formatToChar(msg::FORMAT::XML) + xml::xmlToString(pDoc);
 }

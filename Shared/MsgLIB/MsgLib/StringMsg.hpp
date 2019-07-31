@@ -11,16 +11,14 @@ namespace msg
   {
   public:
     StringMsg();
-    StringMsg(const FORMAT& format, const std::string& msg);
+    StringMsg(const std::string& msg);
     static std::string name() { return "StringMsg"; }
-    bool parseString(std::string msg);
+    bool parseString(std::string msg, const msg::FORMAT& format);
 
-    std::string toString();
+    std::string toString(const msg::FORMAT& format);
 
-    FORMAT format() { return m_format; }
     std::string msg() { return m_msg; }
 
-    void format(const FORMAT& format) { m_format = format; }
     void msg(const std::string& msg) { m_msg = msg; }
 
   private:
@@ -32,7 +30,6 @@ namespace msg
     std::string toProtoString();
     std::string toXMLString();
 
-    FORMAT m_format;
     std::string m_msg;
   };
 } // namespace msg

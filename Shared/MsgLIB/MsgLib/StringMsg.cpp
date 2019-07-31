@@ -22,18 +22,16 @@ namespace
   const std::string N_MSG("msg");
 } // namespace
 
-msg::StringMsg::StringMsg(const FORMAT& format, const std::string& msg)
-  : m_format(format), m_msg(msg)
+msg::StringMsg::StringMsg(const std::string& msg)
+  : m_msg(msg)
 {
 }
 
-msg::StringMsg::StringMsg() : m_format(), m_msg() {}
+msg::StringMsg::StringMsg() : m_msg() {}
 
-bool msg::StringMsg::parseString(std::string msg)
+bool msg::StringMsg::parseString(std::string msg, const msg::FORMAT& format)
 {
-  m_format = getMsgFormat(msg);
-
-  switch (m_format)
+  switch (format)
   {
   case msg::FORMAT::JSON:
     parseFromJson(msg);
@@ -50,9 +48,9 @@ bool msg::StringMsg::parseString(std::string msg)
   }
 }
 
-std::string msg::StringMsg::toString()
+std::string msg::StringMsg::toString(const msg::FORMAT& format)
 {
-  switch (m_format)
+  switch (format)
   {
   case msg::FORMAT::JSON:
     return toJsonString();
@@ -99,19 +97,19 @@ std::string msg::StringMsg::toJsonString()
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_MSG, m_msg);
-  return msg::formatToChar(m_format) + json::jsonToString(doc);
+  return json::jsonToString(doc);
 }
 
 std::string msg::StringMsg::toProtoString()
 {
   proto::StringMsg msg;
   msg.set_msg(m_msg);
-  return msg::formatToChar(m_format) + msg.SerializeAsString();
+  return msg.SerializeAsString();
 }
 
 std::string msg::StringMsg::toXMLString()
 {
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_MSG, m_msg);
-  return msg::formatToChar(m_format) + xml::xmlToString(pDoc);
+  return xml::xmlToString(pDoc);
 }

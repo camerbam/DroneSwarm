@@ -11,19 +11,16 @@ namespace msg
   {
   public:
     BaseMsg();
-    BaseMsg(const FORMAT& format,
-            const std::string& type,
+    BaseMsg(const std::string& type,
             const std::string& msg);
     static std::string name() { return "BaseMsg"; }
-    bool parseString(std::string msg);
+    bool parseString(std::string msg, const msg::FORMAT& format);
 
-    std::string toString();
+    std::string toString(const msg::FORMAT& format);
 
-    FORMAT format() { return m_format; }
     std::string type() { return m_type; }
     std::string msg() { return m_msg; }
 
-    void format(FORMAT format) { m_format = format; }
     void type(std::string type) { m_type = type; }
     void msg(std::string msg) { m_msg = msg; }
 
@@ -36,7 +33,6 @@ namespace msg
     std::string toProtoString();
     std::string toXMLString();
 
-    FORMAT m_format;
     std::string m_type;
     std::string m_msg;
   };
