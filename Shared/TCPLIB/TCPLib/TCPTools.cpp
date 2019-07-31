@@ -9,12 +9,16 @@
 
 namespace
 {
-  // TODO
-  // const size_t MAX_SIZE(99999);
+  const size_t MAX_SIZE(99999);
 }
 
 std::string tcp::getProcessedString(std::string msg)
 {
+  if(msg.size() > MAX_SIZE)
+  {
+    std::cout << "Cannot send a message of that size" << std::endl;
+    return "";
+  }
   std::stringstream ss;
   ss << SYNC_WORD << std::setw(SIZE_OF_SIZE) << msg.size() << msg;
   return ss.str();

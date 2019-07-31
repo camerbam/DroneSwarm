@@ -7,20 +7,11 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/thread_pool.hpp>
 
-// boost expiremental
-#include "TCPTools.hpp"
-#include <boost/asio/buffer.hpp>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/post.hpp>
-#include <boost/asio/thread_pool.hpp>
-#include <boost/optional.hpp>
-#include <boost/signals2.hpp>
-
 #include "ACQLib/ACQ.hpp"
 #include "Handler.hpp"
 #include "MsgLib/BaseMsg.hpp"
 #include "MsgLib/SerializeDeserialize.hpp"
+#include "TCPTools.hpp"
 
 namespace tcp
 {
@@ -48,7 +39,11 @@ namespace tcp
               msg::BaseMsg receivedMsg;
               auto msg = optMsg.get();
               auto format = msg::getMsgFormat(msg);
-              parseString(receivedMsg, msg, format);
+              if(!parseString(receivedMsg, msg, format))
+              {
+                std::cout << "Could not parse msg" << std::endl;
+                return;
+              }
               auto handle = m_handlers->get(receivedMsg.type());
               if (!handle)
               {
@@ -89,8 +84,8 @@ namespace tcp
       msg::BaseMsg msg;
       msg.msg(msg::toString(message, format));
       msg.type(T::name());
-      auto pMessage =
-        std::make_shared<std::string>(tcp::getProcessedString(toString(msg, format)));
+      auto pMessage = std::make_shared<std::string>(
+        tcp::getProcessedString(toString(msg, format)));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });

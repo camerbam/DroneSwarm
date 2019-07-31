@@ -9,7 +9,6 @@
 tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
-  // m_ctx.stop();
   if (m_ctxThread.joinable()) m_ctxThread.join();
 }
 
@@ -30,13 +29,12 @@ void tcp::TcpClient::startConnect(
   else
   {
     std::cout << "No more endpoints to try" << std::endl;
-    // close();
+    close();
   }
 }
 
 void tcp::TcpClient::handleWrite(const boost::system::error_code&, size_t)
 {
-  // if (ec) m_closedSignal(m_id); // TODO What to do here
 }
 
 void tcp::TcpClient::handleConnect(
@@ -100,7 +98,7 @@ void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
   {
     std::cout << "Error on receive: " << ec.message() << "\n";
 
-    // stop(); // TODO
+    close();
   }
 }
 
@@ -108,5 +106,4 @@ void tcp::TcpClient::close()
 {
   m_optCork = boost::none;
   m_ctx.stop();
-  //if (m_ctxThread.joinable()) m_ctxThread.join();
 }

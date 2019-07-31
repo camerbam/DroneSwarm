@@ -62,7 +62,6 @@ namespace tcp
       boost::signals2::scoped_connection registerHandler(
         std::function<void(T)> handler)
       {
-        // TODO I don't like capturing this
         auto poster = [this](T msg, std::function<void(T)> f) {
           boost::asio::post(m_threadPool, [msg, f]() { f(msg); });
         };
@@ -93,10 +92,13 @@ namespace tcp
               if (!optMsg) return;
               boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
                 msg::BaseMsg receivedMsg;
-                // TODO: Check return bool
                 auto msg = optMsg.get();
                 auto format = msg::getMsgFormat(msg);
-                msg::parseString(receivedMsg, msg, format);
+                if(!msg::parseString(receivedMsg, msg, format))
+                {
+                  std::cout << "Could not parse msg" << std::endl;
+                  return;
+                }
                 auto handle = m_handlers->get(receivedMsg.type());
                 if (!handle)
                   std::cout << "Received unknown message" << std::endl;
