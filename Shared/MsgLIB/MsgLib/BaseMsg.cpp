@@ -31,8 +31,7 @@ msg::BaseMsg::BaseMsg(const std::string& type,
 
 msg::BaseMsg::BaseMsg() : m_type(), m_msg() {}
 
-//TODO I would like to be able to pass this be ref
-bool msg::BaseMsg::parseString(std::string msg, const msg::FORMAT& format)
+bool msg::BaseMsg::parseString(const std::string& msg, const msg::FORMAT& format)
 {
   switch (format)
   {

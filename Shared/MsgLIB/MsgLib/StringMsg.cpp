@@ -29,7 +29,7 @@ msg::StringMsg::StringMsg(const std::string& msg)
 
 msg::StringMsg::StringMsg() : m_msg() {}
 
-bool msg::StringMsg::parseString(std::string msg, const msg::FORMAT& format)
+bool msg::StringMsg::parseString(const std::string& msg, const msg::FORMAT& format)
 {
   switch (format)
   {

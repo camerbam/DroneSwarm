@@ -13,7 +13,7 @@ namespace msg
     StringMsg();
     StringMsg(const std::string& msg);
     static std::string name() { return "StringMsg"; }
-    bool parseString(std::string msg, const msg::FORMAT& format);
+    bool parseString(const std::string& msg, const msg::FORMAT& format);
 
     std::string toString(const msg::FORMAT& format);
 

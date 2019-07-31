@@ -14,7 +14,7 @@ namespace msg
     BaseMsg(const std::string& type,
             const std::string& msg);
     static std::string name() { return "BaseMsg"; }
-    bool parseString(std::string msg, const msg::FORMAT& format);
+    bool parseString(const std::string& msg, const msg::FORMAT& format);
 
     std::string toString(const msg::FORMAT& format);
 
