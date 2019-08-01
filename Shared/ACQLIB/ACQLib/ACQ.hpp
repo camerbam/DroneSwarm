@@ -19,12 +19,14 @@ public:
 
   bool isConsuming() { return m_running; }
 
+  void ready();
+
 private:
   std::atomic<bool> m_running;
   std::function<void(std::string)> m_handler;
   std::shared_ptr<boost::asio::io_context> m_ctx;
   boost::optional<boost::asio::io_context::work> m_optCork;
-  std::thread m_runningThread;
+  std::shared_ptr<std::thread> m_pRunningThread;
 };
 
 #endif

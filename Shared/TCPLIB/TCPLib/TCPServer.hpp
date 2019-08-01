@@ -51,6 +51,8 @@ namespace tcp
 
       void startRead();
 
+      void ready();
+
       void close();
 
       void handleRead(const boost::system::error_code& ec,

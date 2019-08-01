@@ -150,3 +150,8 @@ void tcp::TcpClient::close()
   m_optCork = boost::none;
   m_ctx.stop();
 }
+
+void tcp::TcpClient::ready()
+{
+  m_acq.ready();
+}

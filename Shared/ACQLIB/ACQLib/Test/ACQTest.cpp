@@ -12,6 +12,7 @@ BOOST_AUTO_TEST_CASE(ACQString)
     });
 
   AutoConsumedQueue acq(handler);
+  acq.ready();
   std::string first("Hello ");
   std::string second("World!");
 

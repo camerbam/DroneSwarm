@@ -63,6 +63,11 @@ void tcp::TcpServer::TcpConnection::startRead()
     });
 }
 
+void tcp::TcpServer::TcpConnection::ready()
+{
+  m_acq.ready();
+}
+
 void tcp::TcpServer::TcpConnection::handleWrite(
   const boost::system::error_code& ec, size_t)
 {
