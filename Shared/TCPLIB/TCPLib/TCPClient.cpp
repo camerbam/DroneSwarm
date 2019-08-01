@@ -52,7 +52,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
 tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
-  if (m_ctxThread.joinable()) m_ctxThread.join();
+  m_ctxThread.join();
 }
 
 void tcp::TcpClient::startConnect(
