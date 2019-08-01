@@ -1,4 +1,4 @@
-set(lib_name ACQ)
+set(lib_name acq)
 set(${lib_name}_srcs
   ACQ.cpp
   ACQ.hpp

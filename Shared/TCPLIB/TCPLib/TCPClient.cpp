@@ -6,10 +6,53 @@
 
 #include "TCPTools.hpp"
 
+tcp::TcpClient::TcpClient(std::string hostname,
+                          std::string port,
+                          std::shared_ptr<boost::asio::thread_pool> pool)
+  : m_ctx(),
+    m_optCork(m_ctx),
+    m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
+    m_pThreadPool(pool),
+    m_socket(m_ctx),
+    m_inputBuffer(1024),
+    m_handlers(std::make_shared<tcp::HandlerMap>()),
+     m_acq(std::function<void(std::string)>(
+      [ pool = pool,
+        m_handlers = m_handlers ](std::string input) {
+        while (true)
+        {
+          auto optMsg = tcp::getNextStringMessage(input);
+          if (!optMsg) return;
+          boost::asio::post(*pool, [optMsg, m_handlers]() {
+            msg::BaseMsg receivedMsg;
+            auto msg = optMsg.get();
+            auto format = msg::getMsgFormat(msg);
+            if (!parseString(receivedMsg, msg, format))
+            {
+              std::cout << "Could not parse msg" << std::endl;
+              return;
+            }
+            auto handle = m_handlers->get(receivedMsg.type());
+            if (!handle)
+            {
+              std::cout << "Received unknown message" << std::endl;
+              return;
+            }
+            handle->execute(receivedMsg.msg(), format);
+          });
+        }
+      }))
+{
+  boost::asio::ip::tcp::resolver r(m_ctx);
+
+  startConnect(r.resolve(boost::asio::ip::tcp::resolver::query(
+    boost::asio::ip::tcp::v4(), hostname, port)));
+}
+
 tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
-  if (m_ctxThread.joinable()) m_ctxThread.join();
+  m_ctxThread.join();
 }
 
 void tcp::TcpClient::startConnect(
@@ -87,8 +130,8 @@ void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
 {
   if (!ec)
   {
-    std::vector<char> toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + bt);
-    m_acq.addBytes(toAdd);
+    std::string toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + bt);
+    m_acq.add(toAdd);
     m_inputBuffer.clear();
     m_inputBuffer.resize(1024);
 
@@ -106,4 +149,9 @@ void tcp::TcpClient::close()
 {
   m_optCork = boost::none;
   m_ctx.stop();
+}
+
+void tcp::TcpClient::ready()
+{
+  m_acq.ready();
 }

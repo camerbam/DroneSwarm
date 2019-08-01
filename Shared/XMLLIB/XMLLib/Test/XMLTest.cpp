@@ -46,6 +46,7 @@ BOOST_AUTO_TEST_CASE(XML_OBJECT)
   BOOST_CHECK(xml::getVectorBool(pRespNode, seventh)[1] == true);
   BOOST_CHECK(compareDoubles(xml::getVectorDouble(pRespNode, eighth)[0], 2.1));
   BOOST_CHECK(compareDoubles(xml::getVectorDouble(pRespNode, eighth)[1], 2.2));
+  delete pDoc;
 }
 
 BOOST_AUTO_TEST_CASE(XML_DOCUMENT)
@@ -76,4 +77,5 @@ BOOST_AUTO_TEST_CASE(XML_DOCUMENT)
   BOOST_CHECK(xml::getVectorBool(pDoc, seventh)[1] == true);
   BOOST_CHECK(compareDoubles(xml::getVectorDouble(pDoc, eighth)[0], 2.1));
   BOOST_CHECK(compareDoubles(xml::getVectorDouble(pDoc, eighth)[1], 2.2));
+  delete pDoc;
 }

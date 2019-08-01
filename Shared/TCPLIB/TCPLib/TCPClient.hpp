@@ -20,46 +20,7 @@ namespace tcp
   public:
     TcpClient(std::string hostname,
               std::string port,
-              boost::asio::thread_pool& pool)
-      : m_ctx(),
-        m_optCork(m_ctx),
-        m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
-        m_threadPool(pool),
-        m_socket(m_ctx),
-        m_inputBuffer(1024),
-        m_handlers(),
-        m_acq([m_threadPool = &m_threadPool, m_handlers = &m_handlers](
-                std::string& input, std::mutex& mutex) {
-          std::lock_guard<std::mutex> lock(mutex);
-          while (true)
-          {
-            auto optMsg = tcp::getNextStringMessage(input);
-            if (!optMsg) return;
-            boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
-              msg::BaseMsg receivedMsg;
-              auto msg = optMsg.get();
-              auto format = msg::getMsgFormat(msg);
-              if(!parseString(receivedMsg, msg, format))
-              {
-                std::cout << "Could not parse msg" << std::endl;
-                return;
-              }
-              auto handle = m_handlers->get(receivedMsg.type());
-              if (!handle)
-              {
-                std::cout << "Received unknown message" << std::endl;
-                return;
-              }
-              handle->execute(receivedMsg.msg(), format);
-            });
-          }
-        })
-    {
-      boost::asio::ip::tcp::resolver r(m_ctx);
-
-      startConnect(r.resolve(boost::asio::ip::tcp::resolver::query(
-        boost::asio::ip::tcp::v4(), hostname, port)));
-    }
+              std::shared_ptr<boost::asio::thread_pool> pool);
 
     ~TcpClient();
 
@@ -68,13 +29,13 @@ namespace tcp
       std::function<void(T)> handler)
     {
       auto poster = [this](T msg, std::function<void(T)> f) {
-        boost::asio::post(m_threadPool, [msg, f]() { f(msg); });
+        boost::asio::post(*m_pThreadPool, [msg, f]() { f(msg); });
       };
       boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
         poster(msg, handler);
       };
       auto pHandle = std::make_shared<Handler<T>>();
-      m_handlers.add(T::name(), pHandle);
+      m_handlers->add(T::name(), pHandle);
       return pHandle->signal().connect(slot);
     }
 
@@ -104,14 +65,16 @@ namespace tcp
 
     void close();
 
+    void ready();
+
   private:
     boost::asio::io_context m_ctx;
     boost::optional<boost::asio::io_context::work> m_optCork;
     std::thread m_ctxThread;
-    boost::asio::thread_pool& m_threadPool;
+    std::shared_ptr<boost::asio::thread_pool> m_pThreadPool;
     boost::asio::ip::tcp::socket m_socket;
     std::vector<char> m_inputBuffer;
-    tcp::HandlerMap m_handlers;
+    std::shared_ptr<tcp::HandlerMap> m_handlers;
     AutoConsumedQueue m_acq;
   };
 } // namespace tcp

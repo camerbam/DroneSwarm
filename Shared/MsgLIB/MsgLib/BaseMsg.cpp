@@ -57,6 +57,8 @@ bool msg::BaseMsg::parseFromXml(const std::string& msg)
   pDoc->parse<0>(cstr);
   m_type = xml::getString(pDoc, N_TYPE);
   m_msg = xml::getString(pDoc, N_MSG);
+  delete cstr;
+  delete pDoc;
   return true;
 }
 
@@ -81,5 +83,7 @@ std::string msg::BaseMsg::toXMLString() const
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_TYPE, m_type);
   xml::addDataToNode(pDoc, N_MSG, m_msg);
-  return msg::formatToChar(msg::FORMAT::XML) + xml::xmlToString(pDoc);
+  auto toReturn = msg::formatToChar(msg::FORMAT::XML) + xml::xmlToString(pDoc);
+  delete pDoc;
+  return toReturn;
 }

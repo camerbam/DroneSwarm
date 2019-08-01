@@ -39,6 +39,8 @@ namespace tcp
   class HandlerMap
   {
   public:
+    HandlerMap();
+
     void add(const std::string& name, std::shared_ptr<HandlerBase> handle);
 
     std::shared_ptr<HandlerBase> get(const std::string& name);
