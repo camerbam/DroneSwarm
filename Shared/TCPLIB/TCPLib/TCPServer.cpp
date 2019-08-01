@@ -23,15 +23,15 @@ tcp::TcpServer::TcpConnection::TcpConnection(boost::asio::io_context& ctx,
     m_closedSignal(),
     m_threadPool(pool),
     m_inputBuffer(1024),
-    m_handlers(),
+    m_handlers(std::make_shared<tcp::HandlerMap>()),
     m_acq(std::function<void(std::string)>(
       [ m_threadPool = &m_threadPool,
-        m_handlers = &m_handlers ](std::string input) {
+        m_handlers = m_handlers ](std::string input) {
         while (true)
         {
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
-          boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
+          boost::asio::post(*m_threadPool, [optMsg, m_handlers]() {
             msg::BaseMsg receivedMsg;
             auto msg = optMsg.get();
             auto format = msg::getMsgFormat(msg);
@@ -112,6 +112,7 @@ tcp::TcpServer::TcpServer(unsigned short port, boost::asio::thread_pool& pool)
     m_pAcceptor(
       m_ctx, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
     m_connections(),
+    m_connectionHandler(),
     m_threadPool(pool)
 {
   startAccept();

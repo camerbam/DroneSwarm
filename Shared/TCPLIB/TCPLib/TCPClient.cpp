@@ -8,22 +8,22 @@
 
 tcp::TcpClient::TcpClient(std::string hostname,
                           std::string port,
-                          boost::asio::thread_pool& pool)
+                          std::shared_ptr<boost::asio::thread_pool> pool)
   : m_ctx(),
     m_optCork(m_ctx),
     m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
-    m_threadPool(pool),
+    m_pThreadPool(pool),
     m_socket(m_ctx),
     m_inputBuffer(1024),
-    m_handlers(),
-    m_acq(std::function<void(std::string)>(
-      [ m_threadPool = &m_threadPool,
-        m_handlers = &m_handlers ](std::string input) {
+    m_handlers(std::make_shared<tcp::HandlerMap>()),
+     m_acq(std::function<void(std::string)>(
+      [ pool = pool,
+        m_handlers = m_handlers ](std::string input) {
         while (true)
         {
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
-          boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
+          boost::asio::post(*pool, [optMsg, m_handlers]() {
             msg::BaseMsg receivedMsg;
             auto msg = optMsg.get();
             auto format = msg::getMsgFormat(msg);

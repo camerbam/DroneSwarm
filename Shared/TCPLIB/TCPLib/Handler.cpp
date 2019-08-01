@@ -1,5 +1,12 @@
 #include "Handler.hpp"
 
+#include <string>
+
+tcp::HandlerMap::HandlerMap()
+: m_handlers()
+{
+}
+
 void tcp::HandlerMap::add(const std::string& name,
                           std::shared_ptr<HandlerBase> handle)
 {
