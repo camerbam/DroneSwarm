@@ -20,46 +20,7 @@ namespace tcp
   public:
     TcpClient(std::string hostname,
               std::string port,
-              boost::asio::thread_pool& pool)
-      : m_ctx(),
-        m_optCork(m_ctx),
-        m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
-        m_threadPool(pool),
-        m_socket(m_ctx),
-        m_inputBuffer(1024),
-        m_handlers(),
-        m_acq([m_threadPool = &m_threadPool, m_handlers = &m_handlers](
-                std::string& input, std::mutex& mutex) {
-          std::lock_guard<std::mutex> lock(mutex);
-          while (true)
-          {
-            auto optMsg = tcp::getNextStringMessage(input);
-            if (!optMsg) return;
-            boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
-              msg::BaseMsg receivedMsg;
-              auto msg = optMsg.get();
-              auto format = msg::getMsgFormat(msg);
-              if(!parseString(receivedMsg, msg, format))
-              {
-                std::cout << "Could not parse msg" << std::endl;
-                return;
-              }
-              auto handle = m_handlers->get(receivedMsg.type());
-              if (!handle)
-              {
-                std::cout << "Received unknown message" << std::endl;
-                return;
-              }
-              handle->execute(receivedMsg.msg(), format);
-            });
-          }
-        })
-    {
-      boost::asio::ip::tcp::resolver r(m_ctx);
-
-      startConnect(r.resolve(boost::asio::ip::tcp::resolver::query(
-        boost::asio::ip::tcp::v4(), hostname, port)));
-    }
+              boost::asio::thread_pool& pool);
 
     ~TcpClient();
 

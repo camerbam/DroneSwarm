@@ -27,11 +27,7 @@ namespace tcp
     {
     public:
       static std::shared_ptr<TcpConnection> create(
-        boost::asio::io_context& ctx, int id, boost::asio::thread_pool& pool)
-      {
-        return std::shared_ptr<TcpServer::TcpConnection>(
-          new TcpServer::TcpConnection(ctx, id, pool));
-      }
+        boost::asio::io_context& ctx, int id, boost::asio::thread_pool& pool);
 
       boost::asio::ip::tcp::socket& socket();
 
@@ -78,38 +74,7 @@ namespace tcp
     private:
       TcpConnection(boost::asio::io_context& ctx,
                     int id,
-                    boost::asio::thread_pool& pool)
-        : m_socket(ctx),
-          m_id(id),
-          m_closedSignal(),
-          m_threadPool(pool),
-          m_inputBuffer(1024),
-          m_handlers(),
-          m_acq([m_threadPool = &m_threadPool, m_handlers = &m_handlers](
-                  std::string& input, std::mutex& mutex) {
-            std::lock_guard<std::mutex> lock(mutex);
-            while (true)
-            {
-              auto optMsg = tcp::getNextStringMessage(input);
-              if (!optMsg) return;
-              boost::asio::post(*m_threadPool, [optMsg, &m_handlers]() {
-                msg::BaseMsg receivedMsg;
-                auto msg = optMsg.get();
-                auto format = msg::getMsgFormat(msg);
-                if(!msg::parseString(receivedMsg, msg, format))
-                {
-                  std::cout << "Could not parse msg" << std::endl;
-                  return;
-                }
-                auto handle = m_handlers->get(receivedMsg.type());
-                if (!handle)
-                  std::cout << "Received unknown message" << std::endl;
-                handle->execute(receivedMsg.msg(), format);
-              });
-            }
-          })
-      {
-      }
+                    boost::asio::thread_pool& pool);
 
       void handleWrite(const boost::system::error_code& error, size_t bt);
 
@@ -123,18 +88,7 @@ namespace tcp
     };
 
   public:
-    TcpServer(unsigned short port, boost::asio::thread_pool& pool)
-      : m_ctx(),
-        m_optCork(m_ctx),
-        m_iocThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
-        m_pAcceptor(
-          m_ctx,
-          boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-        m_connections(),
-        m_threadPool(pool)
-    {
-      startAccept();
-    }
+    TcpServer(unsigned short port, boost::asio::thread_pool& pool);
 
     ~TcpServer();
 
