@@ -69,7 +69,7 @@ namespace tcp
           poster(msg, handler);
         };
         auto pHandle = std::make_shared<Handler<T>>();
-        m_handlers.add(T::name(), pHandle);
+        m_handlers->add(T::name(), pHandle);
         return pHandle->signal().connect(slot);
       }
 
@@ -85,7 +85,7 @@ namespace tcp
       boost::signals2::signal<void(int)> m_closedSignal;
       boost::asio::thread_pool& m_threadPool;
       std::vector<char> m_inputBuffer;
-      tcp::HandlerMap m_handlers;
+      std::shared_ptr<tcp::HandlerMap> m_handlers;
       AutoConsumedQueue m_acq;
     };
 
@@ -99,10 +99,10 @@ namespace tcp
     void handleAccept(std::shared_ptr<TcpConnection> newConnection,
                       const boost::system::error_code& error);
 
-    void registerConnection(
+    boost::signals2::scoped_connection registerConnection(
       std::function<void(std::shared_ptr<TcpConnection>)> handler)
     {
-      m_connectionHandler = handler;
+      return m_connectionHandler.connect(handler);
     }
 
     void close();
@@ -122,7 +122,7 @@ namespace tcp
     std::thread m_iocThread;
     boost::asio::ip::tcp::acceptor m_pAcceptor;
     std::map<int, std::shared_ptr<TcpConnection>> m_connections;
-    std::function<void(std::shared_ptr<TcpConnection>)> m_connectionHandler;
+    boost::signals2::signal<void(std::shared_ptr<TcpConnection>)> m_connectionHandler;
     boost::asio::thread_pool& m_threadPool;
   };
 } // namespace tcp

@@ -9,7 +9,7 @@
 std::shared_ptr<std::thread> startClientToRecieve()
 {
   return std::make_shared<std::thread>([]() {
-    boost::asio::thread_pool pool(1);
+    auto pool = std::make_shared<boost::asio::thread_pool>(1);
     std::vector<boost::signals2::scoped_connection> connections;
 
     tcp::TcpClient client("localhost", "8080", pool);
@@ -27,7 +27,6 @@ std::shared_ptr<std::thread> startClientToRecieve()
         msgsToGet.erase(std::remove(msgsToGet.begin(), msgsToGet.end(), *found),
                         msgsToGet.end());
         BOOST_CHECK(msgsLeft == msgsToGet.size());
-        std::cout << "verified" << std::endl;
         if (msgsLeft == 0) client.close();
       }));
     client.ready();
@@ -42,7 +41,7 @@ BOOST_AUTO_TEST_CASE(TCPServerSend)
 
   tcp::TcpServer server(8080, pool);
 
-  server.registerConnection([&connections, &server](
+  auto connection = server.registerConnection([&connections, &server](
     std::shared_ptr<tcp::TcpServer::TcpConnection> pConnection) {
     pConnection->ready();
 
@@ -65,7 +64,8 @@ BOOST_AUTO_TEST_CASE(TCPServerSend)
 std::shared_ptr<std::thread> startClientToSend()
 {
   return std::make_shared<std::thread>([]() {
-    boost::asio::thread_pool pool(1);
+    auto pool = std::make_shared<boost::asio::thread_pool>(1);
+
     std::vector<boost::signals2::scoped_connection> connections;
 
     tcp::TcpClient client("localhost", "8080", pool);
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
 
   tcp::TcpServer server(8080, pool);
 
-  server.registerConnection([&connections, &server](
+  auto connection = server.registerConnection([&connections, &server](
     std::shared_ptr<tcp::TcpServer::TcpConnection> pConnection) {
     connections.push_back(pConnection->registerHandler<msg::StringMsg>(
       [pConnection](msg::StringMsg msg) {
@@ -107,7 +107,6 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
         msgsToGet.erase(std::remove(msgsToGet.begin(), msgsToGet.end(), *found),
                         msgsToGet.end());
         BOOST_CHECK(msgsLeft == msgsToGet.size());
-        std::cout << "verified" << std::endl;
         if (msgsLeft == 0) pConnection->close();
       }));
     pConnection->ready();
