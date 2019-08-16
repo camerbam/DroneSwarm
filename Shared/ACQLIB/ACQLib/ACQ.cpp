@@ -1,19 +1,20 @@
 #include "ACQ.hpp"
 
-AutoConsumedQueue::AutoConsumedQueue(std::function<void(std::string)> handler)
+AutoConsumedQueue::AutoConsumedQueue(std::function<void(std::string)> handler,
+                                     bool isReady)
   : m_running(false),
     m_handler(handler),
     m_ctx(std::make_shared<boost::asio::io_context>()),
     m_optCork(*m_ctx),
     m_pRunningThread()
 {
+  if (isReady) ready();
 }
 
 AutoConsumedQueue::~AutoConsumedQueue()
 {
   m_optCork = boost::none;
-  if(m_pRunningThread)
-    m_pRunningThread->join();
+  if (m_pRunningThread) m_pRunningThread->join();
 }
 
 void AutoConsumedQueue::add(const std::string& input)
