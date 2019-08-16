@@ -11,7 +11,7 @@
 class AutoConsumedQueue
 {
 public:
-  AutoConsumedQueue(std::function<void(std::string)> handler);
+  AutoConsumedQueue(std::function<void(std::string)> handler, bool isReady = false);
 
   ~AutoConsumedQueue();
 
