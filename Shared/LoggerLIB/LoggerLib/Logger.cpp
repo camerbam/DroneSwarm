@@ -23,7 +23,7 @@ namespace
       auto tempPath = basePath + std::to_string(i) + ".txt";
       if (!boost::filesystem::exists(tempPath)) return tempPath;
     }
-    throw std::exception("Could not create log file");
+    throw std::runtime_error("Could not create log file");
   }
 
   std::string getTime()
