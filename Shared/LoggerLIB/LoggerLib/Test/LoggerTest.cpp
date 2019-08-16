@@ -48,10 +48,10 @@ BOOST_AUTO_TEST_CASE(LOGGER_TEST)
     auto msg = line.find(msgs[i].msg, from);
     BOOST_CHECK(msg != std::string::npos);
   }
-
-  for (boost::filesystem::recursive_directory_iterator iter(
-         boost::filesystem::current_path());
-       iter != boost::filesystem::recursive_directory_iterator();
+ 
+  for (boost::filesystem::directory_iterator iter(
+          boost::dll::program_location().remove_filename());
+       iter != boost::filesystem::directory_iterator();
        iter++)
   {
     if (iter->path().string().find(logName) != std::string::npos &&
