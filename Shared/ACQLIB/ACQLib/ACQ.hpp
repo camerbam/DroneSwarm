@@ -11,21 +11,22 @@
 class AutoConsumedQueue
 {
 public:
-  AutoConsumedQueue(std::function<void(std::string&)> handler);
+  AutoConsumedQueue(std::function<void(std::string)> handler);
 
   ~AutoConsumedQueue();
 
-  void addBytes(boost::asio::streambuf& buf);
+  void add(const std::string& input);
 
   bool isConsuming() { return m_running; }
 
+  void ready();
+
 private:
   std::atomic<bool> m_running;
-  std::function<void(std::string&)> m_handler;
-  boost::asio::io_context m_ctx;
+  std::function<void(std::string)> m_handler;
+  std::shared_ptr<boost::asio::io_context> m_ctx;
   boost::optional<boost::asio::io_context::work> m_optCork;
-  std::string m_buffer;
-  std::thread m_runningThread;
+  std::shared_ptr<std::thread> m_pRunningThread;
 };
 
 #endif

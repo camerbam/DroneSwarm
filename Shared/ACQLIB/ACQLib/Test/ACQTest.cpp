@@ -3,29 +3,25 @@
 
 #include "ACQLib/ACQ.hpp"
 
-BOOST_AUTO_TEST_CASE(ACQ)
+BOOST_AUTO_TEST_CASE(ACQString)
 {
   std::string end;
-  std::function<void(std::string&)> handler([&end](std::string& toParse) {
-    end += toParse;
-    toParse = "";
-  });
+  std::function<void(std::string const&)> handler(
+    [&end](std::string const& toParse) {
+      end += toParse;
+    });
 
   AutoConsumedQueue acq(handler);
-  boost::asio::streambuf buf;
-  boost::asio::streambuf b;
-  std::ostream os(&b);
+  acq.ready();
   std::string first("Hello ");
   std::string second("World!");
-  os << first;
 
-  acq.addBytes(b);
+  acq.add(first);
   while (acq.isConsuming())
     std::this_thread::yield();
   BOOST_CHECK(end == first);
-  os << second;
-  acq.addBytes(b);
+  acq.add(second);
   while (acq.isConsuming())
     std::this_thread::yield();
-  BOOST_CHECK(end == first + first + second);
+  BOOST_CHECK(end == first + second);
 }
