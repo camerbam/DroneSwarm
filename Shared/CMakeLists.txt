@@ -14,3 +14,4 @@ add_subdirectory(MsgLIB/MsgLib)
 ##################################
 # Third Layer Dependency
 add_subdirectory(TCPLIB/TCPLib)
+add_subdirectory(UDPLIB/UDPLib)
