@@ -8,12 +8,14 @@
 
 #include "UDPLib/UDPSender.hpp"
 
-void startReceiver(boost::asio::thread_pool& pool)
+void startReceiver()
 {
 
-  std::thread t1([&pool]() {
+  std::thread t1([]() {
     unsigned short localPort(8080);
     std::atomic<bool> received(false);
+    boost::asio::thread_pool pool(1);
+
     boost::signals2::scoped_connection con;
     {
       udp::UDPSender receiver(localPort, pool);
@@ -32,13 +34,14 @@ void startReceiver(boost::asio::thread_pool& pool)
     BOOST_CHECK(received);
 
   });
+  t1.detach();
 }
 
 BOOST_AUTO_TEST_CASE(UDPSender)
 {
   boost::asio::thread_pool pool(1);
 
-  startReceiver(pool);
+  startReceiver();
 
   boost::asio::ip::udp::endpoint remoteProcess(
     boost::asio::ip::address::from_string("127.0.0.1"), 8080);
