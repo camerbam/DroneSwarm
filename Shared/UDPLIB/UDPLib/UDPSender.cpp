@@ -98,7 +98,7 @@ boost::signals2::scoped_connection udp::UDPSender::registerReceiver(
 }
 
 void udp::UDPSender::handleSend(const boost::system::error_code& error,
-                                const std::size_t& bytes_transferred)
+                                const std::size_t&)
 {
   if (error) std::cout << error.message() << std::endl;
 }

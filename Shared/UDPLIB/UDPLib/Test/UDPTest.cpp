@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE UDPTest
 #include <atomic>
 #include <thread>
+#include <iostream>
 
 #include <boost/asio/thread_pool.hpp>
 #include <boost/signals2/connection.hpp>
@@ -22,6 +23,7 @@ void startReceiver()
       con = receiver.registerReceiver([&receiver, &received](
         boost::asio::ip::udp::endpoint endpoint, std::string msg) {
         BOOST_CHECK(msg == "Test Msg");
+        BOOST_CHECK(endpoint.port() == 8081);
         receiver.stop();
         received = true;
       });
