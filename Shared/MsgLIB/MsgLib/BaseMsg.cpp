@@ -57,7 +57,7 @@ bool msg::BaseMsg::parseFromXml(const std::string& msg)
   pDoc->parse<0>(cstr);
   m_type = xml::getString(pDoc, N_TYPE);
   m_msg = xml::getString(pDoc, N_MSG);
-  delete cstr;
+  delete[] cstr;
   delete pDoc;
   return true;
 }
