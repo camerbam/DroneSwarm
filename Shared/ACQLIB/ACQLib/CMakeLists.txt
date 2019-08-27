@@ -2,6 +2,8 @@ set(lib_name acq)
 set(${lib_name}_srcs
   ACQ.cpp
   ACQ.hpp
+  ACQEndpoint.cpp
+  ACQEndpoint.hpp
   )
 source_group("" FILES ${${lib_name}_srcs})
 add_library(${lib_name} ${${lib_name}_srcs})
