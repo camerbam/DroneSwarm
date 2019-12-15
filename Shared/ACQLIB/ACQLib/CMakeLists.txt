@@ -11,3 +11,6 @@ xpTargetExtern(${lib_name} PUBLIC boost)
 target_include_directories(${lib_name} PUBLIC ${CMAKE_SOURCE_DIR}/Shared/ACQLIB)
 set_property(TARGET ${lib_name} PROPERTY FOLDER ${folder})
 add_subdirectory(Test)
+message(STATUS ${${lib_name}_srcs})
+
+xpSourceListAppend(${${lib_name}_srcs})

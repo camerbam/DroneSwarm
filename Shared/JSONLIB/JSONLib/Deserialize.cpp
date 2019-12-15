@@ -15,8 +15,9 @@ namespace
   template <class T>
   boost::optional<rapidjson::Value&> getObjectOrArray(T& obj, const std::string& key)
   {
+    if(!obj.IsObject()) return boost::none;
     auto itr = obj.FindMember(key.c_str());
-    if (itr == obj.MemberEnd() || !itr->value.IsObject()){
+    if (itr == obj.MemberEnd() || (!itr->value.IsObject() && !itr->value.IsArray())){
       return boost::none;
     }
     return itr->value;

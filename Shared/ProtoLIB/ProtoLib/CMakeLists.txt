@@ -22,3 +22,4 @@ target_include_directories(${lib_name} PUBLIC ${Shared_BINARY_DIR}/${lib_name}LI
 xpTargetExtern(${lib_name} PUBLIC protobuf)
 set_property(TARGET ${lib_name} PROPERTY FOLDER ${folder})
 xpSourceListAppend("${${lib_name}_proto_srcs}")
+xpSourceListAppend(${${lib_name}_srcs})

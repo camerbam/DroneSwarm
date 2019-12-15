@@ -17,9 +17,16 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_subdirectory(Shared)
 add_subdirectory(Cloud)
 add_subdirectory(Drone)
-add_subdirectory(DroneControl)
+add_subdirectory(DroneController)
 add_subdirectory(DroneSimulator)
 add_subdirectory(GroundStation)
 if(WIN32)
   add_subdirectory(Monitor)
 endif()
+###########################################
+set(random_srcs
+  Findexternprolite.cmake
+  )
+xpSourceListAppend(${random_srcs})
+###########################################
+xpSourceListAppend()
