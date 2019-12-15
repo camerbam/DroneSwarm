@@ -13,13 +13,13 @@ void startReceiver()
 {
 
   std::thread t1([]() {
-    unsigned short localPort(8080);
+    const unsigned short localPort(8080);
     std::atomic<bool> received(false);
     boost::asio::thread_pool pool(1);
 
     boost::signals2::scoped_connection con;
     {
-      udp::UDPSender receiver(localPort, pool);
+      udp::UDPSender receiver(pool, localPort);
       con = receiver.registerReceiver([&receiver, &received](
         boost::asio::ip::udp::endpoint endpoint, std::string msg) {
         BOOST_CHECK(msg == "Test Msg");
@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE(UDPSender)
 
   boost::asio::ip::udp::endpoint remoteProcess(
     boost::asio::ip::address::from_string("127.0.0.1"), 8080);
-  unsigned short localPort(8081);
+  const unsigned short localPort(8081);
 
-  udp::UDPSender sender(localPort, pool);
+  udp::UDPSender sender(pool, localPort);
 
   sender.ready();
 

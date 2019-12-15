@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-udp::UDPSender::UDPSender(unsigned short& localPort,
-                          boost::asio::thread_pool& pool)
+udp::UDPSender::UDPSender(boost::asio::thread_pool& pool,
+                          const unsigned short& localPort)
   : m_pCtx(std::make_shared<boost::asio::io_context>()),
     m_optCork(*m_pCtx),
     m_pCtxThread(),
@@ -59,9 +59,10 @@ void udp::UDPSender::startReceive()
     });
 }
 
-void udp::UDPSender::handleReceive(const boost::system::error_code& error,
-                                   std::size_t bytes_transferred,
-                                   const boost::asio::ip::udp::endpoint& whereFrom)
+void udp::UDPSender::handleReceive(
+  const boost::system::error_code& error,
+  std::size_t bytes_transferred,
+  const boost::asio::ip::udp::endpoint& whereFrom)
 {
   if (!error || error == boost::asio::error::message_size)
   {
@@ -81,16 +82,16 @@ void udp::UDPSender::handleReceive(const boost::system::error_code& error,
 boost::signals2::scoped_connection udp::UDPSender::registerReceiver(
   std::function<void(boost::asio::ip::udp::endpoint, std::string)> handler)
 {
-  auto poster = [this](
-    std::string msg,
-    boost::asio::ip::udp::endpoint endpoint,
-    std::function<void(boost::asio::ip::udp::endpoint, std::string)> f) {
-    boost::asio::post(m_pool, [msg, endpoint, f]() { f(endpoint, msg); });
-  };
+  auto poster =
+    [this](std::string msg,
+           boost::asio::ip::udp::endpoint endpoint,
+           std::function<void(boost::asio::ip::udp::endpoint, std::string)> f) {
+      boost::asio::post(m_pool, [msg, endpoint, f]() { f(endpoint, msg); });
+    };
 
   boost::signals2::slot<void(boost::asio::ip::udp::endpoint, std::string)>
     slot = [poster, handler](
-      boost::asio::ip::udp::endpoint endpoint, std::string msg) {
+             boost::asio::ip::udp::endpoint endpoint, std::string msg) {
       poster(msg, endpoint, handler);
     };
 

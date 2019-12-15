@@ -13,7 +13,8 @@ namespace udp
   class UDPSender
   {
   public:
-    UDPSender(unsigned short& localPort, boost::asio::thread_pool& pool);
+    // TODO specify default
+    UDPSender(boost::asio::thread_pool& pool, const unsigned short& localPort);
 
     ~UDPSender();
 
