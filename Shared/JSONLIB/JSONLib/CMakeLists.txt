@@ -11,4 +11,4 @@ target_include_directories(${lib_name} PUBLIC ${CMAKE_SOURCE_DIR}/Shared/JSONLIB
 xpTargetExtern(${lib_name} PUBLIC boost rapidjson)
 set_property(TARGET ${lib_name} PROPERTY FOLDER ${folder})
 add_subdirectory(Test)
-xpSourceListAppend(${${lib_name}_srcs})
+xpSourceListAppend("${${lib_name}_srcs}")
