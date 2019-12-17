@@ -2,9 +2,6 @@
 
 #include <exception>
 
-#include "JSONLib/Deserialize.hpp"
-#include "XMLLib/Deserialize.hpp"
-
 messages::GoMessage::GoMessage()
   : Message("go"),
     m_xDistance(20),
@@ -74,32 +71,6 @@ double messages::GoMessage::getZDistance() const
 size_t messages::GoMessage::getSpeed() const
 {
   return m_speed;
-}
-
-bool messages::GoMessage::readJsonImpl(rapidjson::Value& jsonToParse)
-{
-  m_xDistance = json::getNumber(jsonToParse, "xDirection");
-  validateDistance(m_xDistance, 20, 500);
-  m_yDistance = json::getNumber(jsonToParse, "yDirection");
-  validateDistance(m_yDistance, 20, 500);
-  m_zDistance = json::getNumber(jsonToParse, "zDirection");
-  validateDistance(m_zDistance, 20, 500);
-  m_speed = static_cast<size_t>(json::getNumber(jsonToParse, "speed"));
-  validateDistance(m_speed, 10, 100);
-  return true;
-}
-
-bool messages::GoMessage::readXmlImpl(rapidxml::xml_node<>* xmlToParse)
-{
-  m_xDistance = xml::getNumber(xmlToParse, "xDirection");
-  validateDistance(m_xDistance, 20, 500);
-  m_yDistance = xml::getNumber(xmlToParse, "yDirection");
-  validateDistance(m_yDistance, 20, 500);
-  m_zDistance = xml::getNumber(xmlToParse, "zDirection");
-  validateDistance(m_zDistance, 20, 500);
-  m_speed = static_cast<size_t>(xml::getNumber(xmlToParse, "speed"));
-  validateDistance(m_speed, 10, 100);
-  return true;
 }
 
 void messages::GoMessage::validateDistance(double distance,

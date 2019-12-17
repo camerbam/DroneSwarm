@@ -12,14 +12,6 @@ namespace
     clockwiseMessage.fromString(toParse);
     return clockwiseMessage;
   }
-
-  void createRapidjson(rapidjson::Document& doc,
-                       rapidjson::Value& toReturn,
-                       const std::string& toParse)
-  {
-    doc.Parse(toParse.c_str());
-    toReturn = doc.GetObject();
-  }
 }
 
 BOOST_AUTO_TEST_CASE(CLOCKWISE_MESSAGES_CONSTRUCTOR_TEST)
@@ -73,78 +65,9 @@ BOOST_AUTO_TEST_CASE(CLOCKWISE_MESSAGES_TO_STRING_TEST)
   }
 }
 
-BOOST_AUTO_TEST_CASE(CLOCKWISE_MESSAGES_FROM_JSON_TEST)
-{
-  rapidjson::Document doc;
-  {
-    messages::ClockwiseMessage clockwiseMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"cw": {"angle": "50"}})");
-    BOOST_CHECK_THROW(clockwiseMessage.readJson(json), std::exception);
-  }
-  {
-    messages::ClockwiseMessage clockwiseMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"cw": {"angle": ".1"}})");
-    BOOST_CHECK_THROW(clockwiseMessage.readJson(json), std::exception);
-  }
-  {
-    messages::ClockwiseMessage clockwiseMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"cw": {"angle": 50}})");
-    BOOST_CHECK(clockwiseMessage.readJson(json));
-  }
-}
-
-BOOST_AUTO_TEST_CASE(CLOCKWISE_MESSAGES_FROM_XML_TEST)
-{
-  auto doc = new rapidxml::xml_document<>;
-  {
-    messages::ClockwiseMessage clockwiseMessage;
-    std::string str("<cw></cw>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      clockwiseMessage.readXml((dynamic_cast<rapidxml::xml_node<>*>(doc))),
-      std::exception);
-  }
-  {
-    messages::ClockwiseMessage clockwiseMessage;
-    std::string str("<cw><angles>1</angles></cw>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      clockwiseMessage.readXml((dynamic_cast<rapidxml::xml_node<>*>(doc))),
-      std::exception);
-  }
-  {
-    messages::ClockwiseMessage clockwiseMessage;
-    std::string str("<cw><angle>50</angle></cw>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK(
-      clockwiseMessage.readXml((dynamic_cast<rapidxml::xml_node<>*>(doc))));
-  }
-  delete doc;
-}
-
 BOOST_AUTO_TEST_CASE(MESSAGE_FACTORY_CLOCKWISE_TEST)
 {
   std::string testMessage = "cw 75";
-
-  rapidjson::Document doc;
-  rapidjson::Value json;
-  createRapidjson(doc, json, R"({"type":"cw","data":{"cw": {"angle": 75}}})");
-  BOOST_CHECK_EQUAL(
-    boost::get<messages::ClockwiseMessage>(messages::getMessage(json))
-    .toString(),
-    testMessage);
-
-  auto xmlDoc = new rapidxml::xml_document<>;
-  std::string str("<type>cw</type><data><cw><angle>75</angle></cw></data>");
-  xmlDoc->parse<0>((char*)str.c_str());
-  BOOST_CHECK_EQUAL(
-    boost::get<messages::ClockwiseMessage>(messages::getMessage(xmlDoc))
-    .toString(),
-    testMessage);
-  delete xmlDoc;
 
   BOOST_CHECK_EQUAL(
     boost::get<messages::ClockwiseMessage>(messages::getMessage(testMessage))

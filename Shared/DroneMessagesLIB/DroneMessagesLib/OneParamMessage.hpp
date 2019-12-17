@@ -17,8 +17,6 @@ namespace messages
     double getArgument() const;
 
   protected:
-    virtual bool readJsonImpl(rapidjson::Value& jsonToParse) override;
-    virtual bool readXmlImpl(rapidxml::xml_node<>* xmlToParse) override;
     virtual bool fromStringImpl(std::string& toParse) override;
 
     bool validateDistance(double argument);

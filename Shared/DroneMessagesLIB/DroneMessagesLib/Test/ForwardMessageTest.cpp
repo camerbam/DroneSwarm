@@ -12,14 +12,6 @@ namespace
     forwardMessage.fromString(toParse);
     return forwardMessage;
   }
-
-  void createRapidjson(rapidjson::Document& doc,
-                       rapidjson::Value& toReturn,
-                       const std::string& toParse)
-  {
-    doc.Parse(toParse.c_str());
-    toReturn = doc.GetObject();
-  }
 }
 
 BOOST_AUTO_TEST_CASE(FORWARD_MESSAGES_FROM_STRING_TEST)
@@ -73,84 +65,9 @@ BOOST_AUTO_TEST_CASE(FORWARD_MESSAGES_TO_STRING_TEST)
   }
 }
 
-BOOST_AUTO_TEST_CASE(FORWARD_MESSAGES_FROM_JSON_TEST)
-{
-  rapidjson::Document doc;
-  {
-    messages::ForwardMessage forwardMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"forward": 50})");
-    BOOST_CHECK_THROW(forwardMessage.readJson(json), std::exception);
-  }
-  {
-    messages::ForwardMessage forwardMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"forward": {"distance": "50"}})");
-    BOOST_CHECK_THROW(forwardMessage.readJson(json), std::exception);
-  }
-  {
-    messages::ForwardMessage forwardMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"forward": {"distance": "1"}})");
-    BOOST_CHECK_THROW(forwardMessage.readJson(json), std::exception);
-  }
-  {
-    messages::ForwardMessage forwardMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"forward": {"distance": 50}})");
-    BOOST_CHECK(forwardMessage.readJson(json));
-  }
-}
-
-BOOST_AUTO_TEST_CASE(FORWARD_MESSAGES_FROM_XML_TEST)
-{
-  auto doc = new rapidxml::xml_document<>;
-  {
-    messages::ForwardMessage forwardMessage;
-    std::string str("<forward></forward>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      forwardMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)),
-      std::exception);
-  }
-  {
-    messages::ForwardMessage forwardMessage;
-    std::string str("<forward><distance>1</distance></forward>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      forwardMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)),
-      std::exception);
-  }
-  {
-    messages::ForwardMessage forwardMessage;
-    std::string str("<forward><distance>50</distance></forward>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK(
-      forwardMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)));
-  }
-  delete doc;
-}
-
 BOOST_AUTO_TEST_CASE(MESSAGE_FACTORY_FORWARD_TEST)
 {
   std::string testMessage = "forward 52";
-
-  rapidjson::Document doc;
-  rapidjson::Value json;
-  createRapidjson(
-    doc, json, R"({"type":"forward","data":{"forward": {"distance": 52}}})");
-  BOOST_CHECK_EQUAL(
-    boost::get<messages::ForwardMessage>(messages::getMessage(json)).toString(),
-    testMessage);
-
-  auto xmlDoc = new rapidxml::xml_document<>;
-  std::string str(
-    "<type>forward</type><data><forward><distance>52</distance></forward></data>");
-  xmlDoc->parse<0>((char*)str.c_str());
-  BOOST_CHECK_EQUAL(
-    boost::get<messages::ForwardMessage>(messages::getMessage(xmlDoc)).toString(),
-    testMessage);
-  delete xmlDoc;
 
   BOOST_CHECK_EQUAL(
     boost::get<messages::ForwardMessage>(messages::getMessage(testMessage))

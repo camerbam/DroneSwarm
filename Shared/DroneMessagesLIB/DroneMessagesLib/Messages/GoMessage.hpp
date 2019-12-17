@@ -19,8 +19,6 @@ namespace messages
 
   private:
     virtual bool fromStringImpl(std::string& toParse) override;
-    virtual bool readJsonImpl(rapidjson::Value& jsonToParse) override;
-    virtual bool readXmlImpl(rapidxml::xml_node<>* xmlToParse) override;
 
     void validateDistance(double distance, double min, double max);
     void validateDistance(size_t distance, size_t min, size_t max);

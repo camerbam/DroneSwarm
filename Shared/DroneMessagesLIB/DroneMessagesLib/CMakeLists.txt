@@ -53,7 +53,7 @@ source_group("" FILES ${base_srcs})
 list(APPEND ${lib_name}_libsrcs ${base_srcs})
 #########################################
 add_library(${lib_name} ${${lib_name}_libsrcs})
-target_link_libraries(${lib_name} PUBLIC json xml)
+xpTargetExtern(${lib_name} PUBLIC boost)
 target_include_directories(${lib_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set_property(TARGET ${lib_name} PROPERTY FOLDER ${folder})
 add_subdirectory(Test)

@@ -16,14 +16,6 @@ namespace
     goMessage.fromString(toParse);
     return goMessage;
   }
-
-  void createRapidjson(rapidjson::Document& doc,
-                       rapidjson::Value& toReturn,
-                       const std::string& toParse)
-  {
-    doc.Parse(toParse.c_str());
-    toReturn = doc.GetObject();
-  }
 }
 
 BOOST_AUTO_TEST_CASE(GO_MESSAGES_FROM_STRING_TEST)
@@ -104,128 +96,9 @@ BOOST_AUTO_TEST_CASE(GO_MESSAGES_TO_STRING_TEST)
   }
 }
 
-BOOST_AUTO_TEST_CASE(GO_MESSAGES_FROM_JSON_TEST)
-{
-  rapidjson::Document doc;
-  {
-    messages::GoMessage goMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"gos": 50})");
-    BOOST_CHECK_THROW(goMessage.readJson(json), std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"go": 50})");
-    BOOST_CHECK_THROW(goMessage.readJson(json), std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    rapidjson::Value json;
-    createRapidjson(doc, json, R"({"go": {"xDirection": "up"}})");
-    BOOST_CHECK_THROW(goMessage.readJson(json), std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    rapidjson::Value json;
-    createRapidjson(
-      doc,
-      json,
-      R"({"go": {"xDirection": 50, "yDirection": 50, "zDirection": 50})");
-    BOOST_CHECK_THROW(goMessage.readJson(json), std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    rapidjson::Value json;
-    createRapidjson(doc,
-                    json,
-                    R"({"go": {"xDirection": 50, 
-                "yDirection": 50, 
-                "zDirection": 50,
-                "speed": 50}})");
-    BOOST_CHECK(goMessage.readJson(json));
-  }
-}
-
-BOOST_AUTO_TEST_CASE(GO_MESSAGES_FROM_XML_TEST)
-{
-  auto doc = new rapidxml::xml_document<>;
-  {
-    messages::GoMessage goMessage;
-    std::string str("<go></go>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      goMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)),
-      std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    std::string str("<gos>50</gos>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      goMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)),
-      std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    std::string str("<go>50</go>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      goMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)),
-      std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    std::string str("<go><xDirection>50</xDirection></go>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      goMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)),
-      std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    std::string str("<go><xDirection>50</xDirection><yDirection>50</"
-                    "yDirection><zDirection>50</zDirection></go>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK_THROW(
-      goMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)),
-      std::exception);
-  }
-  {
-    messages::GoMessage goMessage;
-    std::string str(
-      "<go><xDirection>50</xDirection><yDirection>50</"
-      "yDirection><zDirection>50</zDirection><speed>50</speed></go>");
-    doc->parse<0>((char*)str.c_str());
-    BOOST_CHECK(goMessage.readXml(dynamic_cast<rapidxml::xml_node<>*>(doc)));
-  }
-  delete doc;
-}
-
 BOOST_AUTO_TEST_CASE(MESSAGE_FACTORY_GO_TEST)
 {
   std::string testMessage = "go 51 52 53 54";
-
-  rapidjson::Document doc;
-  rapidjson::Value json;
-  createRapidjson(
-    doc, json, R"({"type":"go","data":{"go":{"xDirection": 51, 
-                "yDirection": 52, 
-                "zDirection": 53,
-                "speed": 54}}})");
-  BOOST_CHECK_EQUAL(
-    boost::get<messages::GoMessage>(messages::getMessage(json)).toString(),
-    testMessage);
-
-  auto xmlDoc = new rapidxml::xml_document<>;
-  std::string str(
-    "<type>go</type><data><go><xDirection>51</xDirection><yDirection>52</"
-    "yDirection><zDirection>53</zDirection><speed>54</speed></go></data>");
-  xmlDoc->parse<0>((char*)str.c_str());
-  BOOST_CHECK_EQUAL(
-    boost::get<messages::GoMessage>(messages::getMessage(xmlDoc)).toString(),
-    testMessage);
-  delete xmlDoc;
 
   BOOST_CHECK_EQUAL(
     boost::get<messages::GoMessage>(messages::getMessage(testMessage))

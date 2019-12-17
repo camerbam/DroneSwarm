@@ -1,8 +1,5 @@
 #include "OneParamMessage.hpp"
 
-#include "JSONLib/Deserialize.hpp"
-#include "XMLLib/Deserialize.hpp"
-
 namespace
 {
   const size_t n_precision(2);
@@ -33,18 +30,6 @@ bool messages::OneParamMessage::fromStringImpl(std::string& toParse)
 std::string messages::OneParamMessage::toString() const
 {
   return m_name + " " + removeUnimportantZeros(std::to_string(m_firstArgument));
-}
-
-bool messages::OneParamMessage::readJsonImpl(rapidjson::Value& jsonToParse)
-{
-  m_firstArgument = json::getNumber(jsonToParse, m_key);
-  return validateDistance(m_firstArgument);
-}
-
-bool messages::OneParamMessage::readXmlImpl(rapidxml::xml_node<>* xmlToParse)
-{
-  m_firstArgument = xml::getNumber(xmlToParse, m_key);
-  return validateDistance(m_firstArgument);
 }
 
 double messages::OneParamMessage::getArgument() const

@@ -3,9 +3,6 @@
 #include <exception>
 #include <map>
 
-#include "JSONLib/Deserialize.hpp"
-#include "XMLLib/Deserialize.hpp"
-
 namespace
 {
   std::map<std::string, messages::Direction> stringToDirection = {
@@ -48,24 +45,4 @@ std::string messages::FlipMessage::toString() const
 messages::Direction messages::FlipMessage::getDirection() const
 {
   return m_direction;
-}
-
-bool messages::FlipMessage::readJsonImpl(rapidjson::Value& jsonToParse)
-{
-  auto direction = json::getString(jsonToParse, "direction");
-  auto directionItr = stringToDirection.find(direction);
-  if (directionItr == stringToDirection.end())
-    throw std::runtime_error("Unknow direction");
-  m_direction = directionItr->second;
-  return true;
-}
-
-bool messages::FlipMessage::readXmlImpl(rapidxml::xml_node<>* xmlToParse)
-{
-  auto direction = xml::getString(xmlToParse, "direction");
-  auto directionItr = stringToDirection.find(direction);
-  if (directionItr == stringToDirection.end())
-    throw std::runtime_error("Unknow direction");
-  m_direction = directionItr->second;
-  return true;
 }

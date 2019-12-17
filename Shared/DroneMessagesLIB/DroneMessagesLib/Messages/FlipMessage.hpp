@@ -24,8 +24,6 @@ namespace messages
 
   private:
     virtual bool fromStringImpl(std::string& toParse) override;
-    virtual bool readJsonImpl(rapidjson::Value& jsonToParse) override;
-    virtual bool readXmlImpl(rapidxml::xml_node<>* xmlToParse) override;
 
     Direction m_direction;
   };
