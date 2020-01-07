@@ -34,7 +34,7 @@ void udp::UDPCommunicatorReliable::startPing(
   m_pPingThread = std::make_shared<std::thread>([&, pingFunction, pingTime]() {
     while (m_running)
     {
-      std::this_thread::sleep_for(std::chrono::milliseconds(250));
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
       if (boost::posix_time::microsec_clock::local_time() > m_lastSent + pingTime)
       {
         if (pingFunction) pingFunction();

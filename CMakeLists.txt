@@ -21,6 +21,7 @@ add_subdirectory(DroneController)
 add_subdirectory(DroneSimulator)
 add_subdirectory(GroundStation)
 add_subdirectory(Monitor)
+add_subdirectory(Playground)
 ###########################################
 set(random_srcs
   Findexternprolite.cmake
