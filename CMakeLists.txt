@@ -20,13 +20,9 @@ add_subdirectory(Drone)
 add_subdirectory(DroneController)
 add_subdirectory(DroneSimulator)
 add_subdirectory(GroundStation)
-if(WIN32)
-  add_subdirectory(Monitor)
-endif()
+add_subdirectory(Monitor)
 ###########################################
 set(random_srcs
   Findexternprolite.cmake
   )
 xpSourceListAppend(${random_srcs})
-###########################################
-xpSourceListAppend()
