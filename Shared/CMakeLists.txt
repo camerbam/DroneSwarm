@@ -10,8 +10,10 @@ add_subdirectory(JSONLIB/JSONLib)
 add_subdirectory(XMLLIB/XMLLib)
 ##################################
 # Second Layer Dependency
+add_subdirectory(DroneMessagesLIB/DroneMessagesLib)
 add_subdirectory(MsgLIB/MsgLib)
 add_subdirectory(UDPLIB/UDPLib)
 ##################################
 # Third Layer Dependency
 add_subdirectory(TCPLIB/TCPLib)
+xpSourceListAppend()

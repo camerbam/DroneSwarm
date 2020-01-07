@@ -38,8 +38,8 @@ namespace
     }
     catch (...)
     {
-      return 0;
     }
+    return 0;
   }
 
   template <class T>

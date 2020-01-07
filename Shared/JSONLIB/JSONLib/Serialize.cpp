@@ -17,11 +17,11 @@ namespace
   template<class T>
   void addObjectOrArray(rapidjson::Document& doc, T& obj, const std::string& key, rapidjson::Value& value)
   {
-    rapidjson::Value rapidValue(rapidjson::kObjectType);
-    rapidValue = value;
+    //rapidjson::Value rapidValue(rapidjson::kObjectType);
+    //rapidValue = value;
     rapidjson::Value index(
       key.c_str(), static_cast<int>(key.size()), doc.GetAllocator());
-    obj.AddMember(index, rapidValue, doc.GetAllocator());
+    obj.AddMember(index, value, doc.GetAllocator());
   }
 
   template<class T>
@@ -153,15 +153,6 @@ void json::addObjectToArray(rapidjson::Document& doc,
                             rapidjson::Value& value)
 {
   rapidjson::Value rapidValue(rapidjson::kObjectType);
-  rapidValue = value;
-  arr.PushBack(rapidValue, doc.GetAllocator());
-}
-
-void json::addArrayToArray(rapidjson::Document& doc,
-                           rapidjson::Value& arr,
-                           rapidjson::Value& value)
-{
-  rapidjson::Value rapidValue(rapidjson::kArrayType);
   rapidValue = value;
   arr.PushBack(rapidValue, doc.GetAllocator());
 }
