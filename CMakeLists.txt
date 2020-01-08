@@ -24,6 +24,7 @@ add_subdirectory(Monitor)
 add_subdirectory(Playground)
 ###########################################
 set(random_srcs
+  Effectiveness.txt
   Findexternprolite.cmake
   )
 xpSourceListAppend(${random_srcs})

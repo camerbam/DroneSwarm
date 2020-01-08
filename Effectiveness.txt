@@ -1,0 +1,62 @@
+Scale: Low, Medium, High
+
+Flexibility:
+	How many key decions?
+		How many options for each decision?
+			Validitity of each option 
+	Timeline flexibility
+		How much can they do at the start?
+		How much is covered by each milestone?
+				
+
+Coverage: 
+	Break down each one:
+		Characteristics of distributed systems
+		Opportunities and challenges for distributed systems
+		Core design issues
+		Common system models
+		Networking and Internetworking 
+		Protocols, protocol families, and protocol design principles
+		TCP/IP protocol suite 
+		Interprocess communication
+		Concurrency controls
+		Distributed Objects 
+		Security issues 
+		Distributed file systems 
+		Name services 
+		Time services
+		client-server and peer-to-peer architectures
+
+
+Extraneous Work: (scale flipped)
+	How much extra work tasks, and time length
+		Not counting self inflicted
+		
+
+Adaptability:
+	How easily can features be added:
+		Drone Test Server (collision detection)
+		New Pretests
+		New Message
+		
+
+Drone Frustration: (How effective is the simulator)
+	Speed
+	Responsive
+	status
+	Mission Pads
+	Bad messages
+	Collision
+	Configurable
+	
+
+API:
+	Ease of use
+		Straight forward
+	Documentation
+		Clear
+		Examples
+	Reliable
+		Consistent
+		Responsive
+		
