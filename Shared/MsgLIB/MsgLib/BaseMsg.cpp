@@ -67,7 +67,7 @@ std::string msg::BaseMsg::toJsonString() const
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_TYPE, m_type);
   json::addStringToDoc(doc, N_MSG, m_msg);
-  return msg::formatToChar(msg::FORMAT::JSON) + json::jsonToString(doc);
+  return json::jsonToString(doc);
 }
 
 std::string msg::BaseMsg::toProtoString() const
@@ -75,7 +75,7 @@ std::string msg::BaseMsg::toProtoString() const
   proto::BaseMsg msg;
   msg.set_type(m_type);
   msg.set_msg(m_msg);
-  return msg::formatToChar(msg::FORMAT::PROTOBUF) + msg.SerializeAsString();
+  return msg.SerializeAsString();
 }
 
 std::string msg::BaseMsg::toXMLString() const
@@ -83,7 +83,7 @@ std::string msg::BaseMsg::toXMLString() const
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_TYPE, m_type);
   xml::addDataToNode(pDoc, N_MSG, m_msg);
-  auto toReturn = msg::formatToChar(msg::FORMAT::XML) + xml::xmlToString(pDoc);
+  auto toReturn = xml::xmlToString(pDoc);
   delete pDoc;
   return toReturn;
 }

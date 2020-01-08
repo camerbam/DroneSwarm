@@ -20,7 +20,7 @@ namespace tcp
   public:
     TcpClient(std::string hostname,
               std::string port,
-              std::shared_ptr<boost::asio::thread_pool> pool);
+              msg::FORMAT format = msg::FORMAT::PROTOBUF);
 
     ~TcpClient();
 
@@ -29,7 +29,7 @@ namespace tcp
       std::function<void(T)> handler)
     {
       auto poster = [this](T msg, std::function<void(T)> f) {
-        boost::asio::post(*m_pThreadPool, [msg, f]() { f(msg); });
+        boost::asio::post(GlobalRegistry::getRegistry().getThreadPool(), [msg, f]() { f(msg); });
       };
       boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
         poster(msg, handler);
@@ -40,13 +40,13 @@ namespace tcp
     }
 
     template <class T>
-    void send(T message, const msg::FORMAT& format)
+    void send(T message)
     {
       msg::BaseMsg msg;
-      msg.msg(msg::toString(message, format));
+      msg.msg(msg::toString(message, m_format));
       msg.type(T::name());
       auto pMessage = std::make_shared<std::string>(
-        tcp::getProcessedString(toString(msg, format)));
+        tcp::getProcessedString(toString(msg, m_format)));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
@@ -70,8 +70,8 @@ namespace tcp
   private:
     boost::asio::io_context m_ctx;
     boost::optional<boost::asio::io_context::work> m_optCork;
+    msg::FORMAT m_format;
     std::thread m_ctxThread;
-    std::shared_ptr<boost::asio::thread_pool> m_pThreadPool;
     boost::asio::ip::tcp::socket m_socket;
     std::vector<char> m_inputBuffer;
     std::shared_ptr<tcp::HandlerMap> m_handlers;

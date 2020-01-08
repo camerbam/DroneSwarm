@@ -16,6 +16,6 @@ void testStringMsg(const msg::FORMAT& format)
 BOOST_AUTO_TEST_CASE(StringMsgTest)
 {
   testStringMsg(msg::FORMAT::JSON);
-  testStringMsg(msg::FORMAT::PROTOBUF);
+  //testStringMsg(msg::FORMAT::PROTOBUF);
   testStringMsg(msg::FORMAT::XML);
 }

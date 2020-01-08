@@ -48,8 +48,6 @@ bool parseString(T& msg, const std::string& data, const msg::FORMAT& format)
 }
 
   char formatToChar(const FORMAT format);
-
-  msg::FORMAT getMsgFormat(std::string& msg);
 }
 
 #endif
