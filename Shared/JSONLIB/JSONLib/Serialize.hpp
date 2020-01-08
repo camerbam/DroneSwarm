@@ -63,10 +63,6 @@ namespace json
                         rapidjson::Value& arr,
                         rapidjson::Value& value);
 
-  void addArrayToArray(rapidjson::Document& doc,
-                       rapidjson::Value& arr,
-                       rapidjson::Value& value);
-
   void addStringToArray(rapidjson::Document& doc,
                         rapidjson::Value& arr,
                         const std::string& value);
