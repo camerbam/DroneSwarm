@@ -24,6 +24,7 @@ add_subdirectory(Monitor)
 add_subdirectory(Playground)
 ###########################################
 set(random_srcs
+  100Times.txt
   Effectiveness.txt
   Findexternprolite.cmake
   )

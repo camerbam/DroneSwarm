@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 #include "DroneControllerLib/DroneControllerStateChanges.hpp"
 #include "DroneMessagesLib/MessageFactory.hpp"
@@ -17,6 +18,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DroneControllerStateChangesTest)
 {
+  std::cout << "2" << std::endl;
   auto pDroneState = std::make_shared<drone::DroneControllerState>();
 
   checkMsg("takeoff", pDroneState);

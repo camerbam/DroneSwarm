@@ -15,6 +15,7 @@
 #include "Handler.hpp"
 #include "MsgLib/BaseMsg.hpp"
 #include "MsgLib/MsgTypes.hpp"
+#include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
 
 #include "ACQLib/ACQ.hpp"

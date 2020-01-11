@@ -23,9 +23,7 @@ namespace
     cv.wait_for(lk, std::chrono::seconds(5));
   }
 
-  void checkRsp(std::condition_variable& cv,
-                std::mutex& mutex,
-                std::string message,
+  void checkRsp(std::string message,
                 std::shared_ptr<drone::DroneSimulatorStateImpl>& pState,
                 const std::string& answer)
   {
@@ -34,9 +32,7 @@ namespace
     BOOST_CHECK(response == answer);
   }
 
-  void checkMsg(std::condition_variable& cv,
-                std::mutex& mutex,
-                std::string message,
+  void checkMsg(std::string message,
                 std::shared_ptr<drone::DroneSimulatorStateImpl>& pState,
                 const int& answer,
                 const int& diff)
@@ -51,7 +47,6 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_STATE_CHANGES_TEST)
 {
-  auto start = std::chrono::steady_clock::now();
   auto registry = GlobalRegistry::getRegistry();
   registry.setSpeedRatio(100);
   registry.setBatteryDecaySpeed(20);
@@ -65,7 +60,7 @@ BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_STATE_CHANGES_TEST)
   checkMsg(cv, mutex, "takeoff", pState, boost::none);
   checkMsg(cv, mutex, "back 50", pState, boost::none);
   checkMsg(cv, mutex, "cw 50", pState, boost::none);
-  checkRsp(cv, mutex, "command", pState, std::string("ok"));
+  checkRsp("command", pState, std::string("ok"));
   checkMsg(cv, mutex, "ccw 50", pState, boost::none);
   checkMsg(cv, mutex, "down 50", pState, boost::none);
   checkMsg(cv, mutex, "flip f", pState, boost::none);
@@ -75,11 +70,11 @@ BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_STATE_CHANGES_TEST)
   checkMsg(cv, mutex, "forward 50", pState, boost::none);
   checkMsg(cv, mutex, "left 50", pState, boost::none);
   checkMsg(cv, mutex, "right 50", pState, boost::none);
-  checkRsp(cv, mutex, "speed?", pState, std::string("10"));
+  checkRsp("speed?", pState, std::string("10"));
   checkMsg(cv, mutex, "go 50 50 50 50", pState, boost::none);
-  checkMsg(cv, mutex, "battery?", pState, 93, 4);
-  checkMsg(cv, mutex, "time?", pState, 130, 15);
+  checkMsg("battery?", pState, 93, 4);
+  checkMsg("time?", pState, 130, 15);
   checkMsg(cv, mutex, "up 50", pState, boost::none);
   checkMsg(cv, mutex, "land", pState, boost::none);
-  checkRsp(cv, mutex, "up 50", pState, std::string("Drone is not flying"));
+  checkRsp("up 50", pState, std::string("Drone is not flying"));
 }

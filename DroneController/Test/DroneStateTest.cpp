@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 
 #include "UtilsLib/Utils.hpp"
 
@@ -6,6 +7,7 @@
 
 BOOST_AUTO_TEST_CASE(DroneControllerStateTest)
 {
+  std::cout << "4" << std::endl;
   drone::DroneControllerState droneState;
   BOOST_CHECK(droneState.takeoff().empty());
   BOOST_CHECK(!droneState.takeoff().empty());

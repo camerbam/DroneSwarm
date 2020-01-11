@@ -14,13 +14,12 @@
 #include "Handler.hpp"
 #include "MsgLib/BaseMsg.hpp"
 #include "TCPTools.hpp"
+#include "TCPConnection.hpp"
 
 #include "ACQLib/ACQ.hpp"
 
 namespace tcp
 {
-  class TcpConnection;
-
   class TcpServer
   {
   public:

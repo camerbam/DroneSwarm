@@ -54,12 +54,12 @@ drone::DroneController::~DroneController()
 }
 
 boost::optional<std::string> drone::DroneController::sendMessage(
-  const messages::Message_t& message)
+  const messages::Message_t& message, boost::posix_time::time_duration timeout)
 {
   if (!m_running) return boost::none;
   auto str =
     boost::apply_visitor(DroneControllerMessagesToString(m_pState), message);
-  auto response = m_controlCommunicator.sendMessage(str, m_controlEndpoint);
+  auto response = m_controlCommunicator.sendMessage(str, m_controlEndpoint, timeout);
   if (!response.didSucceed())
   {
     return boost::none;

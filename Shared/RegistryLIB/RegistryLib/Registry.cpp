@@ -1,5 +1,7 @@
 #include "Registry.hpp"
 
+#include <fstream>
+
 #include <boost/asio/post.hpp>
 #include <boost/filesystem/operations.hpp>
 

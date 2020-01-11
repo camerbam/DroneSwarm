@@ -17,7 +17,6 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
 {
-  auto start = std::chrono::steady_clock::now();
   auto registry = GlobalRegistry::getRegistry(); 
   registry.setSpeedRatio(100);
   registry.setBatteryDecaySpeed(20);

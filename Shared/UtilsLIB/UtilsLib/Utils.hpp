@@ -1,6 +1,8 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <cstdlib>
+
 namespace utils
 {
   bool compareTwoDoubles(const double& a, const double& b);
