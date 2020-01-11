@@ -19,9 +19,3 @@ char msg::formatToChar(const FORMAT format)
   return ::formatToChar[format];
 }
 
-msg::FORMAT msg::getMsgFormat(std::string& msg)
-{
-  auto toReturn = ::charToFormat[msg[0]];
-  msg.erase(0, 1);
-  return toReturn;
-}

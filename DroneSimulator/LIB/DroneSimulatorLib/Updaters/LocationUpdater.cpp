@@ -2,6 +2,7 @@
 #include "LocationUpdater.hpp"
 
 #include "DroneSimulatorLib/DroneSimulatorConsts.hpp"
+#include "RegistryLib/Registry.hpp"
 
 namespace
 {
@@ -11,7 +12,8 @@ namespace
                          double target,
                          size_t speed)
   {
-    double diff(ratio * SPEED_RATIO * speed / drone::FRAMES_PER_SECOND);
+    double diff(ratio * SPEED_RATIO * speed / drone::FRAMES_PER_SECOND *
+                GlobalRegistry::getRegistry().getSpeedRatio());
     if (current < target)
     {
       if (current + diff > target)

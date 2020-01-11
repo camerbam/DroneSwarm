@@ -20,7 +20,8 @@ namespace drone
     ~DroneController();
 
     boost::optional<std::string> sendMessage(
-      const messages::Message_t& message);
+      const messages::Message_t& message, boost::posix_time::time_duration timeout = 
+      boost::posix_time::seconds(10));
 
     size_t getBattery();
     double getX();
