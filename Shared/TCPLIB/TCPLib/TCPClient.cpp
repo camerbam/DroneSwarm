@@ -23,7 +23,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
         {
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
-          boost::asio::post(GlobalRegistry::getRegistry().getThreadPool(),
+          GlobalRegistry::getRegistry().postToThreadPool(
                             [optMsg, m_handlers, format]() {
                               msg::BaseMsg receivedMsg;
                               auto msg = optMsg.get();

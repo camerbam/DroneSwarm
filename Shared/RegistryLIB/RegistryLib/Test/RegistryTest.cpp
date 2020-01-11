@@ -13,11 +13,10 @@ BOOST_AUTO_TEST_CASE(RegistryTest)
   std::condition_variable cv;
   std::mutex m;
 
-  boost::asio::post(
-    GlobalRegistry::getRegistry().getThreadPool(), [&cv, &toPass]() {
-      cv.notify_one();
-      toPass = true;
-    });
+  GlobalRegistry::getRegistry().postToThreadPool([&cv, &toPass]() {
+    cv.notify_one();
+    toPass = true;
+  });
 
   std::unique_lock<std::mutex> lk(m);
   cv.wait_for(lk, std::chrono::milliseconds(1));

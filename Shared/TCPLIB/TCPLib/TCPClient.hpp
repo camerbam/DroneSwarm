@@ -29,7 +29,7 @@ namespace tcp
       std::function<void(T)> handler)
     {
       auto poster = [this](T msg, std::function<void(T)> f) {
-        boost::asio::post(GlobalRegistry::getRegistry().getThreadPool(), [msg, f]() { f(msg); });
+        GlobalRegistry::getRegistry().postToThreadPool([msg, f]() { f(msg); });
       };
       boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
         poster(msg, handler);

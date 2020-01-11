@@ -1,8 +1,11 @@
 #include <boost/test/unit_test.hpp>
 
 #include <condition_variable>
+#include <iostream>
 
 #include "DroneSimulatorLib/State/DroneSimulatorStateImpl.hpp"
+#include "RegistryLib/Registry.hpp"
+#include "UtilsLib/Utils.hpp"
 
 namespace
 {
@@ -14,6 +17,10 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
 {
+  auto start = std::chrono::steady_clock::now();
+  auto registry = GlobalRegistry::getRegistry(); 
+  registry.setSpeedRatio(100);
+  registry.setBatteryDecaySpeed(20);
   drone::DroneSimulatorStateImpl droneState;
   std::condition_variable cv;
   std::mutex mutex;
@@ -75,10 +82,8 @@ BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
   BOOST_CHECK(droneState.changeSpeed(64).empty());
   BOOST_CHECK_EQUAL(droneState.getSpeed(), 64);
 
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-
-  BOOST_CHECK_EQUAL(droneState.getBattery(), 92);
-  BOOST_CHECK_EQUAL(droneState.getTime(), 16);
+  BOOST_CHECK(utils::checkWithin(droneState.getBattery(), 92u, 2u));
+  BOOST_CHECK(utils::checkWithin(droneState.getTime(), 140u, 2u));
 
   BOOST_CHECK(!droneState.getStatusMessage().empty());
 }

@@ -34,7 +34,7 @@ tcp::TcpConnection::TcpConnection(
         {
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
-          boost::asio::post(GlobalRegistry::getRegistry().getThreadPool(),
+          GlobalRegistry::getRegistry().postToThreadPool(
                             [optMsg, handlers, format]() {
                               msg::BaseMsg receivedMsg;
                               auto msg = optMsg.get();

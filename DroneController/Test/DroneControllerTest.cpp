@@ -3,13 +3,15 @@
 #include <iostream>
 
 #include "DroneControllerLib/DroneController.hpp"
-#include "DroneSimulatorLib/DroneSimulator.hpp"
 #include "DroneMessagesLib/MessageFactory.hpp"
 #include "DroneMessagesLib/Messages/BackMessage.hpp"
 #include "DroneMessagesLib/Messages/CommandMessage.hpp"
 #include "DroneMessagesLib/Messages/ForwardMessage.hpp"
 #include "DroneMessagesLib/Messages/LandMessage.hpp"
 #include "DroneMessagesLib/Messages/TakeoffMessage.hpp"
+#include "DroneSimulatorLib/DroneSimulator.hpp"
+#include "RegistryLib/Registry.hpp"
+#include "UtilsLib/Utils.hpp"
 
 namespace
 {
@@ -17,16 +19,15 @@ namespace
   {
     drone::DroneSimulator simulator(duration, startBattery);
   }
-
-  bool compareTwoDoubles(const double& a, const double& b)
-  {
-    return std::abs(a - b) < .25;
-  }
 }
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 {
-  std::thread t1(startSimulator, boost::posix_time::seconds(5), 100);
+  auto registry = GlobalRegistry::getRegistry();
+  registry.setSpeedRatio(100);
+  registry.setBatteryDecaySpeed(20);
+
+  std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
 
   auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
 
@@ -38,16 +39,14 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
   BOOST_CHECK(controller->sendMessage(takeoff));
   BOOST_CHECK(controller->sendMessage(back));
   BOOST_CHECK(controller->sendMessage(land));
-  std::this_thread::sleep_for(std::chrono::seconds(3));
-  BOOST_CHECK(controller->getBattery() == 97);
+  BOOST_CHECK(utils::checkWithin(controller->getBattery(), 97, 2));
   controller.reset();
   t1.join();
 }
 
 BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_TWO_CONTROLLER_TEST)
 {
-  std::thread t1(startSimulator, boost::posix_time::seconds(5), 100);
-  std::this_thread::sleep_for(std::chrono::seconds(3));
+  std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
   auto command = messages::CommandMessage();
   messages::Message_t takeoff = messages::TakeoffMessage();
   messages::Message_t back = messages::BackMessage(20);
@@ -62,7 +61,7 @@ BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_TWO_CONTROLLER_TEST)
   firstController->sendMessage(back);
   simulatorEndpointFirst.sendMessage(forward.toString(), simulatorLocation);
 
-  BOOST_CHECK(compareTwoDoubles(firstController->getX(), -20));
+  BOOST_CHECK(utils::compareTwoDoubles(firstController->getX(), -20));
   t1.join();
 }
 
@@ -72,18 +71,16 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_LATE_SIMULATOR_TEST)
   std::string toSend("command");
   BOOST_CHECK(controller->sendMessage(messages::getMessage(toSend)) ==
               boost::none);
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-  std::thread t1(startSimulator, boost::posix_time::seconds(2), 100);
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
+  std::this_thread::sleep_for(std::chrono::microseconds(10));
   BOOST_CHECK(controller->sendMessage(messages::getMessage(toSend)) !=
               boost::none);
-  controller.reset();
   t1.join();
 }
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_LOW_BATTERY_TEST)
 {
-  std::thread t1(startSimulator, boost::posix_time::seconds(2), 15);
+  std::thread t1(startSimulator, boost::posix_time::seconds(1), 15);
   auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
 
   std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -92,21 +89,9 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_LOW_BATTERY_TEST)
   t1.join();
 }
 
-BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_SUSTAINED_TEST)
-{
-  std::thread t1(startSimulator, boost::posix_time::seconds(2), 100);
-  auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
-
-  std::this_thread::sleep_for(std::chrono::seconds(10));
-
-  BOOST_CHECK(controller->getIsRunning());
-  controller.reset();
-  t1.join();
-}
-
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
 {
-  std::thread t1(startSimulator, boost::posix_time::seconds(10), 100);
+  std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
   auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
 
   messages::Message_t takeoff = messages::TakeoffMessage();
@@ -119,17 +104,15 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
   BOOST_CHECK(controller->sendMessage(left));
   BOOST_CHECK(controller->sendMessage(land));
 
-  BOOST_CHECK(compareTwoDoubles(controller->getX(), -25));
-  BOOST_CHECK(compareTwoDoubles(controller->getY(), -20));
-  BOOST_CHECK(compareTwoDoubles(controller->getZ(), 0));
-
-  std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+  BOOST_CHECK(utils::compareTwoDoubles(controller->getX(), -25));
+  BOOST_CHECK(utils::compareTwoDoubles(controller->getY(), -20));
+  BOOST_CHECK(utils::compareTwoDoubles(controller->getZ(), 0));
 
   BOOST_CHECK(controller->getSpeed() == 10);
 
-  BOOST_CHECK(controller->getTime() == 6);
-  BOOST_CHECK_EQUAL(controller->getTimeOfFlight(), 245);
+  BOOST_CHECK(utils::checkWithin(controller->getTime(), 30, 2));
+  BOOST_CHECK(utils::checkWithin(
+    static_cast<size_t>(controller->getTimeOfFlight()), 145, 5));
 
-  controller.reset();
   t1.join();
 }

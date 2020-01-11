@@ -1,6 +1,7 @@
 
 #include "DroneConfiguration.hpp"
 
+#include "RegistryLib/Registry.hpp"
 
 drone::DroneConfiguration::DroneConfiguration(size_t startingBattery)
   : m_speed(10),
@@ -59,7 +60,11 @@ void drone::DroneConfiguration::increaseTime()
 void drone::DroneConfiguration::update(
   const std::chrono::steady_clock::time_point& now)
 {
-  m_time = std::chrono::duration_cast<std::chrono::seconds>(now - m_startPoint)
-             .count();
-  m_battery = m_startBattery - m_time / 2;
+  m_time = static_cast<size_t>(
+    std::chrono::duration_cast<std::chrono::microseconds>(now - m_startPoint)
+      .count() *
+    GlobalRegistry::getRegistry().getSpeedRatio() / 1000000);
+  m_battery = static_cast<size_t>(
+    m_startBattery -
+    m_time / GlobalRegistry::getRegistry().getBatteryDecaySpeed());
 }

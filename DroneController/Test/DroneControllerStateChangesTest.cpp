@@ -3,6 +3,7 @@
 #include "DroneControllerLib/DroneControllerStateChanges.hpp"
 #include "DroneMessagesLib/MessageFactory.hpp"
 #include "DroneMessagesLib/Message_t.hpp"
+#include "UtilsLib/Utils.hpp"
 
 namespace
 {
@@ -11,11 +12,6 @@ namespace
   {
     boost::apply_visitor(drone::DroneControllerStateChanges(pState),
                          messages::getMessage(message));
-  }
-
-  bool compareTwoDoubles(const double& a, const double& b)
-  {
-    return std::abs(a - b) < .25;
   }
 }
 
@@ -43,12 +39,12 @@ BOOST_AUTO_TEST_CASE(DroneControllerStateChangesTest)
   checkMsg("up 59", pDroneState);
   checkMsg("land", pDroneState);
 
-  BOOST_CHECK(compareTwoDoubles(pDroneState->getAngle(), 260));
+  BOOST_CHECK(utils::compareTwoDoubles(pDroneState->getAngle(), 260));
   BOOST_CHECK_EQUAL(pDroneState->getBattery(), 100);
   BOOST_CHECK_EQUAL(pDroneState->getSpeed(), 58);
   BOOST_CHECK_EQUAL(pDroneState->getTime(), 0);
-  BOOST_CHECK(compareTwoDoubles(pDroneState->getTimeOfFlight(), 0));
-  BOOST_CHECK(compareTwoDoubles(pDroneState->getX(), 57));
-  BOOST_CHECK(compareTwoDoubles(pDroneState->getY(), 57));
-  BOOST_CHECK(compareTwoDoubles(pDroneState->getZ(), 0));
+  BOOST_CHECK(utils::compareTwoDoubles(pDroneState->getTimeOfFlight(), 0));
+  BOOST_CHECK(utils::compareTwoDoubles(pDroneState->getX(), 57));
+  BOOST_CHECK(utils::compareTwoDoubles(pDroneState->getY(), 57));
+  BOOST_CHECK(utils::compareTwoDoubles(pDroneState->getZ(), 0));
 }

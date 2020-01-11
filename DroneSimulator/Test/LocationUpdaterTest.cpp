@@ -1,9 +1,11 @@
 #include <boost/test/unit_test.hpp>
 
+#include <chrono>
 #include <iostream>
 
 #include "DroneSimulatorLib/DroneSimulatorConsts.hpp"
 #include "DroneSimulatorLib/Updaters/LocationUpdater.hpp"
+#include "RegistryLib/Registry.hpp"
 
 namespace
 {
@@ -11,8 +13,7 @@ namespace
                     drone::DroneLocation& location,
                     drone::DroneConfiguration& config)
   {
-    for (size_t i = 0; i < drone::FRAMES_PER_SECOND; i++)
-      updater.updateState(location, config);
+    updater.updateState(location, config);
   }
 
   bool compareDoubles(const double& a, const double& b)
@@ -23,6 +24,9 @@ namespace
 
 BOOST_AUTO_TEST_CASE(LocationUpdaterpp)
 {
+  auto registry = GlobalRegistry::getRegistry();
+  registry.setSpeedRatio(10);
+
   drone::DroneLocation target;
   target.setXCoordinate(25);
   target.setYCoordinate(-15);
