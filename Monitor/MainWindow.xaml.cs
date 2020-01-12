@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace CSharpTest
+namespace Monitor
 {
   /// <summary>
   /// Interaction logic for MainWindow.xaml
@@ -23,6 +23,23 @@ namespace CSharpTest
     public MainWindow()
     {
       InitializeComponent();
+    }
+
+    public int count = 0;
+
+    private void ServerTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+
+    }
+
+    private void Button_Click_2(object sender, RoutedEventArgs e)
+    {
+      TextBox a = new TextBox();
+      a.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+      a.Width = 175;
+      a.Text = "Testing";
+      a.VerticalAlignment = VerticalAlignment.Stretch;
+      this.MainStackPanel.Children.Add(a);
     }
   }
 }
