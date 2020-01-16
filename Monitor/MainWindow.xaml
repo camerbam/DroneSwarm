@@ -11,8 +11,6 @@
     <StackPanel x:Name="MainStackPanel" Orientation="Horizontal" 
                 ScrollViewer.HorizontalScrollBarVisibility="Auto" 
                 CanHorizontallyScroll="True" ScrollViewer.CanContentScroll="True" 
-                Width="Auto" MaxWidth="800" ScrollViewer.VerticalScrollBarVisibility="Auto">
-      <Button Content="Button" Width="75" Click="Button_Click_2"/>
-    </StackPanel>
+                Width="Auto" MaxWidth="800" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
   </ScrollViewer>
 </Window>
