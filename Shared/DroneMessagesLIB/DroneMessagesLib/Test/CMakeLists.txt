@@ -13,6 +13,9 @@ set(${exe_name}_srcs
   GoMessageTest.cpp
   LandMessageTest.cpp
   LeftMessageTest.cpp
+  MDirectionMessageTest.cpp
+  MoffMessageTest.cpp
+  MonMessageTest.cpp
   MessageFactoryTest.cpp
   RightMessageTest.cpp
   SpeedMessageTest.cpp

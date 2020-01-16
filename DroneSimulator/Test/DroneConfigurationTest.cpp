@@ -35,3 +35,12 @@ BOOST_AUTO_TEST_CASE(DRONE_CONFIGURATION_TEST)
   BOOST_CHECK_EQUAL(secondConfig.getBattery(), 99);
   BOOST_CHECK_EQUAL(secondConfig.getTime(), 1);
 }
+
+BOOST_AUTO_TEST_CASE(DRONE_CONFIGURATION_DETECTION_TEST)
+{
+  drone::DroneConfiguration config;
+  BOOST_CHECK(config.enableDetection(messages::DETECTION_DIRECTION::DOWN));
+  BOOST_CHECK(!config.enableDetection(messages::DETECTION_DIRECTION::BOTH));
+  config.disableDetection();
+  BOOST_CHECK(config.enableDetection(messages::DETECTION_DIRECTION::DOWN));
+}

@@ -10,21 +10,30 @@ namespace messages
   public:
     DroneStatusMessage();
 
-    std::string toString(size_t m_timeOfFlight,
-                         double m_zCoordinate,
+    std::string toString(int mid,
+                         double xCoordinate,
+                         double yCoordinate,
+                         double zCoordinate,
+                         size_t m_timeOfFlight,
                          size_t m_battery,
                          size_t m_time) const;
 
     void fromString(std::string message);
 
-    size_t getTimeOfFlight();
+    int getMid();
+    double getXCoordinate();
+    double getYCoordinate();
     double getZCoordinate();
+    size_t getTimeOfFlight();
     size_t getBattery();
     size_t getTime();
 
   protected:
-    size_t m_timeOfFlight;
+    int m_mid;
+    double m_xCoordinate;
+    double m_yCoordinate;
     double m_zCoordinate;
+    size_t m_timeOfFlight;
     size_t m_battery;
     size_t m_time;
   };

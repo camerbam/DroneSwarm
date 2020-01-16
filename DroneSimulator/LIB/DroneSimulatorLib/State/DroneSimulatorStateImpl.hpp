@@ -10,6 +10,7 @@
 
 #include "DroneConfiguration.hpp"
 #include "DroneLocation.hpp"
+#include "DroneMessagesLib/DetectionDirection.hpp"
 
 #include "DroneSimulatorLib/Updaters/DroneUpdater.hpp"
 
@@ -41,13 +42,17 @@ namespace drone
     size_t getBattery() const;
     size_t getTime();
     std::string getStatusMessage();
+    boost::optional<std::string> enableDetection(
+      messages::DETECTION_DIRECTION direction =
+        messages::DETECTION_DIRECTION::BOTH);
+    void disableDetection();
 
     boost::signals2::scoped_connection registerForCompletedUpdate(
       std::function<void(std::string)> callback);
 
   private:
     void startUpdate();
-    
+
     std::atomic<bool> m_flying;
     std::mutex m_statusMutex;
     DroneLocation m_currentLocation;

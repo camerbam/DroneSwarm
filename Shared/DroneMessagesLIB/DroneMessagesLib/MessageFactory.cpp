@@ -32,6 +32,10 @@ messages::Message_t messages::getMessage(std::string& stringToParse)
   if (type == "go") return createAction<messages::GoMessage>(stringToParse);
   if (type == "land") return createAction<messages::LandMessage>(stringToParse);
   if (type == "left") return createAction<messages::LeftMessage>(stringToParse);
+  if (type == "mdirection")
+    return createAction<messages::MDirectionMessage>(stringToParse);
+  if (type == "mon") return createAction<messages::MonMessage>(stringToParse);
+  if (type == "moff") return createAction<messages::MoffMessage>(stringToParse);
   if (type == "right")
     return createAction<messages::RightMessage>(stringToParse);
   if (type == "speed" || type == "speed?")

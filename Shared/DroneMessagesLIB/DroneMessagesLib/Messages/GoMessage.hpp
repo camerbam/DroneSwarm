@@ -1,6 +1,8 @@
 #ifndef GO_MESSAGES_HPP
 #define GO_MESSAGES_HPP
 
+#include <boost/optional.hpp>
+
 #include "DroneMessagesLib/Message.hpp"
 
 namespace messages
@@ -9,13 +11,14 @@ namespace messages
   {
   public:
     GoMessage();
-    GoMessage(double x, double y, double z, size_t speed);
+    GoMessage(double x, double y, double z, size_t speed, size_t mid = 0);
     virtual std::string toString() const override;
 
     double getXDistance() const;
     double getYDistance() const;
     double getZDistance() const;
     size_t getSpeed() const;
+    size_t getMID() const;
 
   private:
     virtual bool fromStringImpl(std::string& toParse) override;
@@ -27,6 +30,7 @@ namespace messages
     double m_yDistance;
     double m_zDistance;
     size_t m_speed;
+    boost::optional<size_t> m_optMid;
   };
 } // namespace messages
 

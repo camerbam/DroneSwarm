@@ -12,6 +12,9 @@
 #include "DroneMessagesLib/Messages/GoMessage.hpp"
 #include "DroneMessagesLib/Messages/LandMessage.hpp"
 #include "DroneMessagesLib/Messages/LeftMessage.hpp"
+#include "DroneMessagesLib/Messages/MDirectionMessage.hpp"
+#include "DroneMessagesLib/Messages/MoffMessage.hpp"
+#include "DroneMessagesLib/Messages/MonMessage.hpp"
 #include "DroneMessagesLib/Messages/RightMessage.hpp"
 #include "DroneMessagesLib/Messages/SpeedMessage.hpp"
 #include "DroneMessagesLib/Messages/TakeoffMessage.hpp"
@@ -28,6 +31,14 @@ namespace
   {
     if (error.empty()) return defaultValue;
     return error;
+  }
+
+  boost::optional<std::string> returnAnswer(
+    const boost::optional<std::string>& error,
+    boost::optional<std::string> defaultValue = boost::none)
+  {
+    if (error) return error;
+    return OK;
   }
 }
 
@@ -122,6 +133,26 @@ boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
   const messages::LeftMessage& message) const
 {
   return returnError(pState->changeTargetY(-message.getArgument()));
+}
+
+boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
+  const messages::MDirectionMessage& message) const
+{
+  return returnAnswer(pState->enableDetection(static_cast<messages::DETECTION_DIRECTION>(
+    static_cast<int>(message.getArgument()))));
+}
+
+boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
+  const messages::MoffMessage& message) const
+{
+  pState->disableDetection();
+  return OK;
+}
+
+boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
+  const messages::MonMessage& message) const
+{
+  return returnAnswer(pState->enableDetection());
 }
 
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(

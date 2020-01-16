@@ -6,10 +6,9 @@ namespace
 }
 
 messages::OneParamMessage::OneParamMessage(const std::string& name,
-                                           const std::string& key,
                                            double min,
                                            double max)
-  : Message(name), m_key(key), m_min(min), m_max(max)
+  : Message(name), m_min(min), m_max(max)
 {
 }
 

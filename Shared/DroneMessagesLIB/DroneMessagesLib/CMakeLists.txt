@@ -22,6 +22,12 @@ set(message_srcs
   Messages/LandMessage.hpp
   Messages/LeftMessage.cpp
   Messages/LeftMessage.hpp
+  Messages/MDirectionMessage.cpp
+  Messages/MDirectionMessage.hpp
+  Messages/MonMessage.cpp
+  Messages/MonMessage.hpp
+  Messages/MoffMessage.cpp
+  Messages/MoffMessage.hpp
   Messages/RightMessage.cpp
   Messages/RightMessage.hpp
   Messages/SpeedMessage.cpp
@@ -37,6 +43,7 @@ source_group(Messages FILES ${message_srcs})
 list(APPEND ${lib_name}_libsrcs ${message_srcs})
 #########################################
 set(base_srcs
+  DetectionDirection.hpp
   DroneStatusMessage.cpp
   DroneStatusMessage.hpp
   Message.cpp

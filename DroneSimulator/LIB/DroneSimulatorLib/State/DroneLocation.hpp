@@ -14,11 +14,13 @@ namespace drone
     DroneLocation(const DroneLocation& location);
 
     double getTimeOfFlight() const;
+    double getMid() const;
     double getXCoordinate() const;
     double getYCoordinate() const;
     double getZCoordinate() const;
     double getAngle() const;
 
+    void setMid(double x);
     void setXCoordinate(double x);
     void setYCoordinate(double y);
     void setZCoordinate(double z);
@@ -35,6 +37,7 @@ namespace drone
     void addTimeOfFlight(double timeToAdd);
 
     std::atomic<double> m_timeOfFlight;
+    std::atomic<double> m_mid;
     std::atomic<double> m_xCoordinate;
     std::atomic<double> m_yCoordinate;
     std::atomic<double> m_zCoordinate;
