@@ -34,8 +34,7 @@ namespace
   }
 
   boost::optional<std::string> returnAnswer(
-    const boost::optional<std::string>& error,
-    boost::optional<std::string> defaultValue = boost::none)
+    const boost::optional<std::string>& error)
   {
     if (error) return error;
     return OK;
@@ -143,14 +142,14 @@ boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
 }
 
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-  const messages::MoffMessage& message) const
+  const messages::MoffMessage&) const
 {
   pState->disableDetection();
   return OK;
 }
 
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-  const messages::MonMessage& message) const
+  const messages::MonMessage&) const
 {
   return returnAnswer(pState->enableDetection());
 }

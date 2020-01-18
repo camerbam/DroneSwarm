@@ -162,6 +162,11 @@ std::string drone::DroneControllerState::changeSpeed(size_t newSpeed)
   return "";
 }
 
+void drone::DroneControllerState::setDetection(const messages::DETECTION_DIRECTION& direction)
+{
+  m_direction = direction;
+}
+
 size_t drone::DroneControllerState::getSpeed()
 {
   return m_speed;

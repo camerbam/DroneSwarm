@@ -46,7 +46,7 @@ namespace
 }
 
 messages::DroneStatusMessage::DroneStatusMessage()
-  : m_timeOfFlight(0), m_zCoordinate(0), m_battery(0), m_time(0)
+  : m_zCoordinate(0), m_timeOfFlight(0), m_battery(0), m_time(0)
 {
 }
 

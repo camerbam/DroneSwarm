@@ -101,16 +101,19 @@ void drone::DroneControllerStateChanges::operator()(
 void drone::DroneControllerStateChanges::operator()(
   const messages::MDirectionMessage& message) const
 {
+  pState->setDetection(static_cast<messages::DETECTION_DIRECTION>(static_cast<int>(message.getArgument())));
 }
 
 void drone::DroneControllerStateChanges::operator()(
-  const messages::MoffMessage& message) const
+  const messages::MoffMessage&) const
 {
+  pState->setDetection(messages::DETECTION_DIRECTION::BOTH);
 }
 
 void drone::DroneControllerStateChanges::operator()(
-  const messages::MonMessage& message) const
+  const messages::MonMessage&) const
 {
+  pState->setDetection(messages::DETECTION_DIRECTION::NONE);
 }
 
 void drone::DroneControllerStateChanges::operator()(

@@ -3,6 +3,8 @@
 #include "DroneMessagesLib/MessageFactory.hpp"
 #include "DroneMessagesLib/Messages/GoMessage.hpp"
 
+#include "UtilsLib/Utils.hpp"
+
 namespace
 {
   messages::GoMessage goodMessage(const double& x,
@@ -14,7 +16,7 @@ namespace
     messages::GoMessage goMessage;
     std::string toParse("go " + std::to_string(x) + " " + std::to_string(y) +
                         " " + std::to_string(z) + " " + std::to_string(speed) +
-                        (mid ? " " + std::to_string(mid) : ""));
+                        (!utils::compareTwoDoubles(mid, 0) ? " " + std::to_string(mid) : ""));
     goMessage.fromString(toParse);
     return goMessage;
   }
