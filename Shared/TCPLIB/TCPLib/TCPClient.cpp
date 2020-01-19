@@ -157,3 +157,8 @@ void tcp::TcpClient::ready()
 {
   m_acq.ready();
 }
+
+bool tcp::TcpClient::isConnected()
+{
+  return m_socket.is_open();
+}

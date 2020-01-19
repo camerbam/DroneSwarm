@@ -18,4 +18,5 @@ add_subdirectory(UDPLIB/UDPLib)
 ##################################
 # Third Layer Dependency
 add_subdirectory(TCPLIB/TCPLib)
+add_subdirectory(MonitorLoggerLIB/MonitorLoggerLib)
 xpSourceListAppend()

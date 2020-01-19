@@ -5,7 +5,6 @@
 
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/test/unit_test.hpp>
 
 #include "LoggerLib/Logger.hpp"

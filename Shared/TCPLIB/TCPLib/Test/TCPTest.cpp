@@ -11,7 +11,6 @@
 std::shared_ptr<std::thread> startClientToRecieve()
 {
   return std::make_shared<std::thread>([]() {
-    auto pool = std::make_shared<boost::asio::thread_pool>(1);
     std::vector<boost::signals2::scoped_connection> connections;
 
     tcp::TcpClient client("localhost", "8080");
@@ -84,8 +83,6 @@ std::shared_ptr<std::thread> startClientToSend()
 
 BOOST_AUTO_TEST_CASE(TCPClientSend)
 {
-  boost::asio::thread_pool pool(1);
-
   std::vector<boost::signals2::scoped_connection> connections;
 
   tcp::TcpServer server(8080);
@@ -110,8 +107,6 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
   });
 
   auto pThread = startClientToSend();
-  // TODO: Switching how these close leads to a seg fault on windows on release.
-  // Race condition is not caught by asan
   server.close();
   pThread->join();
 }

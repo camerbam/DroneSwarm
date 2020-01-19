@@ -68,7 +68,6 @@ void GlobalRegistry::setRegistry(const boost::filesystem::path& p)
 
 void GlobalRegistry::setRegistry(const std::string& config)
 {
-  std::cout << config << std::endl;
   m_pInstance = std::shared_ptr<GlobalRegistry>(new GlobalRegistry(config));
 }
 
