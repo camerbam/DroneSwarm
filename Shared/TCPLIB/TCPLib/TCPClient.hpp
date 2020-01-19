@@ -68,6 +68,8 @@ namespace tcp
 
     void ready();
 
+    bool isConnected();
+
   private:
     boost::asio::io_context m_ctx;
     boost::optional<boost::asio::io_context::work> m_optCork;

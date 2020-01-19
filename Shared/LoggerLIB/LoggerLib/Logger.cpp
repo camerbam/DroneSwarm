@@ -33,7 +33,6 @@ namespace
 
     std::stringstream ss;
     ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
-    ;
     return ss.str();
   }
 
