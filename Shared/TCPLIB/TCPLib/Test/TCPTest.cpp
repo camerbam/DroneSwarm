@@ -37,6 +37,8 @@ std::shared_ptr<std::thread> startClientToRecieve()
 
 BOOST_AUTO_TEST_CASE(TCPServerSend)
 {
+  GlobalRegistry::setRegistry(100, 20);
+
   tcp::TcpServer server(8080);
 
   auto connection = server.registerConnection([&server](

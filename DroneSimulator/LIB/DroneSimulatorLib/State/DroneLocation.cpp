@@ -21,6 +21,7 @@ namespace
 
 drone::DroneLocation::DroneLocation()
   : m_timeOfFlight(0),
+    m_mid(0),
     m_xCoordinate(0),
     m_yCoordinate(0),
     m_zCoordinate(0),
@@ -42,6 +43,11 @@ double drone::DroneLocation::getTimeOfFlight() const
   return m_timeOfFlight;
 }
 
+double drone::DroneLocation::getMid() const
+{
+  return m_mid;
+}
+
 double drone::DroneLocation::getXCoordinate() const
 {
   return m_xCoordinate;
@@ -60,6 +66,11 @@ double drone::DroneLocation::getZCoordinate() const
 double drone::DroneLocation::getAngle() const
 {
   return m_angle;
+}
+
+void drone::DroneLocation::setMid(double x)
+{
+  m_mid = x;
 }
 
 void drone::DroneLocation::setXCoordinate(double x)

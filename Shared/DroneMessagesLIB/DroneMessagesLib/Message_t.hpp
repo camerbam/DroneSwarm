@@ -13,6 +13,9 @@
 #include "Messages/GoMessage.hpp"
 #include "Messages/LandMessage.hpp"
 #include "Messages/LeftMessage.hpp"
+#include "Messages/MDirectionMessage.hpp"
+#include "Messages/MoffMessage.hpp"
+#include "Messages/MonMessage.hpp"
 #include "Messages/RightMessage.hpp"
 #include "Messages/SpeedMessage.hpp"
 #include "Messages/TakeoffMessage.hpp"
@@ -32,6 +35,9 @@ namespace messages
                          messages::GoMessage,
                          messages::LandMessage,
                          messages::LeftMessage,
+                         messages::MDirectionMessage,
+                         messages::MoffMessage,
+                         messages::MonMessage,
                          messages::RightMessage,
                          messages::SpeedMessage,
                          messages::TakeoffMessage,

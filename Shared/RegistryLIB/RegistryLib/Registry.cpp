@@ -1,6 +1,7 @@
 #include "Registry.hpp"
 
 #include <fstream>
+#include <iostream>
 
 #include <boost/asio/post.hpp>
 #include <boost/filesystem/operations.hpp>
@@ -8,73 +9,139 @@
 #include <rapidjson/istreamwrapper.h>
 
 #include "JSONLib/Deserialize.hpp"
+#include "JSONLib/Serialize.hpp"
+#include "UtilsLib/Utils.hpp"
 
-GlobalRegistry::GlobalRegistry() : m_pThreadPool(), m_speedRatio(1), m_decaySpeed(2)
+namespace
 {
+  double validateDValue(double count, double def)
+  {
+    if (utils::compareTwoDoubles(count, 0)) return def;
+    return count;
+  }
+
+  int validateValue(int count, int def)
+  {
+    if (!count) return def;
+    return count;
+  }
+
+  std::vector<Target> validateTargets(rapidjson::Document& doc)
+  {
+    auto targetsArray = doc.FindMember("Targets");
+    if (targetsArray == doc.MemberEnd()) return {};
+    if (!targetsArray->value.IsArray()) return {};
+
+    std::vector<Target> toReturn;
+    for (auto& target : targetsArray->value.GetArray())
+    {
+      auto x = target.FindMember("x");
+      if (x == target.MemberEnd() || !x->value.IsDouble()) continue;
+      auto y = target.FindMember("y");
+      if (y == target.MemberEnd() || !y->value.IsDouble()) continue;
+      auto id = target.FindMember("id");
+      if (id == target.MemberEnd() || !id->value.IsInt()) continue;
+      toReturn.emplace_back(
+        x->value.GetDouble(), y->value.GetDouble(), id->value.GetInt());
+    }
+    return toReturn;
+  }
+}
+
+GlobalRegistry::GlobalRegistry(const std::string& config)
+  : m_pThreadPool(), m_speedRatio(1), m_decaySpeed(2)
+{
+  parseConfig(config);
+}
+
+void GlobalRegistry::setRegistry(const boost::filesystem::path& p)
+{
+  if (!boost::filesystem::exists(p))
+    throw std::runtime_error("Cannot find file: " + p.generic_string());
+  if (boost::filesystem::is_directory(p))
+    throw std::runtime_error("file is a directory: " + p.generic_string());
+  std::ifstream t(p.string());
+  std::string str(
+    (std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+  setRegistry(str);
+}
+
+void GlobalRegistry::setRegistry(const std::string& config)
+{
+  std::cout << config << std::endl;
+  m_pInstance = std::shared_ptr<GlobalRegistry>(new GlobalRegistry(config));
+}
+
+void GlobalRegistry::setRegistry(double speed,
+                                 double decaySpeed,
+                                 const std::vector<Target>& targets)
+{
+  rapidjson::Document doc(rapidjson::kObjectType);
+  json::addNumberToDoc(doc, "ThreadCount", 1);
+  json::addNumberToDoc(doc, "Speed", speed);
+  json::addNumberToDoc(doc, "BatteryDecaySpeed", decaySpeed);
+  if (!targets.empty())
+  {
+    rapidjson::Document targetsJson(rapidjson::kArrayType);
+    for (auto&& target : targets)
+    {
+      rapidjson::Document targetJson(rapidjson::kObjectType);
+      json::addNumberToObject(doc, targetJson, "x", target.getX());
+      json::addNumberToObject(doc, targetJson, "y", target.getY());
+      json::addIntToObject(doc, targetJson, "id", target.getId());
+      json::addObjectToArray(doc, targetsJson, targetJson);
+    }
+    json::addArrayToDoc(doc, "Targets", targetsJson);
+  }
+  setRegistry(json::jsonToString(doc));
 }
 
 GlobalRegistry& GlobalRegistry::getRegistry()
 {
-  return m_instance;
+  if (!m_pInstance) throw std::runtime_error("Invalid Registry");
+  return *m_pInstance;
 }
 
 GlobalRegistry::~GlobalRegistry()
 {
-  if (m_instance.m_pThreadPool) m_instance.m_pThreadPool->join();
+  m_pInstance->m_pThreadPool->join();
 }
 
 void GlobalRegistry::postToThreadPool(std::function<void()> fn)
 {
-  if (!m_instance.m_pThreadPool) m_instance.setThreadPoolCount();
-  boost::asio::post(*m_instance.m_pThreadPool, fn);
-}
-
-void GlobalRegistry::setThreadPoolCount(size_t count)
-{
-  if (!count) count = 1;
-    m_instance.m_pThreadPool =
-      std::make_shared<boost::asio::thread_pool>(count);
-}
-
-void GlobalRegistry::setSpeedRatio(double speedRatio)
-{
-  if (speedRatio < 1)
-    m_instance.m_speedRatio = 1;
-  else
-    m_instance.m_speedRatio = speedRatio;
+  boost::asio::post(*m_pInstance->m_pThreadPool, fn);
 }
 
 double GlobalRegistry::getSpeedRatio()
 {
-  return m_instance.m_speedRatio;
-}
-
-void GlobalRegistry::setBatteryDecaySpeed(double decaySpeed)
-{
-  if (decaySpeed < 1)
-    m_instance.m_decaySpeed = 1;
-  else
-    m_instance.m_decaySpeed = decaySpeed;
+  return m_pInstance->m_speedRatio;
 }
 
 double GlobalRegistry::getBatteryDecaySpeed()
 {
-  return m_instance.m_decaySpeed;
+  return m_pInstance->m_decaySpeed;
 }
 
-bool GlobalRegistry::parseConfig(const boost::filesystem::path& configPath)
+const std::vector<Target>& GlobalRegistry::getTargets()
 {
-  if (!boost::filesystem::exists(configPath)) return false;
+  return m_pInstance->m_targets;
+}
+
+bool GlobalRegistry::parseConfig(const std::string& config)
+{
   rapidjson::Document doc;
-  std::ifstream t(configPath.string());
-  rapidjson::IStreamWrapper isw{t};
-  doc.ParseStream(isw);
+  doc.Parse(config.c_str());
 
-  if (doc.IsNull()) return false;
+  if (doc.IsNull())
+    throw std::runtime_error("Config does not point to valid json");
 
-  setSpeedRatio(json::getNumber(doc, "BatteryDecaySpeed"));
+  m_pThreadPool = std::make_shared<boost::asio::thread_pool>(
+    validateValue(static_cast<int>(json::getNumber(doc, "ThreadCount")), 1));
+  m_speedRatio = validateDValue(json::getNumber(doc, "Speed"), 2);
+  m_decaySpeed = validateDValue(json::getNumber(doc, "BatteryDecaySpeed"), 1);
+  m_targets = validateTargets(doc);
 
   return true;
 }
 
-GlobalRegistry GlobalRegistry::m_instance;
+std::shared_ptr<GlobalRegistry> GlobalRegistry::m_pInstance;

@@ -23,6 +23,7 @@
 #include "DroneMessagesLib/Messages/TakeoffMessage.hpp"
 #include "DroneMessagesLib/Messages/TimeMessage.hpp"
 #include "DroneMessagesLib/Messages/UpMessage.hpp"
+#include "DroneMessagesLib/DetectionDirection.hpp"
 
 namespace drone
 {
@@ -34,6 +35,7 @@ namespace drone
 
     std::string takeoff();
     std::string land();
+    int getMid();
     std::string changeX(double deltaX);
     double getX();
     std::string changeY(double deltaY);
@@ -45,17 +47,19 @@ namespace drone
     std::string changeAngle(double deltaAngle);
     double getAngle();
     std::string changeSpeed(size_t newSpeed);
+    void setDetection(const messages::DETECTION_DIRECTION& direction);
     size_t getSpeed();
     size_t getBattery() const;
     size_t getTime();
     bool updateStatus(std::string& statusMessage);
-
     boost::signals2::scoped_connection registerForBattery(
       std::function<void(size_t)> callback);
 
   private:
     std::atomic<bool> m_flying;
     std::mutex m_statusMutex;
+    std::atomic<int> m_mid;
+    messages::DETECTION_DIRECTION m_direction;
     std::atomic<double> m_xCoordinate;
     std::atomic<double> m_yCoordinate;
     std::atomic<double> m_zCoordinate;

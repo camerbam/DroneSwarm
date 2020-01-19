@@ -28,6 +28,8 @@ namespace
 
 drone::DroneControllerState::DroneControllerState()
   : m_flying(false),
+    m_statusMutex(),
+    m_mid(-1),
     m_xCoordinate(0),
     m_yCoordinate(0),
     m_zCoordinate(0),
@@ -58,6 +60,11 @@ std::string drone::DroneControllerState::land()
   m_flying = false;
   m_zCoordinate = 0;
   return "";
+}
+
+int drone::DroneControllerState::getMid()
+{
+  return m_mid;
 }
 
 std::string drone::DroneControllerState::changeX(double deltaX)
@@ -155,6 +162,11 @@ std::string drone::DroneControllerState::changeSpeed(size_t newSpeed)
   return "";
 }
 
+void drone::DroneControllerState::setDetection(const messages::DETECTION_DIRECTION& direction)
+{
+  m_direction = direction;
+}
+
 size_t drone::DroneControllerState::getSpeed()
 {
   return m_speed;
@@ -182,6 +194,9 @@ bool drone::DroneControllerState::updateStatus(std::string& statusMessage)
     m_batterySignal(m_battery);
   }
   m_timeOfFlight = msg.getTimeOfFlight();
+  m_mid = msg.getMid();
+  m_xCoordinate = msg.getXCoordinate();
+  m_yCoordinate = msg.getYCoordinate();
   m_zCoordinate = msg.getZCoordinate();
   m_time = msg.getTime();
 

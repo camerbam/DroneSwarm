@@ -27,11 +27,17 @@ namespace json
 
   double getNumber(rapidjson::Value& obj, const std::string& key);
 
+  int getInt(rapidjson::Document& doc, const std::string& key);
+
+  int getInt(rapidjson::Value& obj, const std::string& key);
+
   std::vector<std::string> getVectorString(rapidjson::Document& doc, const std::string& key);
 
   std::vector<bool> getVectorBool(rapidjson::Document& doc, const std::string& key);
 
   std::vector<double> getVectorDouble(rapidjson::Document& doc, const std::string& key);
+
+  std::vector<int> getVectorInt(rapidjson::Document& doc, const std::string& key);
 } // namespace json
 
 #endif

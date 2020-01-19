@@ -5,6 +5,7 @@
 #include "DroneMessagesLib/MessageFactory.hpp"
 #include "DroneMessagesLib/Message_t.hpp"
 #include "UtilsLib/Utils.hpp"
+#include "RegistryLib/Registry.hpp"
 
 namespace
 {
@@ -18,7 +19,6 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DroneControllerStateChangesTest)
 {
-  std::cout << "2" << std::endl;
   auto pDroneState = std::make_shared<drone::DroneControllerState>();
 
   checkMsg("takeoff", pDroneState);

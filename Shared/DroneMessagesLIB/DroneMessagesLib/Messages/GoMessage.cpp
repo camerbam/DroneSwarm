@@ -7,21 +7,25 @@ messages::GoMessage::GoMessage()
     m_xDistance(20),
     m_yDistance(20),
     m_zDistance(20),
-    m_speed(10)
+    m_speed(10),
+    m_optMid()
 {
 }
 
-messages::GoMessage::GoMessage(double x, double y, double z, size_t speed)
+messages::GoMessage::GoMessage(
+  double x, double y, double z, size_t speed, size_t mid)
   : Message("go"),
     m_xDistance(x),
     m_yDistance(y),
     m_zDistance(z),
-    m_speed(speed)
+    m_speed(speed),
+    m_optMid(mid)
 {
   validateDistance(m_xDistance, 20, 500);
   validateDistance(m_yDistance, 20, 500);
   validateDistance(m_zDistance, 20, 500);
   validateDistance(m_speed, 10, 100);
+  validateDistance(m_optMid.get(), 0, 8);
 }
 
 bool messages::GoMessage::fromStringImpl(std::string& toParse)
@@ -32,6 +36,7 @@ bool messages::GoMessage::fromStringImpl(std::string& toParse)
     m_yDistance = std::stod(getNextWord(toParse));
     m_zDistance = std::stod(getNextWord(toParse));
     m_speed = std::stoi(getNextWord(toParse));
+    if (!toParse.empty()) m_optMid = std::stoi(getNextWord(toParse));
   }
   catch (std::invalid_argument& ec)
   {
@@ -42,6 +47,7 @@ bool messages::GoMessage::fromStringImpl(std::string& toParse)
   validateDistance(m_yDistance, 20, 500);
   validateDistance(m_zDistance, 20, 500);
   validateDistance(m_speed, 10, 100);
+  if (m_optMid) validateDistance(m_optMid.get(), 1, 8);
   return true;
 }
 
@@ -50,7 +56,8 @@ std::string messages::GoMessage::toString() const
   return m_name + " " + removeUnimportantZeros(std::to_string(m_xDistance)) +
          " " + removeUnimportantZeros(std::to_string(m_yDistance)) + " " +
          removeUnimportantZeros(std::to_string(m_zDistance)) + " " +
-         std::to_string(m_speed);
+         std::to_string(m_speed) +
+         (m_optMid ? " " + std::to_string(m_optMid.get()) : "");
 }
 
 double messages::GoMessage::getXDistance() const
@@ -71,6 +78,12 @@ double messages::GoMessage::getZDistance() const
 size_t messages::GoMessage::getSpeed() const
 {
   return m_speed;
+}
+
+size_t messages::GoMessage::getMID() const
+{
+  if (!m_optMid) return 0;
+  return m_optMid.get();
 }
 
 void messages::GoMessage::validateDistance(double distance,

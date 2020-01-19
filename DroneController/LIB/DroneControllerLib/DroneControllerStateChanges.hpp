@@ -20,6 +20,9 @@ namespace messages
   class GoMessage;
   class LandMessage;
   class LeftMessage;
+  class MDirectionMessage;
+  class MoffMessage;
+  class MonMessage;
   class RightMessage;
   class SpeedMessage;
   class TakeoffMessage;
@@ -52,6 +55,12 @@ namespace drone
 
     void operator()(const messages::LeftMessage& message) const;
 
+    void operator()(const messages::MDirectionMessage& message) const;
+
+    void operator()(const messages::MoffMessage& message) const;
+
+    void operator()(const messages::MonMessage& message) const;
+
     void operator()(const messages::RightMessage& message) const;
 
     void operator()(const messages::TakeoffMessage& message) const;
@@ -59,7 +68,7 @@ namespace drone
     void operator()(const messages::UpMessage& message) const;
 
     template <class T>
-    void operator()(const T&) const 
+    void operator()(const T&) const
     {
     }
 

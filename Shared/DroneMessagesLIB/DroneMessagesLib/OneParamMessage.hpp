@@ -9,7 +9,6 @@ namespace messages
   {
   public:
     OneParamMessage(const std::string& name,
-                    const std::string& key,
                     double min,
                     double max);
     virtual std::string toString() const override;
@@ -22,7 +21,6 @@ namespace messages
     bool validateDistance(double argument);
 
     double m_firstArgument;
-    std::string m_key;
     double m_min;
     double m_max;
   };

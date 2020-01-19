@@ -10,6 +10,8 @@
 #include <boost/algorithm/string/trim.hpp>
 
 #include "DroneMessagesLib/DroneStatusMessage.hpp"
+#include "RegistryLib/Registry.hpp"
+#include "UtilsLib/Utils.hpp"
 
 #include "DroneSimulatorLib/DroneSimulatorConsts.hpp"
 #include "DroneSimulatorLib/Updaters/AngleUpdater.hpp"
@@ -36,7 +38,8 @@ drone::DroneSimulatorStateImpl::DroneSimulatorStateImpl(size_t startingBattery)
     m_pUpdater(),
     m_updateSignal(),
     m_isRunning(true),
-    m_updateThread()
+    m_updateThread(),
+    m_targets(GlobalRegistry::getRegistry().getTargets())
 {
   startUpdate();
 }
@@ -195,7 +198,29 @@ std::string drone::DroneSimulatorStateImpl::getStatusMessage()
 {
   messages::DroneStatusMessage msg;
   std::lock_guard<std::mutex> lock(m_statusMutex);
-  return msg.toString(getTimeOfFlight(), getZ(), getBattery(), getTime());
+  return msg.toString(m_currentLocation.getMid(),
+                      getX(),
+                      getY(),
+                      getZ(),
+                      getTimeOfFlight(),
+                      getBattery(),
+                      getTime());
+}
+
+boost::optional<std::string> drone::DroneSimulatorStateImpl::enableDetection(
+  messages::DETECTION_DIRECTION direction)
+{
+  return m_configuration.enableDetection(direction);
+}
+
+void drone::DroneSimulatorStateImpl::disableDetection()
+{
+  m_configuration.enableDetection(messages::DETECTION_DIRECTION::NONE);
+}
+
+int drone::DroneSimulatorStateImpl::getMid()
+{
+  return m_currentLocation.getMid();
 }
 
 boost::signals2::scoped_connection drone::DroneSimulatorStateImpl::
@@ -216,6 +241,18 @@ void drone::DroneSimulatorStateImpl::startUpdate()
       {
         m_pUpdater.reset();
         m_updateSignal("ok");
+      }
+
+      for (auto&& target : m_targets)
+      {
+        if (utils::checkWithin(
+              target.getX(), m_currentLocation.getXCoordinate(), 5) &&
+            utils::checkWithin(
+              target.getY(), m_currentLocation.getYCoordinate(), 5))
+        {
+          m_currentLocation.setMid(target.getId());
+          break;
+        }
       }
 
       std::this_thread::sleep_for(

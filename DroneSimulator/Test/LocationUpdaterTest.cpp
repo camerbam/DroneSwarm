@@ -24,8 +24,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(LocationUpdaterpp)
 {
-  auto registry = GlobalRegistry::getRegistry();
-  registry.setSpeedRatio(10);
+  GlobalRegistry::setRegistry(10, 20);
 
   drone::DroneLocation target;
   target.setXCoordinate(25);

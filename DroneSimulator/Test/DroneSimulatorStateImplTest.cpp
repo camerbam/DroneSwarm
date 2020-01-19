@@ -17,9 +17,8 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
 {
-  auto registry = GlobalRegistry::getRegistry(); 
-  registry.setSpeedRatio(100);
-  registry.setBatteryDecaySpeed(20);
+  GlobalRegistry::setRegistry(100, 20, { { 0, 0, 1 },{ 100, 0, 2 } });
+
   drone::DroneSimulatorStateImpl droneState;
   std::condition_variable cv;
   std::mutex mutex;
@@ -48,6 +47,7 @@ BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
     std::unique_lock<std::mutex> lk(mutex);
     cv.wait_for(lk, std::chrono::seconds(5));
     BOOST_CHECK(compareTwoDoubles(droneState.getX(), 100));
+    BOOST_CHECK(droneState.getMid() == 2);
   }
   {
     BOOST_CHECK(droneState.changeTargetY(120).empty());

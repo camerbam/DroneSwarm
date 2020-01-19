@@ -2,8 +2,12 @@
 #define DRONE_CONFIGURATION_HPP
 
 #include <atomic>
-#include <string>
 #include <chrono>
+#include <string>
+
+#include <boost/optional.hpp>
+
+#include "DroneMessagesLib/DetectionDirection.hpp"
 
 namespace drone
 {
@@ -25,11 +29,17 @@ namespace drone
 
     void update(const std::chrono::steady_clock::time_point& now);
 
+    boost::optional<std::string> enableDetection(
+      messages::DETECTION_DIRECTION direction);
+
+    void disableDetection();
+
   private:
     std::atomic<size_t> m_speed;
     std::atomic<size_t> m_battery;
     size_t m_startBattery;
     std::atomic<size_t> m_time;
+    messages::DETECTION_DIRECTION m_detectionDirection;
     const std::chrono::steady_clock::time_point m_startPoint;
   };
 } // namespace drone

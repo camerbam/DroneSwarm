@@ -47,9 +47,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_STATE_CHANGES_TEST)
 {
-  auto registry = GlobalRegistry::getRegistry();
-  registry.setSpeedRatio(100);
-  registry.setBatteryDecaySpeed(20);
+  GlobalRegistry::setRegistry(100, 20);
 
   auto pState = std::make_shared<drone::DroneSimulatorStateImpl>();
   std::mutex mutex;
@@ -74,6 +72,9 @@ BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_STATE_CHANGES_TEST)
   checkMsg(cv, mutex, "go 50 50 50 50", pState, boost::none);
   checkMsg("battery?", pState, 93, 4);
   checkMsg("time?", pState, 130, 15);
+  checkRsp("mon", pState, "ok");
+  checkRsp("mdirection 0", pState, "ok");
+  checkRsp("moff", pState, "ok");
   checkMsg(cv, mutex, "up 50", pState, boost::none);
   checkMsg(cv, mutex, "land", pState, boost::none);
   checkRsp("up 50", pState, std::string("Drone is not flying"));
