@@ -1,5 +1,6 @@
 set(exe_name DroneControllerTest)
 set(${exe_name}_srcs
+  DroneControllerCheckMsgToSend.cpp
   DroneControllerMainTest.cpp
   DroneControllerMessagesToString.cpp
   DroneControllerStateChangesTest.cpp

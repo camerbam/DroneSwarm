@@ -6,7 +6,14 @@
 #include "DroneControllerStateChanges.hpp"
 #include "DroneMessagesLib/Messages/BatteryMessage.hpp"
 #include "DroneMessagesLib/Messages/CommandMessage.hpp"
+#include "DroneControllerCheckMsgToSend.hpp"
+#include "LoggerLib/Logger.hpp"
 #include "UDPLib/Response.hpp"
+
+namespace
+{
+  const std::string DRONE_CONTROLLER("Drone Controller");
+}
 
 drone::DroneController::DroneController(const std::string& ipAddress)
   : m_pState(std::make_shared<drone::DroneControllerState>()),
@@ -57,11 +64,20 @@ boost::optional<std::string> drone::DroneController::sendMessage(
   const messages::Message_t& message, boost::posix_time::time_duration timeout)
 {
   if (!m_running) return boost::none;
+  auto error =
+    boost::apply_visitor(DroneControllerCheckMsgToSend(m_pState), message);
+  if (error)
+  {
+    logger::logError(DRONE_CONTROLLER, error.get());
+    return boost::none;
+  }
   auto str =
     boost::apply_visitor(DroneControllerMessagesToString(m_pState), message);
-  auto response = m_controlCommunicator.sendMessage(str, m_controlEndpoint, timeout);
+  auto response =
+    m_controlCommunicator.sendMessage(str, m_controlEndpoint, timeout);
   if (!response.didSucceed())
   {
+    logger::logError(DRONE_CONTROLLER, response.getMessage());
     return boost::none;
   }
   boost::apply_visitor(DroneControllerStateChanges(m_pState), message);

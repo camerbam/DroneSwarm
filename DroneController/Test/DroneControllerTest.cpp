@@ -42,26 +42,26 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
   t1.join();
 }
 
-BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_TWO_CONTROLLER_TEST)
-{
-  std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
-  auto command = messages::CommandMessage();
-  messages::Message_t takeoff = messages::TakeoffMessage();
-  messages::Message_t back = messages::BackMessage(20);
-  auto forward = messages::ForwardMessage(20);
-  auto firstController = std::make_shared<drone::DroneController>("127.0.0.1");
-  boost::asio::ip::udp::endpoint simulatorLocation(
-    boost::asio::ip::address::from_string("127.0.0.1"), 8889);
-  udp::UDPCommunicator simulatorEndpointFirst;
-
-  simulatorEndpointFirst.sendMessage(command.toString(), simulatorLocation);
-  firstController->sendMessage(takeoff);
-  firstController->sendMessage(back);
-  simulatorEndpointFirst.sendMessage(forward.toString(), simulatorLocation);
-
-  BOOST_CHECK(utils::compareTwoDoubles(firstController->getX(), -20));
-  t1.join();
-}
+//BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_TWO_CONTROLLER_TEST) // TODO Move to Simulator
+//{
+//  std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
+//  auto command = messages::CommandMessage();
+//  messages::Message_t takeoff = messages::TakeoffMessage();
+//  messages::Message_t back = messages::BackMessage(20);
+//  auto forward = messages::ForwardMessage(20);
+//  auto firstController = std::make_shared<drone::DroneController>("127.0.0.1");
+//  boost::asio::ip::udp::endpoint simulatorLocation(
+//    boost::asio::ip::address::from_string("127.0.0.1"), 8889);
+//  udp::UDPCommunicator simulatorEndpointFirst;
+//
+//  simulatorEndpointFirst.sendMessage(command.toString(), simulatorLocation);
+//  firstController->sendMessage(takeoff);
+//  firstController->sendMessage(back);
+//  simulatorEndpointFirst.sendMessage(forward.toString(), simulatorLocation);
+//
+//  BOOST_CHECK(utils::compareTwoDoubles(firstController->getX(), -20));
+//  t1.join();
+//}
 
 //BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_LATE_SIMULATOR_TEST)
 //{
@@ -102,15 +102,16 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
   BOOST_CHECK(controller->sendMessage(left));
   BOOST_CHECK(controller->sendMessage(land));
 
+  std::this_thread::sleep_for(std::chrono::milliseconds(110));
   BOOST_CHECK(utils::compareTwoDoubles(controller->getX(), -25));
   BOOST_CHECK(utils::compareTwoDoubles(controller->getY(), -20));
   BOOST_CHECK(utils::compareTwoDoubles(controller->getZ(), 0));
 
   BOOST_CHECK(controller->getSpeed() == 10);
 
-  BOOST_CHECK(utils::checkWithin(controller->getTime(), 30, 2));
+  BOOST_CHECK(utils::checkWithin(controller->getTime(), 40, 2));
   BOOST_CHECK(utils::checkWithin(
-    static_cast<size_t>(controller->getTimeOfFlight()), 145, 5));
+    static_cast<size_t>(controller->getTimeOfFlight()), 245, 5));
 
   t1.join();
 }

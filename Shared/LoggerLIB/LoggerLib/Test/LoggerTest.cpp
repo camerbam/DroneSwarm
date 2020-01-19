@@ -8,6 +8,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "LoggerLib/Logger.hpp"
+#include "RegistryLib/Registry.hpp"
 
 struct Msg
 {
@@ -17,6 +18,8 @@ struct Msg
 
 BOOST_AUTO_TEST_CASE(LOGGER_TEST)
 {
+  GlobalRegistry::setRegistry(100, 20, {}, true);
+
   auto logPath = logger::getLogPath();
   auto logBoostPath = boost::filesystem::path(logPath);
   auto logName = logBoostPath.filename().replace_extension("").string();

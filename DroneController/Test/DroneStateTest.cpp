@@ -4,37 +4,46 @@
 #include "UtilsLib/Utils.hpp"
 
 #include "DroneControllerLib/DroneControllerState.hpp"
+#include "DroneMessagesLib/DroneStatusMessage.hpp"
 
 BOOST_AUTO_TEST_CASE(DroneControllerStateTest)
 {
-  std::cout << "4" << std::endl;
+  messages::DroneStatusMessage msg;
   drone::DroneControllerState droneState;
-  BOOST_CHECK(droneState.takeoff().empty());
-  BOOST_CHECK(!droneState.takeoff().empty());
-  BOOST_CHECK(droneState.changeX(20).empty());
-  BOOST_CHECK(droneState.changeX(25).empty());
-  BOOST_CHECK(utils::compareTwoDoubles(droneState.getX(), 45));
-  BOOST_CHECK(droneState.changeY(25).empty());
-  BOOST_CHECK(droneState.changeY(30).empty());
-  BOOST_CHECK(utils::compareTwoDoubles(droneState.getY(), 55));
-  BOOST_CHECK(droneState.changeZ(25).empty());
-  BOOST_CHECK(droneState.changeZ(-140).empty());
-  BOOST_CHECK(utils::compareTwoDoubles(droneState.getZ(), 0));
-  BOOST_CHECK(droneState.changeXYZ(50, 50, 50).empty());
-  BOOST_CHECK(droneState.changeAngle(30).empty());
-  BOOST_CHECK(droneState.changeAngle(200).empty());
-  BOOST_CHECK(droneState.changeAngle(200).empty());
-  BOOST_CHECK(droneState.changeAngle(-200).empty());
-  BOOST_CHECK(droneState.changeAngle(-200).empty());
-  BOOST_CHECK(droneState.changeAngle(-40).empty());
-  BOOST_CHECK(!droneState.changeAngle(-430).empty());
-  BOOST_CHECK(!droneState.changeAngle(.1).empty());
-  BOOST_CHECK(utils::compareTwoDoubles(droneState.getAngle(), 350));
-  BOOST_CHECK(droneState.changeSpeed(50).empty());
-  BOOST_CHECK(!droneState.changeSpeed(500).empty());
-  BOOST_CHECK(!droneState.changeSpeed(5).empty());
-  BOOST_CHECK(droneState.getSpeed() == 50);
-  BOOST_CHECK(droneState.land().empty());
-  BOOST_CHECK(!droneState.land().empty());
-  BOOST_CHECK(droneState.getTime() == 0);
+  droneState.takeoff();
+  std::atomic<bool> reachedBattery(false);
+  std::atomic<bool> reachedMid(false);
+
+  auto connectionBattery =
+    droneState.registerForBattery([&reachedBattery](size_t) { reachedBattery = true; });
+  auto connectionMid =
+    droneState.registerForBattery([&reachedMid](size_t) { reachedMid = true; });
+  droneState.updateStatus(msg.toString(1, 5, 6, 200, 40, 100, 99, 5));
+
+  BOOST_CHECK_EQUAL(droneState.getMid(), 1);
+  BOOST_CHECK_EQUAL(droneState.getX(), 5);
+  BOOST_CHECK_EQUAL(droneState.getY(), 6);
+  BOOST_CHECK_EQUAL(droneState.getZ(), 200);
+  BOOST_CHECK_EQUAL(droneState.getAngle(), 40);
+  BOOST_CHECK_EQUAL(droneState.getTimeOfFlight(), 100);
+
+  BOOST_CHECK_EQUAL(droneState.getBattery(), 99);
+  BOOST_CHECK_EQUAL(droneState.getTime(), 5);
+  BOOST_CHECK_EQUAL(droneState.isFlying(), true);
+
+  droneState.changeSpeed(75);
+  BOOST_CHECK_EQUAL(droneState.getSpeed(), 75);
+
+  droneState.setDetection(messages::DETECTION_DIRECTION::BOTH);
+  BOOST_CHECK(droneState.getDirection() == messages::DETECTION_DIRECTION::BOTH);
+
+  droneState.land();
+
+  droneState.updateStatus(msg.toString(2, 6, 7, 200, 40, 100, 99, 5));
+  BOOST_CHECK_EQUAL(droneState.getMid(), 2);
+  BOOST_CHECK_EQUAL(droneState.getX(), 11);
+  BOOST_CHECK_EQUAL(droneState.getY(), 13);
+
+  BOOST_CHECK(reachedBattery);
+  BOOST_CHECK(reachedMid);
 }

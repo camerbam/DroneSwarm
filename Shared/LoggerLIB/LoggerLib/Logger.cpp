@@ -9,6 +9,7 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem.hpp>
 
+#include "RegistryLib/Registry.hpp"
 #include "ACQLib/ACQ.hpp"
 
 namespace
@@ -52,7 +53,8 @@ namespace
     std::stringstream ss;
     ss << std::left << std::setw(8) << kind << std::setw(20) << component
        << ": " << getTime() << ": " << msg;
-    n_acq.add(ss.str());
+    if(GlobalRegistry::getRegistry().getSkipLog())
+      n_acq.add(ss.str());
   }
 } // namespace
 

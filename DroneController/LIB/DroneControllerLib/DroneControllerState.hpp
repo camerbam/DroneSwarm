@@ -7,52 +7,36 @@
 
 #include <boost/signals2.hpp>
 
-#include "DroneMessagesLib/Messages/BackMessage.hpp"
-#include "DroneMessagesLib/Messages/BatteryMessage.hpp"
-#include "DroneMessagesLib/Messages/ClockwiseMessage.hpp"
-#include "DroneMessagesLib/Messages/CommandMessage.hpp"
-#include "DroneMessagesLib/Messages/CounterClockwiseMessage.hpp"
-#include "DroneMessagesLib/Messages/DownMessage.hpp"
-#include "DroneMessagesLib/Messages/FlipMessage.hpp"
-#include "DroneMessagesLib/Messages/ForwardMessage.hpp"
-#include "DroneMessagesLib/Messages/GoMessage.hpp"
-#include "DroneMessagesLib/Messages/LandMessage.hpp"
-#include "DroneMessagesLib/Messages/LeftMessage.hpp"
-#include "DroneMessagesLib/Messages/RightMessage.hpp"
-#include "DroneMessagesLib/Messages/SpeedMessage.hpp"
-#include "DroneMessagesLib/Messages/TakeoffMessage.hpp"
-#include "DroneMessagesLib/Messages/TimeMessage.hpp"
-#include "DroneMessagesLib/Messages/UpMessage.hpp"
 #include "DroneMessagesLib/DetectionDirection.hpp"
+#include "RegistryLib/Target.hpp"
 
 namespace drone
 {
   class DroneControllerState
   {
   public:
-    DroneControllerState();
+    DroneControllerState(size_t startBattery = 100);
     ~DroneControllerState();
 
-    std::string takeoff();
-    std::string land();
+    void takeoff();
+    void land();
     int getMid();
-    std::string changeX(double deltaX);
     double getX();
-    std::string changeY(double deltaY);
     double getY();
-    std::string changeZ(double deltaZ);
     double getZ();
-    std::string changeXYZ(double deltaX, double deltaY, double deltaZ);
     double getTimeOfFlight();
-    std::string changeAngle(double deltaAngle);
     double getAngle();
-    std::string changeSpeed(size_t newSpeed);
+    void changeSpeed(size_t newSpeed);
     void setDetection(const messages::DETECTION_DIRECTION& direction);
     size_t getSpeed();
     size_t getBattery() const;
     size_t getTime();
-    bool updateStatus(std::string& statusMessage);
+    bool isFlying();
+    messages::DETECTION_DIRECTION getDirection();
+    bool updateStatus(const std::string& statusMessage);
     boost::signals2::scoped_connection registerForBattery(
+      std::function<void(size_t)> callback);
+    boost::signals2::scoped_connection registerForMid(
       std::function<void(size_t)> callback);
 
   private:
@@ -69,6 +53,8 @@ namespace drone
     std::atomic<size_t> m_battery;
     std::atomic<size_t> m_time;
     boost::signals2::signal<void(size_t)> m_batterySignal;
+    boost::signals2::signal<void(size_t)> m_midSignal;
+    std::vector<Target> m_knownTargets;
   };
 } // namespace drone
 

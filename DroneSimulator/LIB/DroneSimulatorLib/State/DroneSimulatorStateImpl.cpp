@@ -202,6 +202,7 @@ std::string drone::DroneSimulatorStateImpl::getStatusMessage()
                       getX(),
                       getY(),
                       getZ(),
+                      getAngle(),
                       getTimeOfFlight(),
                       getBattery(),
                       getTime());
