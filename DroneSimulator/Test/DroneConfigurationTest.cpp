@@ -7,9 +7,7 @@
 
 BOOST_AUTO_TEST_CASE(DRONE_CONFIGURATION_TEST)
 {
-  auto registry = GlobalRegistry::getRegistry();
-  registry.setSpeedRatio(100);
-  registry.setBatteryDecaySpeed(1);
+  GlobalRegistry::setRegistry(100, 1);
   drone::DroneConfiguration config;
   auto now = std::chrono::steady_clock::now();
   BOOST_CHECK_LT(std::chrono::duration_cast<std::chrono::seconds>(

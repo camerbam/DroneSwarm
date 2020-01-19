@@ -5,22 +5,21 @@
 #include "JSONLib/Deserialize.hpp"
 #include "JSONLib/Serialize.hpp"
 
+#include "UtilsLib/Utils.hpp"
+
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-
-bool compareDoubles(const double& a, const double& b)
-{
-  return std::abs(a - b) < .25;
-}
 
 BOOST_AUTO_TEST_CASE(JSON_OBJECT)
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   rapidjson::Value v(rapidjson::kObjectType);
   std::string first("first"), second("second"), third("third"),
-    fourth("fourth"), fifth("fifth"), sixth("sixth"), seventh("seventh"), eighth("eighth");
+    fourth("fourth"), fifth("fifth"), sixth("sixth"), seventh("seventh"),
+    eighth("eighth"), nineth("nineth");
   json::addNumberToObject(doc, v, first, 1);
   json::addNumberToObject(doc, v, second, 2);
+  json::addIntToObject(doc, v, nineth, 3);
   json::addBoolToObject(doc, v, third, true);
   json::addBoolToObject(doc, v, fourth, false);
   json::addStringToObject(doc, v, sixth, std::string("Hello World"));
@@ -28,6 +27,7 @@ BOOST_AUTO_TEST_CASE(JSON_OBJECT)
   rapidjson::Value v2(rapidjson::kObjectType);
   json::addNumberToObject(doc, v2, first, 1);
   json::addNumberToObject(doc, v2, second, 2);
+  json::addIntToObject(doc, v2, nineth, 3);
   json::addBoolToObject(doc, v2, third, true);
   json::addBoolToObject(doc, v2, fourth, false);
   json::addStringToObject(doc, v2, sixth, std::string("Hello World"));
@@ -40,9 +40,15 @@ BOOST_AUTO_TEST_CASE(JSON_OBJECT)
 
   BOOST_CHECK(json::getBool(firstObj.get(), third) == true);
   BOOST_CHECK(json::getBool(firstObj.get(), fourth) == false);
-  BOOST_CHECK(json::getString(firstObj.get(), sixth) == std::string("Hello World"));
-  BOOST_CHECK(compareDoubles(json::getNumber(firstObj.get(), second), 2));
-  BOOST_CHECK(compareDoubles(json::getNumber(firstObj.get(), first), 1));
+  BOOST_CHECK(json::getString(firstObj.get(), sixth) ==
+              std::string("Hello World"));
+  BOOST_CHECK(
+    utils::compareTwoDoubles(json::getNumber(firstObj.get(), second), 2));
+  BOOST_CHECK(
+    utils::compareTwoDoubles(json::getNumber(firstObj.get(), first), 1));
+
+  BOOST_CHECK(
+   json::getInt(firstObj.get(), nineth) == 3);
 
   auto obj = json::getObjectOrArray(firstObj.get(), seventh);
   BOOST_CHECK(obj);
@@ -52,9 +58,11 @@ BOOST_AUTO_TEST_CASE(JSON_OBJECT)
 
   BOOST_CHECK(json::getBool(obj.get(), third) == true);
   BOOST_CHECK(json::getBool(obj.get(), fourth) == false);
+  BOOST_CHECK(json::getInt(obj.get(), nineth) == 3);
   BOOST_CHECK(json::getString(obj.get(), sixth) == std::string("Hello World"));
-  BOOST_CHECK(compareDoubles(json::getNumber(obj.get(), second), 2));
-  BOOST_CHECK(compareDoubles(json::getNumber(firstObj.get(), first), 1));
+  BOOST_CHECK(utils::compareTwoDoubles(json::getNumber(obj.get(), second), 2));
+  BOOST_CHECK(
+    utils::compareTwoDoubles(json::getNumber(firstObj.get(), first), 1));
 }
 
 BOOST_AUTO_TEST_CASE(JSON_DOCUMENT)
@@ -65,6 +73,7 @@ BOOST_AUTO_TEST_CASE(JSON_DOCUMENT)
     fourth("fourth"), fifth("fifth"), sixth("sixth"), seventh("seventh");
   json::addNumberToDoc(doc, first, 1);
   json::addNumberToDoc(doc, second, 2);
+  json::addIntToDoc(doc, seventh, 2);
   json::addBoolToDoc(doc, third, true);
   json::addBoolToDoc(doc, fourth, false);
   json::addStringToDoc(doc, sixth, std::string("Hello World"));
@@ -72,8 +81,9 @@ BOOST_AUTO_TEST_CASE(JSON_DOCUMENT)
   BOOST_CHECK(json::getBool(doc, third) == true);
   BOOST_CHECK(json::getBool(doc, fourth) == false);
   BOOST_CHECK(json::getString(doc, sixth) == std::string("Hello World"));
-  BOOST_CHECK(compareDoubles(json::getNumber(doc, second), 2));
-  BOOST_CHECK(compareDoubles(json::getNumber(doc, first), 1));
+  BOOST_CHECK(utils::compareTwoDoubles(json::getNumber(doc, second), 2));
+  BOOST_CHECK(utils::compareTwoDoubles(json::getNumber(doc, first), 1));
+  BOOST_CHECK(json::getInt(doc, seventh) == 2);
 }
 
 BOOST_AUTO_TEST_CASE(JSON_ARRAY)
@@ -82,7 +92,8 @@ BOOST_AUTO_TEST_CASE(JSON_ARRAY)
   rapidjson::Value stringArray(rapidjson::kArrayType);
   rapidjson::Value doubleArray(rapidjson::kArrayType);
   rapidjson::Value boolArray(rapidjson::kArrayType);
-  std::string first("first"), second("second"), third("third");
+  rapidjson::Value intArray(rapidjson::kArrayType);
+  std::string first("first"), second("second"), third("third"), fourth("fourth");
 
   json::addStringToArray(doc, stringArray, "a");
   json::addStringToArray(doc, stringArray, "b");
@@ -91,7 +102,7 @@ BOOST_AUTO_TEST_CASE(JSON_ARRAY)
   json::addStringToArray(doc, stringArray, "e");
 
   json::addArrayToDoc(doc, first, stringArray);
-  
+
   auto stringResult = json::getVectorString(doc, first);
   BOOST_CHECK(stringResult[0] == "a");
   BOOST_CHECK(stringResult[1] == "b");
@@ -116,7 +127,16 @@ BOOST_AUTO_TEST_CASE(JSON_ARRAY)
   auto doubleResult = json::getVectorDouble(doc, third);
   size_t j = 0;
   for (double i = 0; i < 5; i++, j++)
-    BOOST_CHECK(compareDoubles(doubleResult[j], i));
+    BOOST_CHECK(utils::compareTwoDoubles(doubleResult[j], i));
+
+  for (int i = 0; i < 5; i++)
+    json::addIntToArray(doc, intArray, i);
+
+  json::addArrayToDoc(doc, fourth, intArray);
+
+  auto intResult = json::getVectorInt(doc, fourth);
+  for (int i = 0; i < 5; i++)
+    BOOST_CHECK(utils::compareTwoDoubles(intResult[i], i));
 }
 
 BOOST_AUTO_TEST_CASE(JSON_OBJECT_TO_ARRAY)

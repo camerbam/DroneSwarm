@@ -11,6 +11,7 @@
 #include "DroneConfiguration.hpp"
 #include "DroneLocation.hpp"
 #include "DroneMessagesLib/DetectionDirection.hpp"
+#include "RegistryLib/Target.hpp"
 
 #include "DroneSimulatorLib/Updaters/DroneUpdater.hpp"
 
@@ -46,6 +47,7 @@ namespace drone
       messages::DETECTION_DIRECTION direction =
         messages::DETECTION_DIRECTION::BOTH);
     void disableDetection();
+    int getMid();
 
     boost::signals2::scoped_connection registerForCompletedUpdate(
       std::function<void(std::string)> callback);
@@ -61,6 +63,7 @@ namespace drone
     boost::signals2::signal<void(std::string)> m_updateSignal;
     std::atomic<bool> m_isRunning;
     std::thread m_updateThread;
+    const std::vector<Target>& m_targets;
   };
 } // namespace drone
 

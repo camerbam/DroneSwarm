@@ -23,8 +23,6 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_TEST)
 {
-  auto registry = GlobalRegistry::getRegistry();
-    registry.setSpeedRatio(100);
   std::thread t1(startSimulator, boost::posix_time::seconds(1));
   auto command = std::make_shared<messages::CommandMessage>();
   auto takeoff = std::make_shared<messages::TakeoffMessage>();

@@ -9,6 +9,7 @@
 
 BOOST_AUTO_TEST_CASE(RegistryTest)
 {
+  GlobalRegistry::setRegistry(100, 20);
   std::atomic<bool> toPass(false);
   std::condition_variable cv;
   std::mutex m;

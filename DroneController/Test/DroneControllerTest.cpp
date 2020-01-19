@@ -23,10 +23,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 {
-  std::cout << "3" << std::endl;
-  auto registry = GlobalRegistry::getRegistry();
-  registry.setSpeedRatio(100);
-  registry.setBatteryDecaySpeed(20);
+  GlobalRegistry::setRegistry(100, 20);
 
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
 
@@ -47,7 +44,6 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 
 BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_TWO_CONTROLLER_TEST)
 {
-  std::cout << "3.1" << std::endl;
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
   auto command = messages::CommandMessage();
   messages::Message_t takeoff = messages::TakeoffMessage();
@@ -82,7 +78,6 @@ BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_TWO_CONTROLLER_TEST)
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_LOW_BATTERY_TEST)
 {
-  std::cout << "3.3" << std::endl;
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 15);
   auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
 
@@ -94,7 +89,6 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_LOW_BATTERY_TEST)
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
 {
-  std::cout << "3.4" << std::endl;
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
   auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
 

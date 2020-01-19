@@ -28,6 +28,10 @@ namespace json
                       const std::string& key,
                       const double& value);
 
+  void addIntToDoc(rapidjson::Document& doc,
+    const std::string& key,
+    const int& value);
+
   // Add to Objects
   void addBoolToObject(rapidjson::Document& doc,
                        rapidjson::Value& obj,
@@ -54,6 +58,11 @@ namespace json
                          const std::string& member,
                          const double& value);
 
+  void addIntToObject(rapidjson::Document& doc,
+    rapidjson::Value& obj,
+    const std::string& member,
+    const int& value);
+
   // Add to Array
   void addBoolToArray(rapidjson::Document& doc,
                       rapidjson::Value& arr,
@@ -70,6 +79,10 @@ namespace json
   void addNumberToArray(rapidjson::Document& doc,
                         rapidjson::Value& arr,
                         const double& value);
+
+  void addIntToArray(rapidjson::Document& doc,
+    rapidjson::Value& arr,
+    const int& value);
 } // namespace json
 
 #endif

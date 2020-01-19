@@ -45,6 +45,16 @@ namespace
   }
 
   template<class T>
+  void addInt(rapidjson::Document& doc, T& obj, const std::string& key, const int& value)
+  {
+    rapidjson::Value rapidValue(rapidjson::kNumberType);
+    rapidValue.SetInt(value);
+    rapidjson::Value index(
+      key.c_str(), static_cast<int>(key.size()), doc.GetAllocator());
+    obj.AddMember(index, rapidValue, doc.GetAllocator());
+  }
+
+  template<class T>
   std::string jsonToString(T& doc)
   {
     rapidjson::StringBuffer buffer;
@@ -100,6 +110,13 @@ void json::addNumberToDoc(rapidjson::Document& doc,
   ::addNumber(doc, doc, key, value);
 }
 
+void json::addIntToDoc(rapidjson::Document& doc,
+  const std::string& key,
+  const int& value)
+{
+  ::addInt(doc, doc, key, value);
+}
+
 void json::addBoolToObject(rapidjson::Document& doc,
                            rapidjson::Value& obj,
                            const std::string& key,
@@ -140,6 +157,14 @@ void json::addNumberToObject(rapidjson::Document& doc,
   ::addNumber(doc, obj, key, value);
 }
 
+void json::addIntToObject(rapidjson::Document& doc,
+  rapidjson::Value& obj,
+  const std::string& key,
+  const int& value)
+{
+  ::addInt(doc, obj, key, value);
+}
+
 void json::addBoolToArray(rapidjson::Document& doc,
                           rapidjson::Value& arr,
                           const bool value)
@@ -169,6 +194,14 @@ void json::addStringToArray(rapidjson::Document& doc,
 void json::addNumberToArray(rapidjson::Document& doc,
                             rapidjson::Value& arr,
                             const double& value)
+{
+  rapidjson::Value rapidValue(value);
+  arr.PushBack(rapidValue, doc.GetAllocator());
+}
+
+void json::addIntToArray(rapidjson::Document& doc,
+  rapidjson::Value& arr,
+  const int& value)
 {
   rapidjson::Value rapidValue(value);
   arr.PushBack(rapidValue, doc.GetAllocator());

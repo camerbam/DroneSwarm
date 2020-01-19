@@ -39,6 +39,14 @@ namespace
     return itr->value.GetDouble();
   }
 
+  template <class T>
+  int getInt(T& obj, const std::string& key)
+  {
+    auto itr = obj.FindMember(key.c_str());
+    if (itr == obj.MemberEnd() || !itr->value.IsInt()) return 0;
+    return itr->value.GetInt();
+  }
+
   template <class T, class RJ>
   std::vector<T> getVector(RJ& obj,
                            const std::string& key,
@@ -95,6 +103,16 @@ double json::getNumber(rapidjson::Value& obj, const std::string& key)
   return ::getNumber(obj, key);
 }
 
+int json::getInt(rapidjson::Document& doc, const std::string& key)
+{
+  return ::getInt(doc, key);
+}
+
+int json::getInt(rapidjson::Value& obj, const std::string& key)
+{
+  return ::getInt(obj, key);
+}
+
 std::vector<std::string> json::getVectorString(rapidjson::Document& doc,
                                                const std::string& key)
 {
@@ -114,4 +132,11 @@ std::vector<double> json::getVectorDouble(rapidjson::Document& doc,
 {
   return ::getVector<double>(
     doc, key, [](rapidjson::Value& val) -> double { return val.GetDouble(); });
+}
+
+std::vector<int> json::getVectorInt(rapidjson::Document& doc,
+  const std::string& key)
+{
+  return ::getVector<int>(
+    doc, key, [](rapidjson::Value& val) -> int { return val.GetInt(); });
 }

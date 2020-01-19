@@ -9,5 +9,6 @@ bool utils::compareTwoDoubles(const double& a, const double& b)
 
 bool utils::checkWithin(size_t real, size_t close, size_t diff)
 {
-  return real >= close - diff && real <= close + diff;
+  return static_cast<int>(real) >= static_cast<int>(close - diff) &&
+         real <= static_cast<int>(close + diff);
 }

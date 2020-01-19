@@ -47,9 +47,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_SIMULATOR_STATE_CHANGES_TEST)
 {
-  auto registry = GlobalRegistry::getRegistry();
-  registry.setSpeedRatio(100);
-  registry.setBatteryDecaySpeed(20);
+  GlobalRegistry::setRegistry(100, 20);
 
   auto pState = std::make_shared<drone::DroneSimulatorStateImpl>();
   std::mutex mutex;
