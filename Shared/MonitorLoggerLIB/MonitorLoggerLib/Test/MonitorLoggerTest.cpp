@@ -24,7 +24,7 @@ std::shared_ptr<std::thread> startServer(size_t& msgsLeft)
       server.registerConnection([&connections, &server, &msgsLeft, &cv](
         std::shared_ptr<tcp::TcpConnection> pConnection) {
         connections.push_back(pConnection->registerHandler<msg::StringMsg>(
-          [pConnection, &msgsLeft, &cv](msg::StringMsg msg) {
+          [pConnection, &msgsLeft, &cv](msg::StringMsg) {
             msgsLeft--;
             if (msgsLeft == 0)
             {
