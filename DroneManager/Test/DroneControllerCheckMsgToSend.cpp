@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "DroneControllerLib/DroneControllerCheckMsgToSend.hpp"
+#include "DroneManagerLib/DroneControllerCheckMsgToSend.hpp"
 #include "DroneMessagesLib/Message_t.hpp"
 
 namespace

@@ -14,9 +14,9 @@ udp::UDPCommunicator::UDPCommunicator()
 udp::UDPCommunicator::UDPCommunicator(const short localPort)
   : m_ctx(),
     m_optCork(m_ctx),
-    m_socket(m_ctx,
-             boost::asio::ip::udp::endpoint(
-               boost::asio::ip::address::from_string("127.0.0.1"), localPort)),
+    m_socket(
+      m_ctx,
+      boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), localPort)),
     m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); })
 {
 }

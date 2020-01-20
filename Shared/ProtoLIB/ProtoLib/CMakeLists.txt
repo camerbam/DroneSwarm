@@ -1,7 +1,12 @@
 set(lib_name Proto)
 set(${lib_name}_srcs
   BaseMsg.proto
+  FlightPathMsg.proto
+  FlightPathRsp.proto
+  Point.proto
   StringMsg.proto
+  TargetMsg.proto
+  TargetRsp.proto
   )
 source_group("proto" FILES ${${lib_name}_srcs})
 list(APPEND ${lib_name}_proto_srcs ${${lib_name}_srcs})

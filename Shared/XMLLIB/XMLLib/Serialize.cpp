@@ -61,6 +61,13 @@ void xml::addDataToNode(rapidxml::xml_node<>* obj,
 
 void xml::addDataToNode(rapidxml::xml_node<>* obj,
                         const std::string& key,
+                        const int& data)
+{
+  ::addData(obj, key, std::to_string(data));
+}
+
+void xml::addDataToNode(rapidxml::xml_node<>* obj,
+                        const std::string& key,
                         const bool& data)
 {
   std::stringstream ss;
