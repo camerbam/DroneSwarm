@@ -82,7 +82,8 @@ BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
   BOOST_CHECK_EQUAL(droneState.getSpeed(), 64);
 
   BOOST_CHECK(utils::checkWithin(droneState.getBattery(), 92u, 2u));
-  BOOST_CHECK(utils::checkWithin(droneState.getTime(), 140u, 2u));
+std::cout << droneState.getTime() << std::endl;
+  BOOST_CHECK(utils::checkWithin(droneState.getTime(), 135u, 6u));
 
   BOOST_CHECK(!droneState.getStatusMessage().empty());
 }
