@@ -37,7 +37,7 @@ namespace drone
     boost::signals2::scoped_connection registerForBattery(
       std::function<void(size_t)> callback);
     boost::signals2::scoped_connection registerForMid(
-      std::function<void(size_t)> callback);
+      std::function<void(int)> callback);
 
   private:
     std::atomic<bool> m_flying;
@@ -53,7 +53,7 @@ namespace drone
     std::atomic<size_t> m_battery;
     std::atomic<size_t> m_time;
     boost::signals2::signal<void(size_t)> m_batterySignal;
-    boost::signals2::signal<void(size_t)> m_midSignal;
+    boost::signals2::signal<void(int)> m_midSignal;
     std::vector<Target> m_knownTargets;
   };
 } // namespace drone

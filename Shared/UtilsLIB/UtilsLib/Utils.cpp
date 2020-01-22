@@ -13,3 +13,10 @@ bool utils::checkWithin(size_t real, size_t close, size_t diff)
   return realInt >= static_cast<int>(close - diff) &&
          realInt <= static_cast<int>(close + diff);
 }
+
+bool utils::checkWithinDouble(double real, double close, double diff)
+{
+  int realInt = static_cast<int>(real);
+  return realInt >= static_cast<int>(close - diff) &&
+    realInt <= static_cast<int>(close + diff);
+}

@@ -1,5 +1,7 @@
 #include "UDPCommunicator.hpp"
 
+#include <iostream>
+
 #include "Response.hpp"
 
 udp::UDPCommunicator::UDPCommunicator()

@@ -1,6 +1,8 @@
 set(exe_name MsgTest)
 set(${exe_name}_srcs
   BaseMsgTest.cpp
+  FinishMsg.cpp
+  FinishRsp.cpp
   FlightPathMsg.cpp
   FlightPathRsp.cpp
   MsgTest.cpp
@@ -8,6 +10,8 @@ set(${exe_name}_srcs
   StringMsgTest.cpp
   TargetMsg.cpp
   TargetRsp.cpp
+  ZConfigMsg.cpp
+  ZConfigRsp.cpp
   )
 source_group("" FILES ${${exe_name}_srcs})
 add_executable(${exe_name} ${${exe_name}_srcs})

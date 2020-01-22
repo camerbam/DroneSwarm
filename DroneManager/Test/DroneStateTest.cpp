@@ -5,7 +5,7 @@
 
 #include "DroneManagerLib/DroneControllerState.hpp"
 #include "DroneMessagesLib/DroneStatusMessage.hpp"
-
+/*
 BOOST_AUTO_TEST_CASE(DroneControllerStateTest)
 {
   messages::DroneStatusMessage msg;
@@ -47,3 +47,4 @@ BOOST_AUTO_TEST_CASE(DroneControllerStateTest)
   BOOST_CHECK(reachedBattery);
   BOOST_CHECK(reachedMid);
 }
+*/

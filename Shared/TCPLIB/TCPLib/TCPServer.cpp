@@ -26,7 +26,8 @@ tcp::TcpServer::TcpServer(unsigned short port, msg::FORMAT format)
 tcp::TcpServer::~TcpServer()
 {
   m_optCork = boost::none;
-  if (m_iocThread.joinable()) m_iocThread.join();
+  if (m_iocThread.joinable())
+    m_iocThread.join();
 }
 
 void tcp::TcpServer::startAccept()
@@ -59,5 +60,5 @@ void tcp::TcpServer::close()
 {
   m_optCork = boost::none;
   m_pCtx->stop();
-  if (m_iocThread.joinable()) m_iocThread.join();
+  //if (m_iocThread.joinable()) m_iocThread.join();
 }

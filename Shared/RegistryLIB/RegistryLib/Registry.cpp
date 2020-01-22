@@ -54,6 +54,18 @@ GlobalRegistry::GlobalRegistry(const std::string& config)
   parseConfig(config);
 }
 
+GlobalRegistry::GlobalRegistry()
+  : m_pThreadPool(std::make_shared<boost::asio::thread_pool>(1)),
+    m_speedRatio(1),
+    m_decaySpeed(2)
+{
+}
+
+void GlobalRegistry::setRegistry()
+{
+  m_pInstance = std::shared_ptr<GlobalRegistry>(new GlobalRegistry());
+}
+
 void GlobalRegistry::setRegistry(const boost::filesystem::path& p)
 {
   if (!boost::filesystem::exists(p))

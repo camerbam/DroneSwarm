@@ -32,6 +32,9 @@ namespace drone
     double getTimeOfFlight();
     bool getIsRunning();
 
+    boost::signals2::scoped_connection registerForMid(
+      std::function<void(int)> callback);
+
   private:
     std::shared_ptr<DroneControllerState> m_pState;
     std::atomic<bool> m_running;

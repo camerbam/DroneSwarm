@@ -47,11 +47,6 @@ drone::DroneController::DroneController(const std::string& ipAddress)
     boost::posix_time::seconds(8));
   messages::Message_t command = messages::CommandMessage();
   sendMessage(command);
-
-  m_connection = m_pState->registerForBattery([this](size_t battery) {
-    if (battery >= 20) return;
-    m_running = false;
-  });
 }
 
 drone::DroneController::~DroneController()
@@ -122,4 +117,10 @@ double drone::DroneController::getTimeOfFlight()
 bool drone::DroneController::getIsRunning()
 {
   return m_running;
+}
+
+boost::signals2::scoped_connection drone::DroneController::registerForMid(
+  std::function<void(int)> callback)
+{
+  return m_pState->registerForMid(callback);
 }

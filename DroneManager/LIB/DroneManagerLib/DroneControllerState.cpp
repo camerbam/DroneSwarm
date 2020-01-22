@@ -34,7 +34,7 @@ drone::DroneControllerState::DroneControllerState(size_t startBattery)
     m_time(0),
     m_batterySignal(),
     m_midSignal(),
-    m_knownTargets()
+    m_knownTargets({{0, 0, -1}})
 {
 }
 
@@ -134,8 +134,7 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   if (m_mid != mid)
   {
     m_midSignal(mid);
-    m_knownTargets.emplace_back(
-      m_xCoordinate, m_yCoordinate, mid);
+    m_knownTargets.emplace_back(m_xCoordinate, m_yCoordinate, mid);
   }
   m_mid = mid;
 
@@ -161,7 +160,7 @@ boost::signals2::scoped_connection drone::DroneControllerState::
 }
 
 boost::signals2::scoped_connection drone::DroneControllerState::registerForMid(
-  std::function<void(size_t)> callback)
+  std::function<void(int)> callback)
 {
   return m_midSignal.connect(callback);
 }

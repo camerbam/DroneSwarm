@@ -5,6 +5,7 @@ set(${exe_name}_srcs
   DroneControllerMessagesToString.cpp
   DroneControllerStateChangesTest.cpp
   DroneControllerTest.cpp
+  DroneManagerTest.cpp
   DroneStateTest.cpp
   )
 source_group("" FILES ${${exe_name}_srcs})

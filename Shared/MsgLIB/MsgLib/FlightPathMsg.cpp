@@ -15,7 +15,6 @@
 
 #include "Point.hpp"
 
-#include <iostream>
 namespace
 {
   const std::string N_POINTS("points");

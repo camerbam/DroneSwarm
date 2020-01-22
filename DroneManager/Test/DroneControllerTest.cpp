@@ -12,7 +12,7 @@
 #include "DroneSimulatorLib/DroneSimulator.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
-
+/*
 namespace
 {
   void startSimulator(boost::posix_time::seconds duration, size_t startBattery)
@@ -76,17 +76,6 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 //  t1.join();
 //}
 
-BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_LOW_BATTERY_TEST)
-{
-  std::thread t1(startSimulator, boost::posix_time::seconds(1), 15);
-  auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
-
-  std::this_thread::sleep_for(std::chrono::seconds(2));
-
-  BOOST_CHECK(!controller->getIsRunning());
-  t1.join();
-}
-
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
 {
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
@@ -115,3 +104,4 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
 
   t1.join();
 }
+*/

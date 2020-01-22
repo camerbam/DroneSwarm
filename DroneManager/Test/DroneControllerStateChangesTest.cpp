@@ -6,7 +6,7 @@
 #include "DroneMessagesLib/Message_t.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
-
+/*
 namespace
 {
   void checkMsg(std::string message,
@@ -35,3 +35,4 @@ BOOST_AUTO_TEST_CASE(DroneControllerStateChangesTest)
   checkMsg("land", pDroneState);
   BOOST_CHECK_EQUAL(pDroneState->isFlying(), false);
 }
+*/

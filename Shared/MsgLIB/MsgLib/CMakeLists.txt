@@ -2,6 +2,10 @@ set(lib_name Msg)
 set(${lib_name}_srcs
   BaseMsg.cpp
   BaseMsg.hpp
+  FinishMsg.cpp
+  FinishMsg.hpp
+  FinishRsp.cpp
+  FinishRsp.hpp
   FlightPathMsg.cpp
   FlightPathMsg.hpp
   FlightPathRsp.cpp
@@ -17,6 +21,10 @@ set(${lib_name}_srcs
   TargetMsg.hpp
   TargetRsp.cpp
   TargetRsp.hpp
+  ZConfigMsg.cpp
+  ZConfigMsg.hpp
+  ZConfigRsp.cpp
+  ZConfigRsp.hpp
   )
 source_group("" FILES ${${lib_name}_srcs})
 add_library(${lib_name} ${${lib_name}_srcs})

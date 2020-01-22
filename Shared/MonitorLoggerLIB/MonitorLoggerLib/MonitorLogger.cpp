@@ -2,6 +2,8 @@
 
 #include <iomanip>
 
+#include <boost/asio/ip/host_name.hpp>
+
 #include "MsgLib/StringMsg.hpp"
 #include "LoggerLib/Logger.hpp"
 
@@ -38,9 +40,8 @@ namespace
 } // namespace
 
 logger::MonitorLogger::MonitorLogger(const std::string& name,
-                                     const std::string& hostname,
                                      const std::string& port)
-  : m_client(hostname, port, msg::FORMAT::PROTOBUF)
+  : m_client(boost::asio::ip::host_name(), port, msg::FORMAT::PROTOBUF)
 {
   m_client.ready();
   msg::StringMsg msg(name);

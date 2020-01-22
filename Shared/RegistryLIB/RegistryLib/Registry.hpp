@@ -14,6 +14,7 @@
 class GlobalRegistry
 {
 public:
+  static void setRegistry();
   static void setRegistry(const boost::filesystem::path& p);
   static void setRegistry(const std::string& config);
   static void setRegistry(
@@ -37,7 +38,7 @@ public:
   bool getSkipLog();
 
 private:
-  GlobalRegistry() = default;
+  GlobalRegistry();
   GlobalRegistry(const GlobalRegistry&) = delete;
 
   GlobalRegistry(const std::string& p);
