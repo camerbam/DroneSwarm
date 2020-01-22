@@ -16,12 +16,12 @@ bool msg::FinishRsp::parseFromJson(const std::string&)
   return true;
 }
 
-bool msg::FinishRsp::parseFromProto(const std::string& msg)
+bool msg::FinishRsp::parseFromProto(const std::string&)
 {
   return true;
 }
 
-bool msg::FinishRsp::parseFromXml(const std::string& msg)
+bool msg::FinishRsp::parseFromXml(const std::string&)
 {
   return true;
 }

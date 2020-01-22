@@ -2,14 +2,15 @@
 
 #include "JSONLib/Deserialize.hpp"
 #include "JSONLib/Serialize.hpp"
+#include "XMLLib/Deserialize.hpp"
+#include "XMLLib/Serialize.hpp"
+#include "UtilsLib/Utils.hpp"
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
 #include "ProtoLib/Point.pb.h"
 #pragma warning(pop)
 
-#include "XMLLib/Deserialize.hpp"
-#include "XMLLib/Serialize.hpp"
 
 namespace
 {
@@ -66,5 +67,5 @@ void msg::Point::toXML(rapidxml::xml_node<>* node) const
 
 bool msg::operator==(const msg::Point& lhs, const msg::Point& rhs)
 {
-  return lhs.x() == rhs.x() && lhs.y() == rhs.y();
+  return utils::compareTwoDoubles(lhs.x(), rhs.x()) && utils::compareTwoDoubles(lhs.y(), rhs.y());
 }

@@ -24,12 +24,12 @@ bool msg::TargetRsp::parseFromJson(const std::string&)
   return true;
 }
 
-bool msg::TargetRsp::parseFromProto(const std::string& msg)
+bool msg::TargetRsp::parseFromProto(const std::string&)
 {
   return true;
 }
 
-bool msg::TargetRsp::parseFromXml(const std::string& msg)
+bool msg::TargetRsp::parseFromXml(const std::string&)
 {
   return true;
 }

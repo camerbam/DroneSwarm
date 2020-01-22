@@ -24,12 +24,12 @@ bool msg::FlightPathRsp::parseFromJson(const std::string&)
   return true;
 }
 
-bool msg::FlightPathRsp::parseFromProto(const std::string& msg)
+bool msg::FlightPathRsp::parseFromProto(const std::string&)
 {
   return true;
 }
 
-bool msg::FlightPathRsp::parseFromXml(const std::string& msg)
+bool msg::FlightPathRsp::parseFromXml(const std::string&)
 {
   return true;
 }

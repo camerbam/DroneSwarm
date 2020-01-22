@@ -8,17 +8,6 @@
 
 #include "DroneMessagesLib/DroneStatusMessage.hpp"
 
-namespace
-{
-  void fixAngle(std::atomic<double>& angle)
-  {
-    while (angle > 360)
-      angle = angle - 360;
-    while (angle < 0)
-      angle = angle + 360;
-  }
-} // namespace
-
 drone::DroneControllerState::DroneControllerState(size_t startBattery)
   : m_flying(false),
     m_statusMutex(),

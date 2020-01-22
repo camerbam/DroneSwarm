@@ -19,7 +19,7 @@ namespace
            std::queue<messages::Message_t>& messages,
            const double& px)
   {
-    while (x != px)
+    while (utils::compareTwoDoubles(x, px))
     {
       auto xDiff = px - x;
       auto xDiffAbs = std::abs(xDiff);
@@ -74,7 +74,7 @@ namespace
            std::queue<messages::Message_t>& messages,
            const double& py)
   {
-    while (y != py)
+    while (utils::compareTwoDoubles(y, py))
     {
       auto yDiff = py - y;
       auto yDiffAbs = std::abs(yDiff);
@@ -144,8 +144,8 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
   : m_controller(ipAddress),
     m_client(boost::asio::ip::host_name(), serverPort),
     m_pathMutex(),
-    m_points(),
     m_flightPath(),
+    m_points(),
     m_connections(),
      m_logger("Drone Manager", monitorPort),
     m_sendThread(),

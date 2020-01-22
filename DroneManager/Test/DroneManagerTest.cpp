@@ -14,6 +14,7 @@
 #include "RegistryLib/Registry.hpp"
 #include "TCPLib/TCPServer.hpp"
 #include "UDPLib/Response.hpp"
+#include "UtilsLib/Utils.hpp"
 
 namespace
 {
@@ -55,7 +56,6 @@ namespace
 
   std::shared_ptr<std::thread> startServer(
     std::vector<boost::signals2::scoped_connection>& connections,
-    boost::posix_time::seconds timeout,
     std::condition_variable& startManager,
     std::mutex& m)
   {
@@ -78,8 +78,8 @@ namespace
             connections.push_back(connection->registerHandler<msg::TargetMsg>(
               [connection](const msg::TargetMsg& target) {
                 BOOST_CHECK(target.id() == 2);
-                BOOST_CHECK(target.point().x() == 30);
-                BOOST_CHECK(target.point().y() == 40);
+                BOOST_CHECK(utils::compareTwoDoubles(target.point().x(), 30));
+                BOOST_CHECK(utils::compareTwoDoubles(target.point().y(), 40));
                 msg::FinishMsg msg;
                 connection->send(msg);
               }));
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(DRONE_MANAGER_TEST)
   std::mutex m;
   std::vector<boost::signals2::scoped_connection> connections;
   auto t1 =
-    startServer(connections, boost::posix_time::seconds(1), startManager, m);
+    startServer(connections, startManager, m);
 
   {
     std::unique_lock<std::mutex> lock(m);

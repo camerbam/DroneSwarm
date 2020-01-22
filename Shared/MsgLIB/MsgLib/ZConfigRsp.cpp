@@ -25,12 +25,12 @@ bool msg::ZConfigRsp::parseFromJson(const std::string&)
   return true;
 }
 
-bool msg::ZConfigRsp::parseFromProto(const std::string& msg)
+bool msg::ZConfigRsp::parseFromProto(const std::string&)
 {
   return true;
 }
 
-bool msg::ZConfigRsp::parseFromXml(const std::string& msg)
+bool msg::ZConfigRsp::parseFromXml(const std::string&)
 {
   return true;
 }
