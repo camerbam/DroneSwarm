@@ -12,7 +12,7 @@
 #include "DroneSimulatorLib/DroneSimulator.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
-/*
+
 namespace
 {
   void startSimulator(boost::posix_time::seconds duration, size_t startBattery)
@@ -98,10 +98,10 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
 
   BOOST_CHECK(controller->getSpeed() == 10);
 
-  BOOST_CHECK(utils::checkWithin(controller->getTime(), 40, 2));
+  std::cout << controller->getTime() << std::endl;
+  BOOST_CHECK(utils::checkWithin(controller->getTime(), 45, 6));
   BOOST_CHECK(utils::checkWithin(
     static_cast<size_t>(controller->getTimeOfFlight()), 245, 5));
 
   t1.join();
 }
-*/

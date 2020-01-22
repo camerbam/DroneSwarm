@@ -16,7 +16,7 @@ namespace msg
 namespace drone
 {
   std::queue<messages::Message_t> createFlightPath(
-    double x, double y, const std::vector<msg::Point>& points); // TODO Unit test
+    double x, double y, const std::vector<msg::Point>& points);
 
   class DroneManager
   {

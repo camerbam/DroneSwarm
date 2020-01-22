@@ -19,7 +19,7 @@ namespace
            std::queue<messages::Message_t>& messages,
            const double& px)
   {
-    while (utils::compareTwoDoubles(x, px))
+    while (!utils::compareTwoDoubles(x, px))
     {
       auto xDiff = px - x;
       auto xDiffAbs = std::abs(xDiff);
@@ -62,10 +62,15 @@ namespace
       else
       {
         if (xDiff > 0)
+        {
           messages.push(messages::RightMessage(500));
+          x += 500;
+        }
         else
+        {
           messages.push(messages::LeftMessage(500));
-        x += 500;
+          x -= 500;
+        }
       }
     }
   }
@@ -74,7 +79,7 @@ namespace
            std::queue<messages::Message_t>& messages,
            const double& py)
   {
-    while (utils::compareTwoDoubles(y, py))
+    while (!utils::compareTwoDoubles(y, py))
     {
       auto yDiff = py - y;
       auto yDiffAbs = std::abs(yDiff);
@@ -117,10 +122,15 @@ namespace
       else
       {
         if (yDiff > 0)
+        {
           messages.push(messages::ForwardMessage(500));
+          y += 500;
+        }
         else
+        {
           messages.push(messages::BackMessage(500));
-        y += 500;
+          y -= 500;
+        }
       }
     }
   }
@@ -130,8 +140,10 @@ std::queue<messages::Message_t> drone::createFlightPath(
   double x, double y, const std::vector<msg::Point>& points)
 {
   std::queue<messages::Message_t> toReturn;
+  static int i;
   for (auto&& point : points)
   {
+    i++;
     goX(x, toReturn, point.x());
     goY(y, toReturn, point.y());
   }
@@ -147,7 +159,7 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
     m_flightPath(),
     m_points(),
     m_connections(),
-     m_logger("Drone Manager", monitorPort),
+    m_logger("Drone Manager", monitorPort),
     m_sendThread(),
     m_toQuit(false),
     m_zConfig(100)
@@ -176,6 +188,7 @@ void drone::DroneManager::registerHandlers()
     [this](const msg::FlightPathMsg& msg) {
       auto path = createFlightPath(
         m_controller.getX(), m_controller.getY(), msg.points());
+      std::cout << "flight" << std::endl;
       std::lock_guard<std::mutex> l(m_pathMutex);
       std::swap(path, m_flightPath);
       auto points = msg.points();
@@ -188,6 +201,7 @@ void drone::DroneManager::registerHandlers()
   m_connections.push_back(m_client.registerHandler<msg::ZConfigMsg>(
     [this](const msg::ZConfigMsg& msg) {
       m_zConfig = msg.zAxis();
+      std::cout << "zAxis" << std::endl;
       m_client.send(msg::ZConfigRsp());
     }));
 
@@ -210,7 +224,7 @@ void drone::DroneManager::startMessages()
     {
       if (m_flightPath.empty())
       {
-         m_logger.logInfo("DroneManager", "No targets to go to");
+        m_logger.logInfo("DroneManager", "No targets to go to");
         std::this_thread::sleep_for(std::chrono::seconds(1));
         continue;
       }

@@ -2,7 +2,7 @@
 
 #include "DroneManagerLib/DroneControllerCheckMsgToSend.hpp"
 #include "DroneMessagesLib/Message_t.hpp"
-/*
+
 namespace
 {
   boost::optional<std::string> checkMsg(
@@ -53,4 +53,3 @@ BOOST_AUTO_TEST_CASE(DroneControllerCheckMsgToSendTestNobattery)
   auto pDroneState = std::make_shared<drone::DroneControllerState>(4);
   BOOST_CHECK(checkMsg(messages::TakeoffMessage(), pDroneState));
 }
-*/
