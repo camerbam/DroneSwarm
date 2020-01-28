@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(MONITOR_LOGGER_TEST)
     logName.end());
   size_t msgsLeft = 4;
   auto t = startServer(msgsLeft);
-  logger::MonitorLogger logger("test", "localhost", "13000");
+  logger::MonitorLogger logger("localhost", "13000");
 
   logger.logError("test", "testLog");
   logger.logInfo("test", "testLog");

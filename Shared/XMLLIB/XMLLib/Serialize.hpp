@@ -21,6 +21,10 @@ namespace xml
                      const double& data);
 
   void addDataToNode(rapidxml::xml_node<>* obj,
+                              const std::string& key,
+                              const int& data); // TODO unit test
+
+  void addDataToNode(rapidxml::xml_node<>* obj,
                      const std::string& key,
                      const bool& data);
 

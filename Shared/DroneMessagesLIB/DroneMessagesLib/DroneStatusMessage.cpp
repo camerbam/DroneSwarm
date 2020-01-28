@@ -3,6 +3,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <map>
 #include <sstream>
+#include <iostream>
 
 namespace
 {
@@ -46,7 +47,6 @@ namespace
 }
 
 messages::DroneStatusMessage::DroneStatusMessage()
-  : m_zCoordinate(0), m_timeOfFlight(0), m_battery(0), m_time(0)
 {
 }
 
@@ -54,14 +54,15 @@ std::string messages::DroneStatusMessage::toString(int mid,
                                                    double xCoordinate,
                                                    double yCoordinate,
                                                    double zCoordinate,
+                                                   double angle,
                                                    size_t timeOfFlight,
                                                    size_t battery,
                                                    size_t time) const
 {
   std::stringstream ss;
   ss << "mid:" << mid << ";x:" << xCoordinate << ";y:" << yCoordinate
-     << ";z:" << zCoordinate
-     << ";mpry:0,0,0;pitch:0;roll:0;yaw:0;vgx:0;vgy:0;vgz:0;"
+     << ";z:" << zCoordinate << ";mpry:0,0,0;pitch:0;roll:0;yaw:" << angle
+     << ";vgx:0;vgy:0;vgz:0;"
         "templ:85;temph:87;tof:"
      << timeOfFlight << ";h:" << zCoordinate << ";bat:" << battery
      << ";baro:1263.39;time:" << time << ";agx:3.00;agy:-4.00;agz:-1008.00;";
@@ -77,6 +78,7 @@ void messages::DroneStatusMessage::fromString(std::string message)
   m_xCoordinate = values["x"];
   m_yCoordinate = values["y"];
   m_zCoordinate = values["h"];
+  m_angle = values["yaw"];
   m_timeOfFlight = values["tof"];
 }
 
@@ -98,6 +100,11 @@ double messages::DroneStatusMessage::getYCoordinate()
 double messages::DroneStatusMessage::getZCoordinate()
 {
   return m_zCoordinate;
+}
+
+double messages::DroneStatusMessage::getAngle()
+{
+  return m_angle;
 }
 
 size_t messages::DroneStatusMessage::getTimeOfFlight()

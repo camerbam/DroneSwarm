@@ -20,6 +20,7 @@ drone::DroneSimulator::DroneSimulator(boost::posix_time::seconds timeout,
       while (m_pState)
       {
         udp::Response response(m_controlEndpoint.receiveMessage(timeout));
+        std::cout << "Received: " << response.getMessage() << std::endl;
         m_pState = m_pState->handleResponse(response);
       }
     })

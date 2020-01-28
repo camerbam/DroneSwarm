@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package proto;
+
+message ZConfigMsg {
+  required double zAxis = 1;
+}

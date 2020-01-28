@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+package proto;
+
+message Point {
+  required double x = 1;
+  required double y = 2;
+}

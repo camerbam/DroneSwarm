@@ -64,6 +64,7 @@ namespace drone
     std::atomic<bool> m_isRunning;
     std::thread m_updateThread;
     const std::vector<Target>& m_targets;
+    Target m_lastTarget;
   };
 } // namespace drone
 

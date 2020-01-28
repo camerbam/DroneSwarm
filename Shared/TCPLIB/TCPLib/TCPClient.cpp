@@ -24,23 +24,21 @@ tcp::TcpClient::TcpClient(std::string hostname,
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
           GlobalRegistry::getRegistry().postToThreadPool(
-                            [optMsg, m_handlers, format]() {
-                              msg::BaseMsg receivedMsg;
-                              auto msg = optMsg.get();
-                              if (!parseString(receivedMsg, msg, format))
-                              {
-                                std::cout << "Could not parse msg" << std::endl;
-                                return;
-                              }
-                              auto handle = m_handlers->get(receivedMsg.type());
-                              if (!handle)
-                              {
-                                std::cout << "1Received unknown message"
-                                          << std::endl;
-                                return;
-                              }
-                              handle->execute(receivedMsg.msg(), format);
-                            });
+            [msg = optMsg.get(), m_handlers, format]() {
+              msg::BaseMsg receivedMsg;
+              if (!parseString(receivedMsg, msg, format))
+              {
+                std::cout << "Could not parse msg" << std::endl;
+                return;
+              }
+              auto handle = m_handlers->get(receivedMsg.type());
+              if (!handle)
+              {
+                std::cout << "1Received unknown message" << std::endl;
+                return;
+              }
+              handle->execute(receivedMsg.msg(), format);
+            });
         }
       }))
 {
@@ -53,8 +51,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
 tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
-  if(m_ctxThread.joinable())
-  m_ctxThread.join();
+  if (m_ctxThread.joinable()) m_ctxThread.join();
 }
 
 void tcp::TcpClient::startConnect(

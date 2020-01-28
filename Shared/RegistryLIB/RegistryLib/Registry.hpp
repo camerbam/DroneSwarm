@@ -14,12 +14,14 @@
 class GlobalRegistry
 {
 public:
+  static void setRegistry();
   static void setRegistry(const boost::filesystem::path& p);
   static void setRegistry(const std::string& config);
   static void setRegistry(
     double speed,
     double decaySpeed,
-    const std::vector<Target>& targets = {});
+    const std::vector<Target>& targets = {},
+    bool skipLog = true);
 
   static GlobalRegistry& getRegistry();
 
@@ -33,8 +35,10 @@ public:
 
   const std::vector<Target>& getTargets();
 
+  bool getSkipLog();
+
 private:
-  GlobalRegistry() = default;
+  GlobalRegistry();
   GlobalRegistry(const GlobalRegistry&) = delete;
 
   GlobalRegistry(const std::string& p);
@@ -46,6 +50,7 @@ private:
   double m_speedRatio;
   double m_decaySpeed;
   std::vector<Target> m_targets;
+  bool m_skipLog;
 };
 
 #endif

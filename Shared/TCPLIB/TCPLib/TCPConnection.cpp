@@ -45,8 +45,9 @@ tcp::TcpConnection::TcpConnection(
                               }
                               auto handle = handlers->get(receivedMsg.type());
                               if (!handle)
-                                std::cout << "2Received unknown message"
+                                std::cout << "Received unknown message"
                                           << std::endl;
+                              else
                               handle->execute(receivedMsg.msg(), format);
                             });
         }

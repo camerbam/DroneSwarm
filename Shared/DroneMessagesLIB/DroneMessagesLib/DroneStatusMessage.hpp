@@ -14,6 +14,7 @@ namespace messages
                          double xCoordinate,
                          double yCoordinate,
                          double zCoordinate,
+                         double angle,
                          size_t m_timeOfFlight,
                          size_t m_battery,
                          size_t m_time) const;
@@ -24,6 +25,7 @@ namespace messages
     double getXCoordinate();
     double getYCoordinate();
     double getZCoordinate();
+    double getAngle();
     size_t getTimeOfFlight();
     size_t getBattery();
     size_t getTime();
@@ -33,6 +35,7 @@ namespace messages
     double m_xCoordinate;
     double m_yCoordinate;
     double m_zCoordinate;
+    double m_angle;
     size_t m_timeOfFlight;
     size_t m_battery;
     size_t m_time;

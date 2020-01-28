@@ -36,9 +36,9 @@ namespace
     for (auto& target : targetsArray->value.GetArray())
     {
       auto x = target.FindMember("x");
-      if (x == target.MemberEnd() || !x->value.IsDouble()) continue;
+      if (x == target.MemberEnd() || !x->value.IsNumber()) continue;
       auto y = target.FindMember("y");
-      if (y == target.MemberEnd() || !y->value.IsDouble()) continue;
+      if (y == target.MemberEnd() || !y->value.IsNumber()) continue;
       auto id = target.FindMember("id");
       if (id == target.MemberEnd() || !id->value.IsInt()) continue;
       toReturn.emplace_back(
@@ -52,6 +52,18 @@ GlobalRegistry::GlobalRegistry(const std::string& config)
   : m_pThreadPool(), m_speedRatio(1), m_decaySpeed(2)
 {
   parseConfig(config);
+}
+
+GlobalRegistry::GlobalRegistry()
+  : m_pThreadPool(std::make_shared<boost::asio::thread_pool>(1)),
+    m_speedRatio(1),
+    m_decaySpeed(2)
+{
+}
+
+void GlobalRegistry::setRegistry()
+{
+  m_pInstance = std::shared_ptr<GlobalRegistry>(new GlobalRegistry());
 }
 
 void GlobalRegistry::setRegistry(const boost::filesystem::path& p)
@@ -73,7 +85,8 @@ void GlobalRegistry::setRegistry(const std::string& config)
 
 void GlobalRegistry::setRegistry(double speed,
                                  double decaySpeed,
-                                 const std::vector<Target>& targets)
+                                 const std::vector<Target>& targets,
+                                 bool skipLog)
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addNumberToDoc(doc, "ThreadCount", 1);
@@ -92,6 +105,7 @@ void GlobalRegistry::setRegistry(double speed,
     }
     json::addArrayToDoc(doc, "Targets", targetsJson);
   }
+  json::addBoolToDoc(doc, "SkipLog", skipLog);
   setRegistry(json::jsonToString(doc));
 }
 
@@ -126,6 +140,11 @@ const std::vector<Target>& GlobalRegistry::getTargets()
   return m_pInstance->m_targets;
 }
 
+bool GlobalRegistry::getSkipLog()
+{
+  return m_pInstance->m_skipLog;
+}
+
 bool GlobalRegistry::parseConfig(const std::string& config)
 {
   rapidjson::Document doc;
@@ -139,6 +158,7 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   m_speedRatio = validateDValue(json::getNumber(doc, "Speed"), 2);
   m_decaySpeed = validateDValue(json::getNumber(doc, "BatteryDecaySpeed"), 1);
   m_targets = validateTargets(doc);
+  m_skipLog = json::getBool(doc, "SkipLog");
 
   return true;
 }

@@ -43,7 +43,7 @@ bool msg::BaseMsg::parseFromJson(const std::string& msg)
 bool msg::BaseMsg::parseFromProto(const std::string& msg)
 {
   proto::BaseMsg m;
-  m.ParseFromString(msg.c_str());
+  m.ParseFromString(msg);
   m_type = m.type();
   m_msg = m.msg();
   return true;
