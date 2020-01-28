@@ -23,8 +23,8 @@
 #include "DroneSimulatorPretestState.hpp"
 #include "LoggerLib/Logger.hpp"
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 namespace
 {
@@ -64,129 +64,119 @@ namespace
       m_messagesReceived.emplace("UpMessage", false);
     }
 
-    bool DroneSimulatorPretestMessages::handleMsg(const std::string& name,
-                                                  std::string msg)
+    bool handleMsg(const std::string& name, std::string msg)
     {
       m_messagesReceived[name] = true;
       m_communicator.sendMessage(msg, m_droneEndpoint);
       return false;
     }
 
-    void DroneSimulatorPretestMessages::printMsg()
+    void printMsg()
     {
       std::cout << "************* RESULTS *************" << std::endl;
-      for(auto&& m : m_messagesReceived)
+      for (auto&& m : m_messagesReceived)
       {
         std::cout << std::setw(50) << std::left << m.first << std::right;
-        if(m.second)
+        if (m.second)
           std::cout << CORRECT << std::endl;
         else
-        std::cout << NOT_RECEIVED << std::endl;
+          std::cout << NOT_RECEIVED << std::endl;
       }
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::BackMessage&)
+    bool operator()(const messages::BackMessage&)
     {
       return handleMsg("BackMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::BatteryMessage&)
+    bool operator()(const messages::BatteryMessage&)
     {
       return handleMsg("BatteryMessage", "95");
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::CommandMessage&)
+    bool operator()(const messages::CommandMessage&)
     {
       return handleMsg("CommandMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::ClockwiseMessage&)
+    bool operator()(const messages::ClockwiseMessage&)
     {
       return handleMsg("ClockwiseMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::CounterClockwiseMessage&)
+    bool operator()(const messages::CounterClockwiseMessage&)
     {
       return handleMsg("CounterClockwiseMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::DownMessage&)
+    bool operator()(const messages::DownMessage&)
     {
       return handleMsg("DownMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::FlipMessage&)
+    bool operator()(const messages::FlipMessage&)
     {
       return handleMsg("FlipMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::ForwardMessage&)
+    bool operator()(const messages::ForwardMessage&)
     {
       return handleMsg("ForwardMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::GoMessage&)
+    bool operator()(const messages::GoMessage&)
     {
       return handleMsg("GoMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::LandMessage&)
+    bool operator()(const messages::LandMessage&)
     {
       handleMsg("LandMessage", OK);
       printMsg();
       return true;
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::LeftMessage&)
+    bool operator()(const messages::LeftMessage&)
     {
       return handleMsg("LeftMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::MDirectionMessage&)
+    bool operator()(const messages::MDirectionMessage&)
     {
       return handleMsg("MDirectionMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::MoffMessage&)
+    bool operator()(const messages::MoffMessage&)
     {
       return handleMsg("MoffMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::MonMessage&)
+    bool operator()(const messages::MonMessage&)
     {
       return handleMsg("MonMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::RightMessage&)
+    bool operator()(const messages::RightMessage&)
     {
       return handleMsg("RightMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::SpeedMessage&)
+    bool operator()(const messages::SpeedMessage&)
     {
       return handleMsg("SpeedMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(
-      const messages::TakeoffMessage&)
+    bool operator()(const messages::TakeoffMessage&)
     {
       return handleMsg("TakeoffMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::TimeMessage&)
+    bool operator()(const messages::TimeMessage&)
     {
       return handleMsg("TimeMessage", OK);
     }
 
-    bool DroneSimulatorPretestMessages::operator()(const messages::UpMessage&)
+    bool operator()(const messages::UpMessage&)
     {
       return handleMsg("UpMessage", OK);
     }
