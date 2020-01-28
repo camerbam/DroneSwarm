@@ -27,35 +27,35 @@ namespace
       {
         if (xDiff > 0)
         {
-          messages.push(messages::RightMessage(xDiffAbs + 20));
-          messages.push(messages::LeftMessage(20));
+          messages.push(messages::ForwardMessage(xDiffAbs + 20));
+          messages.push(messages::BackMessage(20));
         }
         else
         {
-          messages.push(messages::LeftMessage(xDiffAbs + 20));
-          messages.push(messages::RightMessage(20));
+          messages.push(messages::BackMessage(xDiffAbs + 20));
+          messages.push(messages::ForwardMessage(20));
         }
         x += xDiff;
       }
       else if (xDiffAbs < 500)
       {
         if (xDiff > 0)
-          messages.push(messages::RightMessage(xDiffAbs));
+          messages.push(messages::ForwardMessage(xDiffAbs));
         else
-          messages.push(messages::LeftMessage(xDiffAbs));
+          messages.push(messages::BackMessage(xDiffAbs));
         x += xDiff;
       }
       else if (xDiffAbs < 520)
       {
         if (xDiff > 0)
         {
-          messages.push(messages::RightMessage(xDiffAbs - 20));
-          messages.push(messages::RightMessage(20));
+          messages.push(messages::ForwardMessage(xDiffAbs - 20));
+          messages.push(messages::ForwardMessage(20));
         }
         else
         {
-          messages.push(messages::LeftMessage(xDiffAbs - 20));
-          messages.push(messages::LeftMessage(20));
+          messages.push(messages::BackMessage(xDiffAbs - 20));
+          messages.push(messages::BackMessage(20));
         }
         x += xDiff;
       }
@@ -63,12 +63,12 @@ namespace
       {
         if (xDiff > 0)
         {
-          messages.push(messages::RightMessage(500));
+          messages.push(messages::ForwardMessage(500));
           x += 500;
         }
         else
         {
-          messages.push(messages::LeftMessage(500));
+          messages.push(messages::BackMessage(500));
           x -= 500;
         }
       }
@@ -87,35 +87,35 @@ namespace
       {
         if (yDiff > 0)
         {
-          messages.push(messages::ForwardMessage(yDiffAbs + 20));
-          messages.push(messages::BackMessage(20));
+          messages.push(messages::RightMessage(yDiffAbs + 20));
+          messages.push(messages::LeftMessage(20));
         }
         else
         {
-          messages.push(messages::BackMessage(yDiffAbs + 20));
-          messages.push(messages::ForwardMessage(20));
+          messages.push(messages::LeftMessage(yDiffAbs + 20));
+          messages.push(messages::RightMessage(20));
         }
         y += yDiff;
       }
       else if (yDiffAbs < 500)
       {
         if (yDiff > 0)
-          messages.push(messages::ForwardMessage(yDiffAbs));
+          messages.push(messages::RightMessage(yDiffAbs));
         else
-          messages.push(messages::BackMessage(yDiffAbs));
+          messages.push(messages::LeftMessage(yDiffAbs));
         y += yDiff;
       }
       else if (yDiffAbs < 520)
       {
         if (yDiff > 0)
         {
-          messages.push(messages::ForwardMessage(yDiffAbs - 20));
-          messages.push(messages::ForwardMessage(20));
+          messages.push(messages::RightMessage(yDiffAbs - 20));
+          messages.push(messages::RightMessage(20));
         }
         else
         {
-          messages.push(messages::BackMessage(yDiffAbs - 20));
-          messages.push(messages::BackMessage(20));
+          messages.push(messages::LeftMessage(yDiffAbs - 20));
+          messages.push(messages::LeftMessage(20));
         }
         y += yDiff;
       }
@@ -123,12 +123,12 @@ namespace
       {
         if (yDiff > 0)
         {
-          messages.push(messages::ForwardMessage(500));
+          messages.push(messages::RightMessage(500));
           y += 500;
         }
         else
         {
-          messages.push(messages::BackMessage(500));
+          messages.push(messages::LeftMessage(500));
           y -= 500;
         }
       }
@@ -166,12 +166,9 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
 {
   m_connections.push_back(m_controller.registerForMid([this](int id) {
     if (m_points.empty()) return;
-    std::cout << m_points[0].x() << " " << m_controller.getX() << " "
-              << m_points[0].y() << " " << m_controller.getY() << std::endl;
     if (utils::checkWithinDouble(m_points[0].x(), m_controller.getX(), 10) &&
         utils::checkWithinDouble(m_points[0].y(), m_controller.getY(), 10))
     {
-      std::cout << "Found id: " << id << std::endl;
       msg::TargetMsg msg(id, {m_points[0].x(), m_points[0].y()});
       m_client.send(msg);
       m_points.erase(m_points.begin());
@@ -189,12 +186,10 @@ drone::DroneManager::~DroneManager()
 
 void drone::DroneManager::registerHandlers()
 {
-  std::cout << "Registering" << std::endl;
   m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>(
     [this](const msg::FlightPathMsg& msg) {
       auto path = createFlightPath(
         m_controller.getX(), m_controller.getY(), msg.points());
-      std::cout << "flight" << std::endl;
       std::lock_guard<std::mutex> l(m_pathMutex);
       std::swap(path, m_flightPath);
       auto points = msg.points();
@@ -207,7 +202,6 @@ void drone::DroneManager::registerHandlers()
   m_connections.push_back(m_client.registerHandler<msg::ZConfigMsg>(
     [this](const msg::ZConfigMsg& msg) {
       m_zConfig = msg.zAxis();
-      std::cout << "zAxis" << std::endl;
       m_client.send(msg::ZConfigRsp());
     }));
 

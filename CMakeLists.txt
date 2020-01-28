@@ -19,7 +19,7 @@ add_subdirectory(Cloud)
 add_subdirectory(Drone)
 add_subdirectory(DroneManager)
 add_subdirectory(DroneSimulator)
-add_subdirectory(GroundStation)
+add_subdirectory(MockGroundStation)
 add_subdirectory(Monitor)
 add_subdirectory(Playground)
 ###########################################
