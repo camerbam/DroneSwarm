@@ -123,7 +123,6 @@ GlobalRegistry::~GlobalRegistry()
 
 void GlobalRegistry::postToThreadPool(std::function<void()> fn)
 {
-  std::cout << "posted" << std::endl;
   boost::asio::post(*m_pInstance->m_pThreadPool, fn);
 }
 
@@ -147,6 +146,11 @@ bool GlobalRegistry::getSkipLog()
   return m_pInstance->m_skipLog;
 }
 
+size_t GlobalRegistry::getPretest()
+{
+  return m_pInstance->m_pretest;
+}
+
 bool GlobalRegistry::parseConfig(const std::string& config)
 {
   rapidjson::Document doc;
@@ -161,6 +165,7 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   m_decaySpeed = validateDValue(json::getNumber(doc, "BatteryDecaySpeed"), 1);
   m_targets = validateTargets(doc);
   m_skipLog = json::getBool(doc, "SkipLog");
+  m_pretest = json::getInt(doc, "Pretest");
 
   return true;
 }

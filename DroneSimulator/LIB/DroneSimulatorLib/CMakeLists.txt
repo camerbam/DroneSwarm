@@ -15,6 +15,8 @@ set(DroneState_srcs
   State/DroneLocation.hpp
   State/DroneSimulatorIdleState.cpp
   State/DroneSimulatorIdleState.hpp
+  State/DroneSimulatorPretestState.cpp
+  State/DroneSimulatorPretestState.hpp
   State/DroneSimulatorSDKState.cpp
   State/DroneSimulatorSDKState.hpp
   State/DroneSimulatorState.hpp
@@ -37,7 +39,7 @@ source_group(Updaters FILES ${DroneStateUpdater_srcs})
 list(APPEND ${lib_name}_libsrcs ${DroneStateUpdater_srcs})
 ###############################################
 add_library(${lib_name} ${${lib_name}_libsrcs})
-target_link_libraries(${lib_name} PUBLIC DroneMessagesLib udp registry)
+target_link_libraries(${lib_name} PUBLIC DroneMessagesLib udp registry logger)
 target_include_directories(${lib_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../)
 set_property(TARGET ${lib_name} PROPERTY FOLDER ${folder})
 xpSourceListAppend("${${lib_name}_libsrcs}")

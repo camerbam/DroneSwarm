@@ -3,8 +3,9 @@
 #include <iostream>
 
 #include "DroneMessagesLib/MessageFactory.hpp"
-
 #include "DroneSimulatorSDKState.hpp"
+#include "DroneSimulatorPretestState.hpp"
+#include "RegistryLib/Registry.hpp"
 
 namespace
 {
@@ -24,9 +25,28 @@ namespace
     std::shared_ptr<drone::DroneSimulatorState> operator()(
       const messages::CommandMessage&) const
     {
+      std::shared_ptr<drone::DroneSimulatorState> toReturn;
+      switch (GlobalRegistry::getRegistry().getPretest())
+      {
+      case 0:
+        std::make_shared<drone::DroneSimulatorSDKState>(
+          m_controlEndpoint, m_response.getEndpoint(), m_startingBattery);
+        break;
+      case 1:
+        std::make_shared<drone::DroneSimulatorPretestState>(
+          m_controlEndpoint, m_response.getEndpoint());
+        break;
+      case 2:
+        break;
+      default:
+        m_controlEndpoint.sendMessage(
+          "No known pretest: " +
+            std::to_string(GlobalRegistry::getRegistry().getPretest()),
+          m_response.getEndpoint());
+        return nullptr;
+      }
       m_controlEndpoint.sendMessage("ok", m_response.getEndpoint());
-      return std::make_shared<drone::DroneSimulatorSDKState>(
-        m_controlEndpoint, m_response.getEndpoint(), m_startingBattery);
+      return toReturn;
     }
 
     template <class T>
