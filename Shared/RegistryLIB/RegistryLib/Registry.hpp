@@ -37,6 +37,10 @@ public:
 
   bool getSkipLog();
 
+  void setPretest(size_t pretest);
+
+  size_t getPretest();
+
 private:
   GlobalRegistry();
   GlobalRegistry(const GlobalRegistry&) = delete;
@@ -51,6 +55,7 @@ private:
   double m_decaySpeed;
   std::vector<Target> m_targets;
   bool m_skipLog;
+  size_t m_pretest;
 };
 
 #endif

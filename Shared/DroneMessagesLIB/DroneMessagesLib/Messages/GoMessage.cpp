@@ -13,19 +13,19 @@ messages::GoMessage::GoMessage()
 }
 
 messages::GoMessage::GoMessage(
-  double x, double y, double z, size_t speed, size_t mid)
+  double x, double y, double z, size_t speed, boost::optional<int> optMid)
   : Message("go"),
     m_xDistance(x),
     m_yDistance(y),
     m_zDistance(z),
     m_speed(speed),
-    m_optMid(mid)
+    m_optMid(optMid)
 {
-  validateDistance(m_xDistance, 20, 500);
-  validateDistance(m_yDistance, 20, 500);
-  validateDistance(m_zDistance, 20, 500);
-  validateDistance(m_speed, 10, 100);
-  validateDistance(m_optMid.get(), 0, 8);
+  validateDistance(m_xDistance, 20., 500.);
+  validateDistance(m_yDistance, 20., 500.);
+  validateDistance(m_zDistance, 20., 500.);
+  validateDistance(m_speed, 10u, 100u);
+  if (optMid) validateDistance(m_optMid.get(), 1, 8);
 }
 
 bool messages::GoMessage::fromStringImpl(std::string& toParse)
@@ -43,10 +43,10 @@ bool messages::GoMessage::fromStringImpl(std::string& toParse)
     throw std::runtime_error(std::string("Could not parse back message: ") +
                              ec.what());
   }
-  validateDistance(m_xDistance, 20, 500);
-  validateDistance(m_yDistance, 20, 500);
-  validateDistance(m_zDistance, 20, 500);
-  validateDistance(m_speed, 10, 100);
+  validateDistance(m_xDistance, 20., 500.);
+  validateDistance(m_yDistance, 20., 500.);
+  validateDistance(m_zDistance, 20., 500.);
+  validateDistance(m_speed, 10u, 100u);
   if (m_optMid) validateDistance(m_optMid.get(), 1, 8);
   return true;
 }
@@ -80,7 +80,7 @@ size_t messages::GoMessage::getSpeed() const
   return m_speed;
 }
 
-size_t messages::GoMessage::getMID() const
+int messages::GoMessage::getMID() const
 {
   if (!m_optMid) return 0;
   return m_optMid.get();
@@ -96,6 +96,16 @@ void messages::GoMessage::validateDistance(double distance,
   if (distance > max)
     throw std::runtime_error("Go message requires a number smaller than " +
                              removeUnimportantZeros(std::to_string(max)));
+}
+
+void messages::GoMessage::validateDistance(int distance, int min, int max)
+{
+  if (distance < min)
+    throw std::runtime_error("Go message requires a number greater than " +
+                             std::to_string(min));
+  if (distance > max)
+    throw std::runtime_error("Go message requires a number smaller than " +
+                             std::to_string(max));
 }
 
 void messages::GoMessage::validateDistance(size_t distance,
