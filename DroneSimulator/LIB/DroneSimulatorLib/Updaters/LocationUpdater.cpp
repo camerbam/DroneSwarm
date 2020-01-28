@@ -6,7 +6,7 @@
 
 namespace
 {
-  const size_t SPEED_RATIO(5);
+  const size_t SPEED_RATIO(1);
   double updateDimension(double ratio,
                          double current,
                          double target,

@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 
 #include "RegistryLib/Registry.hpp"
+#include "DroneSimulatorLib/DroneSimulator.hpp"
 
 int main(int argc, char* argv[])
 {
@@ -14,14 +15,13 @@ int main(int argc, char* argv[])
     boost::program_options::options_description desc{ "Options" };
     desc.add_options()("help,h", "Help screen")(
       "config,c",
-      boost::program_options::value<std::string>())
-      ("ip", boost::program_options::value<std::string>(), "IP Address for Drone");
+      boost::program_options::value<std::string>());
+      //("ip", boost::program_options::value<std::string>(), "IP Address for Drone");
 
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
     notify(vm);
-
-    if (vm.count("help"))
+    if (vm.empty() || vm.count("help"))
       std::cout << desc << '\n';
     else if (vm.count("config"))
     {
@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
         throw std::runtime_error("Cannot access config");
       GlobalRegistry::setRegistry(boost::filesystem::path(config));
     }
-    else if (vm.count("pi"))
-      std::cout << "Pi: " << vm["pi"].as<float>() << '\n';
+
+    drone::DroneSimulator sim;
   }
   catch (const boost::program_options::error& ex)
   {

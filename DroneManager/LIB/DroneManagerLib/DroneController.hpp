@@ -1,6 +1,8 @@
 #ifndef DRONE_CONTROLLER_HPP
 #define DRONE_CONTROLLER_HPP
 
+#include <condition_variable>
+
 #include <boost/optional.hpp>
 #include <boost/signals2/connection.hpp>
 
@@ -31,6 +33,8 @@ namespace drone
     size_t getTime();
     double getTimeOfFlight();
     bool getIsRunning();
+    void waitForStatusMsg();
+
 
     boost::signals2::scoped_connection registerForMid(
       std::function<void(int)> callback);
@@ -42,6 +46,8 @@ namespace drone
     boost::asio::ip::udp::endpoint m_controlEndpoint;
     udp::UDPCommunicator m_statusCommunicator;
     boost::signals2::scoped_connection m_connection;
+    std::condition_variable m_cvStatus;
+    std::mutex m_statusMutex;
     std::thread m_statusThread;
   };
 } // namespace drone

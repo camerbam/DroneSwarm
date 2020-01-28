@@ -3,6 +3,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <map>
 #include <sstream>
+#include <iostream>
 
 namespace
 {
@@ -53,15 +54,16 @@ std::string messages::DroneStatusMessage::toString(int mid,
                                                    double xCoordinate,
                                                    double yCoordinate,
                                                    double zCoordinate,
-  double angle,
+                                                   double angle,
                                                    size_t timeOfFlight,
                                                    size_t battery,
                                                    size_t time) const
 {
+  std::cout << xCoordinate << " " << yCoordinate << std::endl;
   std::stringstream ss;
   ss << "mid:" << mid << ";x:" << xCoordinate << ";y:" << yCoordinate
-     << ";z:" << zCoordinate
-     << ";mpry:0,0,0;pitch:0;roll:0;yaw:" << angle << ";vgx:0;vgy:0;vgz:0;"
+     << ";z:" << zCoordinate << ";mpry:0,0,0;pitch:0;roll:0;yaw:" << angle
+     << ";vgx:0;vgy:0;vgz:0;"
         "templ:85;temph:87;tof:"
      << timeOfFlight << ";h:" << zCoordinate << ";bat:" << battery
      << ";baro:1263.39;time:" << time << ";agx:3.00;agy:-4.00;agz:-1008.00;";

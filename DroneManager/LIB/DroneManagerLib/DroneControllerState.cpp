@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 #include <sstream>
 
 #include <boost/algorithm/string/trim.hpp>
@@ -123,7 +124,9 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   if (m_mid != mid)
   {
     m_midSignal(mid);
-    m_knownTargets.emplace_back(m_xCoordinate, m_yCoordinate, mid);
+    m_knownTargets.emplace_back(m_xCoordinate,
+                                m_yCoordinate,
+                                mid);
   }
   m_mid = mid;
 
@@ -133,8 +136,6 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
     });
   m_xCoordinate = msg.getXCoordinate() + currentTarget->getX();
   m_yCoordinate = msg.getYCoordinate() + currentTarget->getY();
-  static int i = 0;
-  i++;
   m_zCoordinate = msg.getZCoordinate();
   m_angle = msg.getAngle();
   m_time = msg.getTime();

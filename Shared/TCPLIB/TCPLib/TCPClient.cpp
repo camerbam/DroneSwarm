@@ -24,9 +24,8 @@ tcp::TcpClient::TcpClient(std::string hostname,
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
           GlobalRegistry::getRegistry().postToThreadPool(
-            [optMsg, m_handlers, format]() {
+            [msg = optMsg.get(), m_handlers, format]() {
               msg::BaseMsg receivedMsg;
-              auto msg = optMsg.get();
               if (!parseString(receivedMsg, msg, format))
               {
                 std::cout << "Could not parse msg" << std::endl;

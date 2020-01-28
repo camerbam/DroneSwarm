@@ -39,7 +39,8 @@ drone::DroneSimulatorStateImpl::DroneSimulatorStateImpl(size_t startingBattery)
     m_updateSignal(),
     m_isRunning(true),
     m_updateThread(),
-    m_targets(GlobalRegistry::getRegistry().getTargets())
+    m_targets(GlobalRegistry::getRegistry().getTargets()),
+    m_lastTarget(0, 0, -1)
 {
   startUpdate();
 }
@@ -197,10 +198,11 @@ size_t drone::DroneSimulatorStateImpl::getTime()
 std::string drone::DroneSimulatorStateImpl::getStatusMessage()
 {
   messages::DroneStatusMessage msg;
+  auto targets = GlobalRegistry::getRegistry().getTargets();
   std::lock_guard<std::mutex> lock(m_statusMutex);
   return msg.toString(m_currentLocation.getMid(),
-                      getX(),
-                      getY(),
+                      getX() - m_lastTarget.getX(),
+                      getY() - m_lastTarget.getY(),
                       getZ(),
                       getAngle(),
                       getTimeOfFlight(),
@@ -244,6 +246,8 @@ void drone::DroneSimulatorStateImpl::startUpdate()
         m_updateSignal("ok");
       }
 
+      // std::cout << m_currentLocation.getXCoordinate() << " "
+      //          << m_currentLocation.getYCoordinate() << std::endl;
       for (auto&& target : m_targets)
       {
         if (utils::checkWithin(
@@ -251,6 +255,11 @@ void drone::DroneSimulatorStateImpl::startUpdate()
             utils::checkWithin(
               target.getY(), m_currentLocation.getYCoordinate(), 5))
         {
+          if (target.getId() == m_lastTarget.getId()) break;
+          m_lastTarget = Target(m_currentLocation.getXCoordinate(),
+                                m_currentLocation.getYCoordinate(),
+                                target.getId());
+          std::cout << "set new mid: " << target.getId() << std::endl;
           m_currentLocation.setMid(target.getId());
           break;
         }

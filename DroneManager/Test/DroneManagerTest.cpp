@@ -122,8 +122,7 @@ BOOST_AUTO_TEST_CASE(DRONE_MANAGER_TEST)
   std::condition_variable startManager;
   std::mutex m;
   std::vector<boost::signals2::scoped_connection> connections;
-  auto t1 =
-    startServer(connections, startManager, m);
+  auto t1 = startServer(connections, startManager, m);
 
   {
     std::unique_lock<std::mutex> lock(m);
@@ -140,80 +139,106 @@ BOOST_AUTO_TEST_CASE(DRONE_MANAGER_TEST)
 BOOST_AUTO_TEST_CASE(DRONE_MANAGER_PATH_TEST)
 {
   std::vector<msg::Point> points;
-  points.push_back({ 50, 50 }); // 2
-  points.push_back({ 0, 0 }); // 2
-  points.push_back({ 10, 10 }); // 4
-  points.push_back({ 0, 0 }); // 4
-  points.push_back({ 540, 540 }); // 4
-  points.push_back({ 0, 0 }); // 4
-  points.push_back({ 510, 510 }); // 4
-  points.push_back({ 0, 0 }); // 4
+  points.push_back({50, 50});   // 2
+  points.push_back({0, 0});     // 2
+  points.push_back({10, 10});   // 4
+  points.push_back({0, 0});     // 4
+  points.push_back({540, 540}); // 4
+  points.push_back({0, 0});     // 4
+  points.push_back({510, 510}); // 4
+  points.push_back({0, 0});     // 4
   auto rsp = drone::createFlightPath(0, 0, points);
 
   messages::RightMessage().getArgument();
   BOOST_REQUIRE(rsp.size() == 28);
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::RightMessage>(rsp.front()).getArgument(), 50));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 50));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 50));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 50));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 50));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 50));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::BackMessage>(rsp.front()).getArgument(), 50));
-  rsp.pop();
-
-
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::RightMessage>(rsp.front()).getArgument(), 30));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 20));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 30));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::BackMessage>(rsp.front()).getArgument(), 20));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 50));
   rsp.pop();
 
-
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 30));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 30));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::RightMessage>(rsp.front()).getArgument(), 20));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 20));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::BackMessage>(rsp.front()).getArgument(), 30));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 30));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 20));
-  rsp.pop();
-
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::RightMessage>(rsp.front()).getArgument(), 500));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::RightMessage>(rsp.front()).getArgument(), 40));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 500));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 40));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 20));
   rsp.pop();
 
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 500));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 30));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 40));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 20));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::BackMessage>(rsp.front()).getArgument(), 500));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 30));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::BackMessage>(rsp.front()).getArgument(), 40));
-  rsp.pop();
-
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::RightMessage>(rsp.front()).getArgument(), 490));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::RightMessage>(rsp.front()).getArgument(), 20));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 490));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 20));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 20));
   rsp.pop();
 
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 490));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 500));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 20));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 40));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::BackMessage>(rsp.front()).getArgument(), 490));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 500));
   rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(boost::get<messages::BackMessage>(rsp.front()).getArgument(), 20));
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 40));
+  rsp.pop();
+
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 500));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 40));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 500));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 40));
+  rsp.pop();
+
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 490));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 20));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 490));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 20));
+  rsp.pop();
+
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 490));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 20));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 490));
+  rsp.pop();
+  BOOST_CHECK(utils::compareTwoDoubles(
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 20));
   rsp.pop();
 }

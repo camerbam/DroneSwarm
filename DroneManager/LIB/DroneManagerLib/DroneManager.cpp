@@ -165,11 +165,16 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
     m_zConfig(100)
 {
   m_connections.push_back(m_controller.registerForMid([this](int id) {
-    if (utils::checkWithinDouble(m_points[0].x(), m_controller.getX(), 5) &&
-        utils::checkWithinDouble(m_points[0].y(), m_controller.getY(), 5))
+    if (m_points.empty()) return;
+    std::cout << m_points[0].x() << " " << m_controller.getX() << " "
+              << m_points[0].y() << " " << m_controller.getY() << std::endl;
+    if (utils::checkWithinDouble(m_points[0].x(), m_controller.getX(), 10) &&
+        utils::checkWithinDouble(m_points[0].y(), m_controller.getY(), 10))
     {
+      std::cout << "Found id: " << id << std::endl;
       msg::TargetMsg msg(id, {m_points[0].x(), m_points[0].y()});
       m_client.send(msg);
+      m_points.erase(m_points.begin());
     }
   }));
   registerHandlers();
@@ -184,6 +189,7 @@ drone::DroneManager::~DroneManager()
 
 void drone::DroneManager::registerHandlers()
 {
+  std::cout << "Registering" << std::endl;
   m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>(
     [this](const msg::FlightPathMsg& msg) {
       auto path = createFlightPath(
@@ -217,6 +223,7 @@ void drone::DroneManager::startMessages()
   static bool running(false);
   if (running) return;
   m_controller.sendMessage(messages::TakeoffMessage());
+  m_controller.waitForStatusMsg();
   auto diff = m_zConfig - m_controller.getZ();
   if (diff > 20) m_controller.sendMessage(messages::UpMessage(diff));
   m_sendThread = std::make_shared<std::thread>([this]() {

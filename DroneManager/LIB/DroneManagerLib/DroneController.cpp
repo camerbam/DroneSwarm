@@ -2,11 +2,11 @@
 
 #include <iostream>
 
+#include "DroneControllerCheckMsgToSend.hpp"
 #include "DroneControllerMessagesToString.hpp"
 #include "DroneControllerStateChanges.hpp"
 #include "DroneMessagesLib/Messages/BatteryMessage.hpp"
 #include "DroneMessagesLib/Messages/CommandMessage.hpp"
-#include "DroneControllerCheckMsgToSend.hpp"
 #include "LoggerLib/Logger.hpp"
 #include "UDPLib/Response.hpp"
 
@@ -22,6 +22,8 @@ drone::DroneController::DroneController(const std::string& ipAddress)
     m_controlEndpoint(boost::asio::ip::address::from_string(ipAddress), 8889),
     m_statusCommunicator(8890),
     m_connection(),
+    m_cvStatus(),
+    m_statusMutex(),
     m_statusThread([this]() {
       while (m_running)
       {
@@ -35,6 +37,7 @@ drone::DroneController::DroneController(const std::string& ipAddress)
           return;
         std::string statusMsg = status.getMessage();
         m_pState->updateStatus(statusMsg);
+        m_cvStatus.notify_one();
       }
     })
 {
@@ -68,6 +71,7 @@ boost::optional<std::string> drone::DroneController::sendMessage(
   }
   auto str =
     boost::apply_visitor(DroneControllerMessagesToString(m_pState), message);
+  std::cout << "Sending" << str << std::endl;
   auto response =
     m_controlCommunicator.sendMessage(str, m_controlEndpoint, timeout);
   if (!response.didSucceed())
@@ -117,6 +121,12 @@ double drone::DroneController::getTimeOfFlight()
 bool drone::DroneController::getIsRunning()
 {
   return m_running;
+}
+
+void drone::DroneController::waitForStatusMsg()
+{
+  std::unique_lock<std::mutex> lock(m_statusMutex);
+  m_cvStatus.wait_for(lock, std::chrono::seconds(1));
 }
 
 boost::signals2::scoped_connection drone::DroneController::registerForMid(

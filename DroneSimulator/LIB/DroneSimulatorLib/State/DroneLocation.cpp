@@ -21,7 +21,7 @@ namespace
 
 drone::DroneLocation::DroneLocation()
   : m_timeOfFlight(0),
-    m_mid(0),
+    m_mid(-1),
     m_xCoordinate(0),
     m_yCoordinate(0),
     m_zCoordinate(0),

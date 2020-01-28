@@ -10,6 +10,7 @@
 
 int main(int argc, char* argv[])
 {
+  GlobalRegistry::setRegistry();
   std::string ip;
   std::string sPort;
   std::string mPort;
@@ -41,11 +42,11 @@ int main(int argc, char* argv[])
   catch (const boost::program_options::error& ex)
   {
     std::cerr << ex.what() << '\n';
+    return 1;
   }
 
   try
   {
-    GlobalRegistry::setRegistry();
     drone::DroneManager manager(ip, sPort, mPort);
     std::cout << "Enter \"exit\" to exit" << std::endl;
     std::string line;

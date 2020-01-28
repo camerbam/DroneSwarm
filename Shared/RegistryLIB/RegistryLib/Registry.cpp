@@ -22,6 +22,7 @@ namespace
 
   int validateValue(int count, int def)
   {
+    std::cout << "either: " << count << " " << def << std::endl;
     if (!count) return def;
     return count;
   }
@@ -36,9 +37,9 @@ namespace
     for (auto& target : targetsArray->value.GetArray())
     {
       auto x = target.FindMember("x");
-      if (x == target.MemberEnd() || !x->value.IsDouble()) continue;
+      if (x == target.MemberEnd() || !x->value.IsNumber()) continue;
       auto y = target.FindMember("y");
-      if (y == target.MemberEnd() || !y->value.IsDouble()) continue;
+      if (y == target.MemberEnd() || !y->value.IsNumber()) continue;
       auto id = target.FindMember("id");
       if (id == target.MemberEnd() || !id->value.IsInt()) continue;
       toReturn.emplace_back(
@@ -122,6 +123,7 @@ GlobalRegistry::~GlobalRegistry()
 
 void GlobalRegistry::postToThreadPool(std::function<void()> fn)
 {
+  std::cout << "posted" << std::endl;
   boost::asio::post(*m_pInstance->m_pThreadPool, fn);
 }
 
