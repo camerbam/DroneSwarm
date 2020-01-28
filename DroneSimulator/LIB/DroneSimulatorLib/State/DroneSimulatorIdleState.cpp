@@ -3,8 +3,8 @@
 #include <iostream>
 
 #include "DroneMessagesLib/MessageFactory.hpp"
-#include "DroneSimulatorSDKState.hpp"
 #include "DroneSimulatorPretestState.hpp"
+#include "DroneSimulatorSDKState.hpp"
 #include "RegistryLib/Registry.hpp"
 
 namespace
@@ -29,11 +29,11 @@ namespace
       switch (GlobalRegistry::getRegistry().getPretest())
       {
       case 0:
-        std::make_shared<drone::DroneSimulatorSDKState>(
+        toReturn = std::make_shared<drone::DroneSimulatorSDKState>(
           m_controlEndpoint, m_response.getEndpoint(), m_startingBattery);
         break;
       case 1:
-        std::make_shared<drone::DroneSimulatorPretestState>(
+        toReturn = std::make_shared<drone::DroneSimulatorPretestState>(
           m_controlEndpoint, m_response.getEndpoint());
         break;
       case 2:

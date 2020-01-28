@@ -23,17 +23,29 @@
 #include "DroneSimulatorPretestState.hpp"
 #include "LoggerLib/Logger.hpp"
 
+#include <iostream>
+#include <iomanip>
+
 namespace
 {
+  const std::string CORRECT("Correct");
+  const std::string NOT_RECEIVED("Not Received");
+  const std::string OK("ok");
+
   class DroneSimulatorPretestMessages : public boost::static_visitor<bool>
   {
   public:
-    DroneSimulatorPretestMessages() : m_messagesReceived()
+    DroneSimulatorPretestMessages(
+      udp::UDPCommunicator& communicator,
+      const boost::asio::ip::udp::endpoint& droneEndpoint)
+      : m_messagesReceived(),
+        m_communicator(communicator),
+        m_droneEndpoint(droneEndpoint)
     {
       m_messagesReceived.emplace("BackMessage", false);
       m_messagesReceived.emplace("BatteryMessage", false);
       m_messagesReceived.emplace("ClockwiseMessage", false);
-      // Had to used it already
+      // Had to have used it already
       m_messagesReceived.emplace("CommandMessage", true);
       m_messagesReceived.emplace("CounterClockwiseMessage", false);
       m_messagesReceived.emplace("DownMessage", false);
@@ -52,152 +64,144 @@ namespace
       m_messagesReceived.emplace("UpMessage", false);
     }
 
+    bool DroneSimulatorPretestMessages::handleMsg(const std::string& name,
+                                                  std::string msg)
+    {
+      m_messagesReceived[name] = true;
+      m_communicator.sendMessage(msg, m_droneEndpoint);
+      return false;
+    }
+
+    void DroneSimulatorPretestMessages::printMsg()
+    {
+      std::cout << "************* RESULTS *************" << std::endl;
+      for(auto&& m : m_messagesReceived)
+      {
+        std::cout << std::setw(50) << std::left << m.first << std::right;
+        if(m.second)
+          std::cout << CORRECT << std::endl;
+        else
+        std::cout << NOT_RECEIVED << std::endl;
+      }
+    }
+
     bool DroneSimulatorPretestMessages::operator()(const messages::BackMessage&)
     {
-      m_messagesReceived.at("BackMessage") = true;
+      return handleMsg("BackMessage", OK);
     }
 
     bool DroneSimulatorPretestMessages::operator()(
       const messages::BatteryMessage&)
     {
-      m_messagesReceived.at("BatteryMessage") = true;
+      return handleMsg("BatteryMessage", "95");
     }
 
     bool DroneSimulatorPretestMessages::operator()(
       const messages::CommandMessage&)
     {
-      if (!pState) pState.reset(new DroneSimulatorStateImpl());
-      return OK;
+      return handleMsg("CommandMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::ClockwiseMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(
+      const messages::ClockwiseMessage&)
     {
-      return returnError(pState->changeTargetAngle(-message.getArgument()));
+      return handleMsg("ClockwiseMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::CounterClockwiseMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(
+      const messages::CounterClockwiseMessage&)
     {
-      return returnError(pState->changeTargetAngle(message.getArgument()));
+      return handleMsg("CounterClockwiseMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::DownMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::DownMessage&)
     {
-      return returnError(pState->changeTargetZ(-message.getArgument()));
+      return handleMsg("DownMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::FlipMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::FlipMessage&)
     {
-      std::string error;
-      switch (message.getDirection())
-      {
-      case messages::Direction::FORWARD:
-        error = pState->changeTargetY(20);
-        break;
-      case messages::Direction::RIGHT:
-        error = pState->changeTargetX(20);
-        break;
-      case messages::Direction::BACK:
-        error = pState->changeTargetY(-20);
-        break;
-      case messages::Direction::LEFT:
-        error = pState->changeTargetX(-20);
-        break;
-      }
-      return returnError(error);
+      return handleMsg("FlipMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::ForwardMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(
+      const messages::ForwardMessage&)
     {
-      return returnError(pState->changeTargetY(message.getArgument()));
+      return handleMsg("ForwardMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::GoMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::GoMessage&)
     {
-      std::string error(pState->changeTargetXYZ(message.getXDistance(),
-                                                message.getYDistance(),
-                                                message.getZDistance(),
-                                                message.getSpeed()));
-      return returnError(error);
+      return handleMsg("GoMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::LandMessage&) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::LandMessage&)
     {
-      return returnError(pState->land());
+      handleMsg("LandMessage", OK);
+      printMsg();
+      return true;
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::LeftMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::LeftMessage&)
     {
-      return returnError(pState->changeTargetX(-message.getArgument()));
+      return handleMsg("LeftMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::MDirectionMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(
+      const messages::MDirectionMessage&)
     {
-      return returnAnswer(
-        pState->enableDetection(static_cast<messages::DETECTION_DIRECTION>(
-          static_cast<int>(message.getArgument()))));
+      return handleMsg("MDirectionMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::MoffMessage&) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::MoffMessage&)
     {
-      pState->disableDetection();
-      return OK;
+      return handleMsg("MoffMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::MonMessage&) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::MonMessage&)
     {
-      return returnAnswer(pState->enableDetection());
+      return handleMsg("MonMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::RightMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(
+      const messages::RightMessage&)
     {
-      return returnError(pState->changeTargetX(message.getArgument()));
+      return handleMsg("RightMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::SpeedMessage&) const
+    bool DroneSimulatorPretestMessages::operator()(
+      const messages::SpeedMessage&)
     {
-      return std::to_string(pState->getSpeed());
+      return handleMsg("SpeedMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::TakeoffMessage&) const
+    bool DroneSimulatorPretestMessages::operator()(
+      const messages::TakeoffMessage&)
     {
-      return returnError(pState->takeoff());
+      return handleMsg("TakeoffMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::TimeMessage&) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::TimeMessage&)
     {
-      return std::to_string(pState->getTime());
+      return handleMsg("TimeMessage", OK);
     }
 
-    boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
-      const messages::UpMessage& message) const
+    bool DroneSimulatorPretestMessages::operator()(const messages::UpMessage&)
     {
-      return returnError(pState->changeTargetZ(message.getArgument()));
+      return handleMsg("UpMessage", OK);
     }
 
   private:
     std::map<std::string, bool> m_messagesReceived;
+    udp::UDPCommunicator& m_communicator;
+    const boost::asio::ip::udp::endpoint m_droneEndpoint;
   };
 }
 
 drone::DroneSimulatorPretestState::DroneSimulatorPretestState(
   udp::UDPCommunicator& controlEndpoint,
-  const boost::asio::ip::udp::endpoint& drone)
-  : DroneSimulatorState(controlEndpoint)
+  const boost::asio::ip::udp::endpoint& droneEndpoint)
+  : DroneSimulatorState(controlEndpoint), m_droneEndpoint(droneEndpoint)
 {
 }
 
@@ -208,13 +212,22 @@ drone::DroneSimulatorPretestState::~DroneSimulatorPretestState()
 std::shared_ptr<drone::DroneSimulatorState> drone::DroneSimulatorPretestState::
   handleResponse(const udp::Response& response)
 {
-  static DroneSimulatorPretestMessages pretest;
+  static DroneSimulatorPretestMessages pretest(m_sender, m_droneEndpoint);
   if (!response.didSucceed())
   {
     logger::logError("Pretest", "No messages recieved within timeout, exiting");
     return nullptr;
   }
   auto msg = response.getMessage();
-  auto toExit = boost::apply_visitor(pretest, messages::getMessage(msg));
+  try
+  {
+    auto toExit = boost::apply_visitor(pretest, messages::getMessage(msg));
+    if (toExit) return nullptr;
+  }
+  catch (std::exception& ex)
+  {
+    std::cout << ex.what() << std::endl;
+    return nullptr;
+  }
   return shared_from_this();
 }
