@@ -91,7 +91,9 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
   BOOST_CHECK(controller->sendMessage(left));
   BOOST_CHECK(controller->sendMessage(land));
 
-  std::this_thread::sleep_for(std::chrono::milliseconds(110));
+  std::this_thread::sleep_for(std::chrono::milliseconds(510));
+  std::cout << controller->getX() << std::endl;
+  std::cout << controller->getY() << std::endl;
   BOOST_CHECK(utils::compareTwoDoubles(controller->getX(), -25));
   BOOST_CHECK(utils::compareTwoDoubles(controller->getY(), -20));
   BOOST_CHECK(utils::compareTwoDoubles(controller->getZ(), 0));
@@ -99,7 +101,7 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
   BOOST_CHECK(controller->getSpeed() == 10);
 
   std::cout << controller->getTime() << std::endl;
-  BOOST_CHECK(utils::checkWithin(controller->getTime(), 45, 6));
+  BOOST_CHECK(utils::checkWithin(controller->getTime(), 90, 10));
   BOOST_CHECK(utils::checkWithin(
     static_cast<size_t>(controller->getTimeOfFlight()), 245, 5));
 

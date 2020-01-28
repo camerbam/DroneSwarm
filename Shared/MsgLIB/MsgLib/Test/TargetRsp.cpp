@@ -19,7 +19,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(TargetRspTest)
 {
-  testMsg(msg::FORMAT::JSON, "{}");
+  testMsg(msg::FORMAT::JSON, R"({"error":""})");
   testMsg(msg::FORMAT::PROTOBUF);
-  testMsg(msg::FORMAT::XML, "\n");
+  testMsg(msg::FORMAT::XML, "<error/>\n\n");
 }

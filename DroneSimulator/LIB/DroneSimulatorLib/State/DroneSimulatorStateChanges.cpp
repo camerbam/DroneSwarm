@@ -50,7 +50,7 @@ drone::DroneSimulatorStateChanges::DroneSimulatorStateChanges(
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
   const messages::BackMessage& message) const
 {
-  return returnError(pState->changeTargetY(-message.getArgument()));
+  return returnError(pState->changeTargetX(-message.getArgument()));
 }
 
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
@@ -91,16 +91,16 @@ boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
   switch (message.getDirection())
   {
   case messages::Direction::FORWARD:
-    error = pState->changeTargetY(20);
-    break;
-  case messages::Direction::RIGHT:
     error = pState->changeTargetX(20);
     break;
+  case messages::Direction::RIGHT:
+    error = pState->changeTargetY(20);
+    break;
   case messages::Direction::BACK:
-    error = pState->changeTargetY(-20);
+    error = pState->changeTargetX(-20);
     break;
   case messages::Direction::LEFT:
-    error = pState->changeTargetX(-20);
+    error = pState->changeTargetY(-20);
     break;
   }
   return returnError(error);
@@ -109,7 +109,7 @@ boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
   const messages::ForwardMessage& message) const
 {
-  return returnError(pState->changeTargetY(message.getArgument()));
+  return returnError(pState->changeTargetX(message.getArgument()));
 }
 
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
@@ -131,7 +131,7 @@ boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
   const messages::LeftMessage& message) const
 {
-  return returnError(pState->changeTargetX(-message.getArgument()));
+  return returnError(pState->changeTargetY(-message.getArgument()));
 }
 
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
@@ -157,7 +157,7 @@ boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(
   const messages::RightMessage& message) const
 {
-  return returnError(pState->changeTargetX(message.getArgument()));
+  return returnError(pState->changeTargetY(message.getArgument()));
 }
 
 boost::optional<std::string> drone::DroneSimulatorStateChanges::operator()(

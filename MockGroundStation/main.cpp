@@ -9,6 +9,7 @@
 #include "MsgLib/TargetRsp.hpp"
 #include "MsgLib/ZConfigMsg.hpp"
 #include "MsgLib/ZConfigRsp.hpp"
+#include "UtilsLib/Utils.hpp"
 
 int main()
 {
@@ -31,7 +32,7 @@ int main()
       drones.push_back(connection);
 
       connections.push_back(connection->registerHandler<msg::ZConfigRsp>(
-        [](const msg::ZConfigRsp& target) {
+        [](const msg::ZConfigRsp&) {
         std::cout << "received" << std::endl;
       }));
 
@@ -39,9 +40,9 @@ int main()
         [connection, &server, &targets, &cv](const msg::TargetMsg& target) {
           std::cout << "received" << std::endl;
           auto nextTarget = targets.front();
-          if (nextTarget.getX() == target.point().x() &&
-              nextTarget.getY() == target.point().y() &&
-              nextTarget.getId() == target.id())
+          if (utils::compareTwoDoubles(nextTarget.getX(), target.point().x()) &&
+              utils::compareTwoDoubles(nextTarget.getY(), target.point().y()) &&
+              utils::compareTwoDoubles(nextTarget.getId(), target.id()))
           {
             std::cout << "correct" << std::endl;
             connection->send(msg::TargetRsp());

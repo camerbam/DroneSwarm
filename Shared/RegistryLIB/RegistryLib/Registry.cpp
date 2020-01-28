@@ -22,7 +22,6 @@ namespace
 
   int validateValue(int count, int def)
   {
-    std::cout << "either: " << count << " " << def << std::endl;
     if (!count) return def;
     return count;
   }

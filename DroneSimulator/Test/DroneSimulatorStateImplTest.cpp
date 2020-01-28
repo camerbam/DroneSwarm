@@ -7,17 +7,9 @@
 #include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
 
-namespace
-{
-  bool compareTwoDoubles(const double& a, const double& b)
-  {
-    return std::abs(a - b) < .001;
-  }
-}
-
 BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
 {
-  GlobalRegistry::setRegistry(100, 20, { { 0, 0, 1 },{ 100, 0, 2 } });
+  GlobalRegistry::setRegistry(100, 20, { { 0, 0, 0 },{ 100, 0, 2 } });
 
   drone::DroneSimulatorStateImpl droneState;
   std::condition_variable cv;
@@ -45,45 +37,44 @@ BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
   {
     BOOST_CHECK(droneState.changeTargetX(100).empty());
     std::unique_lock<std::mutex> lk(mutex);
-    cv.wait_for(lk, std::chrono::seconds(5));
-    BOOST_CHECK(compareTwoDoubles(droneState.getX(), 100));
+    cv.wait_for(lk, std::chrono::seconds(6));
+    BOOST_CHECK(utils::compareTwoDoubles(droneState.getX(), 100));
     BOOST_CHECK(droneState.getMid() == 2);
   }
   {
     BOOST_CHECK(droneState.changeTargetY(120).empty());
     std::unique_lock<std::mutex> lk(mutex);
     cv.wait_for(lk, std::chrono::seconds(5));
-    BOOST_CHECK(compareTwoDoubles(droneState.getY(), 120));
+    BOOST_CHECK(utils::compareTwoDoubles(droneState.getY(), 120));
   }
   {
     BOOST_CHECK(droneState.changeTargetZ(140).empty());
     std::unique_lock<std::mutex> lk(mutex);
     cv.wait_for(lk, std::chrono::seconds(5));
-    BOOST_CHECK(compareTwoDoubles(droneState.getZ(), 240));
+    BOOST_CHECK(utils::compareTwoDoubles(droneState.getZ(), 240));
   }
   {
     BOOST_CHECK(droneState.changeTargetXYZ(40, 50, 60, 30).empty());
     std::unique_lock<std::mutex> lk(mutex);
     cv.wait_for(lk, std::chrono::seconds(5));
-    BOOST_CHECK(compareTwoDoubles(droneState.getX(), 140));
-    BOOST_CHECK(compareTwoDoubles(droneState.getY(), 170));
-    BOOST_CHECK(compareTwoDoubles(droneState.getZ(), 300));
+    BOOST_CHECK(utils::compareTwoDoubles(droneState.getX(), 140));
+    BOOST_CHECK(utils::compareTwoDoubles(droneState.getY(), 170));
+    BOOST_CHECK(utils::compareTwoDoubles(droneState.getZ(), 300));
   }
-  BOOST_CHECK(compareTwoDoubles(droneState.getTimeOfFlight(), 810));
+  BOOST_CHECK(utils::compareTwoDoubles(droneState.getTimeOfFlight(), 810));
   {
     BOOST_CHECK(!droneState.changeTargetAngle(.1).empty());
     BOOST_CHECK(!droneState.changeTargetAngle(361).empty());
     BOOST_CHECK(droneState.changeTargetAngle(60).empty());
     std::unique_lock<std::mutex> lk(mutex);
     cv.wait_for(lk, std::chrono::seconds(5));
-    BOOST_CHECK(compareTwoDoubles(droneState.getAngle(), 60));
+    BOOST_CHECK(utils::compareTwoDoubles(droneState.getAngle(), 60));
   }
   BOOST_CHECK(droneState.changeSpeed(64).empty());
   BOOST_CHECK_EQUAL(droneState.getSpeed(), 64);
 
   BOOST_CHECK(utils::checkWithin(droneState.getBattery(), 92u, 2u));
-std::cout << droneState.getTime() << std::endl;
-  BOOST_CHECK(utils::checkWithin(droneState.getTime(), 135u, 6u));
+  BOOST_CHECK(utils::checkWithin(droneState.getTime(), 160u, 10u));
 
   BOOST_CHECK(!droneState.getStatusMessage().empty());
 }
