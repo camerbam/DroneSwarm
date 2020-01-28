@@ -3,10 +3,13 @@
 #include <iostream>
 
 #include "DroneSimulatorLib/State/DroneLocation.hpp"
+#include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
 
 BOOST_AUTO_TEST_CASE(DRONE_LOCATION_TEST)
 {
+  GlobalRegistry::setRegistry();
+
   drone::DroneLocation location;
   
   location.setXCoordinate(50);

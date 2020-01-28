@@ -22,7 +22,6 @@ namespace
 
   int validateValue(int count, int def)
   {
-    std::cout << "either: " << count << " " << def << std::endl;
     if (!count) return def;
     return count;
   }
@@ -123,7 +122,6 @@ GlobalRegistry::~GlobalRegistry()
 
 void GlobalRegistry::postToThreadPool(std::function<void()> fn)
 {
-  std::cout << "posted" << std::endl;
   boost::asio::post(*m_pInstance->m_pThreadPool, fn);
 }
 

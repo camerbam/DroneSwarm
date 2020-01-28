@@ -59,7 +59,6 @@ std::string messages::DroneStatusMessage::toString(int mid,
                                                    size_t battery,
                                                    size_t time) const
 {
-  std::cout << xCoordinate << " " << yCoordinate << std::endl;
   std::stringstream ss;
   ss << "mid:" << mid << ";x:" << xCoordinate << ";y:" << yCoordinate
      << ";z:" << zCoordinate << ";mpry:0,0,0;pitch:0;roll:0;yaw:" << angle

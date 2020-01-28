@@ -246,8 +246,6 @@ void drone::DroneSimulatorStateImpl::startUpdate()
         m_updateSignal("ok");
       }
 
-      // std::cout << m_currentLocation.getXCoordinate() << " "
-      //          << m_currentLocation.getYCoordinate() << std::endl;
       for (auto&& target : m_targets)
       {
         if (utils::checkWithin(
@@ -259,7 +257,6 @@ void drone::DroneSimulatorStateImpl::startUpdate()
           m_lastTarget = Target(m_currentLocation.getXCoordinate(),
                                 m_currentLocation.getYCoordinate(),
                                 target.getId());
-          std::cout << "set new mid: " << target.getId() << std::endl;
           m_currentLocation.setMid(target.getId());
           break;
         }
