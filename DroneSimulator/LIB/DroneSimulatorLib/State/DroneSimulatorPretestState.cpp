@@ -192,6 +192,8 @@ namespace
     bool operator()(const messages::LandMessage&)
     {
       handleMsg("LandMessage", OK);
+      if (m_messagesReceived.at("LandMessage") == Recieved::TRY_MSG_AGAIN)
+        return false;
       printMsg();
       return true;
     }
@@ -223,7 +225,7 @@ namespace
 
     bool operator()(const messages::SpeedMessage&)
     {
-      return handleMsg("SpeedMessage", OK);
+      return handleMsg("SpeedMessage", "10");
     }
 
     bool operator()(const messages::TakeoffMessage&)
@@ -233,7 +235,7 @@ namespace
 
     bool operator()(const messages::TimeMessage&)
     {
-      return handleMsg("TimeMessage", OK);
+      return handleMsg("TimeMessage", "15");
     }
 
     bool operator()(const messages::UpMessage&)

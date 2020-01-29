@@ -29,7 +29,9 @@ namespace
     auto isOkay = [](const std::string& msg) { return msg == "ok"; };
     runTest(com, messages::CommandMessage(), end, isOkay);
     runTest(com, messages::BackMessage(50), end, isOkay);
-    runTest(com, messages::BatteryMessage(), end, isOkay);
+    runTest(com, messages::BatteryMessage(), end, [](const std::string& msg) {
+      return msg == "95";
+    });
     runTest(com, messages::ClockwiseMessage(53), end, isOkay);
     runTest(com, messages::CounterClockwiseMessage(54), end, isOkay);
     runTest(com, messages::DownMessage(55), end, isOkay);
@@ -41,9 +43,13 @@ namespace
     runTest(com, messages::MoffMessage(), end, isOkay);
     runTest(com, messages::MonMessage(), end, isOkay);
     runTest(com, messages::RightMessage(62), end, isOkay);
-    runTest(com, messages::SpeedMessage(), end, isOkay);
+    runTest(com, messages::SpeedMessage(), end, [](const std::string& msg) {
+      return msg == "10";
+    });
     runTest(com, messages::TakeoffMessage(), end, isOkay);
-    runTest(com, messages::TimeMessage(), end, isOkay);
+    runTest(com, messages::TimeMessage(), end, [](const std::string& msg) {
+      return msg == "15";
+    });
     runTest(com, messages::UpMessage(63), end, isOkay);
     runTest(com, messages::LandMessage(), end, isOkay);
   }
