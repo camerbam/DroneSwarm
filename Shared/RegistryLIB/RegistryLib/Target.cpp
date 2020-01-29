@@ -1,7 +1,10 @@
+
+#include "Target.hpp"
+
 #include <algorithm>
 #include <set>
 
-#include "Target.hpp"
+#include "UtilsLib/Utils.hpp"
 
 Target::Target(
   double x, double y, int id, std::set<int> dependents, int falseAfter)
@@ -46,6 +49,7 @@ bool Target::isReady() const
 
 bool operator==(const Target& lhs, const Target& rhs)
 {
-  return lhs.getX() == rhs.getX() && lhs.getY() == rhs.getY() &&
-         lhs.getId() == rhs.getId();
+  return utils::compareTwoDoubles(lhs.getX(), rhs.getX()) &&
+         utils::compareTwoDoubles(lhs.getY(), rhs.getY()) &&
+         utils::compareTwoDoubles(lhs.getId(), rhs.getId());
 }
