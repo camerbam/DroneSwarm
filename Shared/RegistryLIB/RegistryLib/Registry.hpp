@@ -37,7 +37,7 @@ public:
 
   bool getSkipLog();
 
-  void setPretest(size_t pretest);
+  bool getPrintLog();
 
   size_t getPretest();
 
@@ -55,6 +55,7 @@ private:
   double m_decaySpeed;
   std::vector<Target> m_targets;
   bool m_skipLog;
+  bool m_printLog;
   size_t m_pretest;
 };
 

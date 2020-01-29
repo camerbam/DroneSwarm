@@ -145,6 +145,11 @@ bool GlobalRegistry::getSkipLog()
   return m_pInstance->m_skipLog;
 }
 
+bool GlobalRegistry::getPrintLog()
+{
+  return m_pInstance->m_printLog;
+}
+
 size_t GlobalRegistry::getPretest()
 {
   return m_pInstance->m_pretest;
@@ -165,6 +170,7 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   m_targets = validateTargets(doc);
   m_skipLog = json::getBool(doc, "SkipLog");
   m_pretest = json::getInt(doc, "Pretest");
+  m_printLog = json::getBool(doc, "PrintToConsole");
 
   return true;
 }

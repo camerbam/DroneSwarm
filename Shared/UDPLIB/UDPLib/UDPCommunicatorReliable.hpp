@@ -23,7 +23,10 @@ namespace udp
     Response sendMessage(const std::string& msgToSend,
                          const boost::asio::ip::udp::endpoint& remoteEndpoint,
                          const boost::posix_time::time_duration& timeout =
-                           boost::posix_time::seconds(10));
+                           boost::posix_time::seconds(10),
+                         std::function<bool(const std::string& msg)> validator =
+                           [](...) { return true; },
+                         size_t tries = 1);
 
     void startPing(std::function<void()> pingFunction,
                    const boost::posix_time::time_duration& pingTime);

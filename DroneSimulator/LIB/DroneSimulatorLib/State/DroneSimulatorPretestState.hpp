@@ -13,7 +13,7 @@ namespace drone
   {
   public:
     DroneSimulatorPretestState(udp::UDPCommunicator& controlEndpoint,
-      const boost::asio::ip::udp::endpoint& droneEndpoint);
+      const boost::asio::ip::udp::endpoint& droneEndpoint, bool reliable);
 
     ~DroneSimulatorPretestState();
 
@@ -22,6 +22,7 @@ namespace drone
 
   private:
     const boost::asio::ip::udp::endpoint m_droneEndpoint;
+    int m_reliable;
   };
 } // namespace drone
 
