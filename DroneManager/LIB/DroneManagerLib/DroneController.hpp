@@ -7,8 +7,8 @@
 #include <boost/signals2/connection.hpp>
 
 #include "DroneControllerState.hpp"
-#include "DroneMessagesLib/Message_t.hpp"
 #include "DroneMessagesLib/Message.hpp"
+#include "DroneMessagesLib/Message_t.hpp"
 #include "UDPLib/UDPCommunicator.hpp"
 #include "UDPLib/UDPCommunicatorReliable.hpp"
 
@@ -17,13 +17,15 @@ namespace drone
   class DroneController
   {
   public:
-    DroneController(const std::string& ipAddress = std::string("127.0.0.1"));
+    DroneController(const std::string& ipAddress = std::string("127.0.0.1"),
+                    int startingY = 0);
 
     ~DroneController();
 
     boost::optional<std::string> sendMessage(
-      const messages::Message_t& message, boost::posix_time::time_duration timeout = 
-      boost::posix_time::seconds(10));
+      const messages::Message_t& message,
+      boost::posix_time::time_duration timeout =
+        boost::posix_time::seconds(10));
 
     size_t getBattery();
     double getX();
@@ -34,7 +36,6 @@ namespace drone
     double getTimeOfFlight();
     bool getIsRunning();
     void waitForStatusMsg();
-
 
     boost::signals2::scoped_connection registerForMid(
       std::function<void(int)> callback);

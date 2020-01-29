@@ -15,7 +15,7 @@ namespace drone
   class DroneControllerState
   {
   public:
-    DroneControllerState(size_t startBattery = 100);
+    DroneControllerState(size_t startBattery = 100, int startingY = 0);
     ~DroneControllerState();
 
     void takeoff();

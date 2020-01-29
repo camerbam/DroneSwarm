@@ -9,13 +9,14 @@
 
 #include "DroneMessagesLib/DroneStatusMessage.hpp"
 
-drone::DroneControllerState::DroneControllerState(size_t startBattery)
+drone::DroneControllerState::DroneControllerState(size_t startBattery,
+                                                  int startingY)
   : m_flying(false),
     m_statusMutex(),
     m_mid(-1),
     m_direction(messages::DETECTION_DIRECTION::NONE),
     m_xCoordinate(0),
-    m_yCoordinate(0),
+    m_yCoordinate(startingY),
     m_zCoordinate(0),
     m_timeOfFlight(0),
     m_angle(0),
@@ -124,9 +125,7 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   if (m_mid != mid)
   {
     m_midSignal(mid);
-    m_knownTargets.emplace_back(m_xCoordinate,
-                                m_yCoordinate,
-                                mid);
+    m_knownTargets.emplace_back(m_xCoordinate, m_yCoordinate, mid);
   }
   m_mid = mid;
 

@@ -15,8 +15,9 @@ namespace
   const std::string DRONE_CONTROLLER("Drone Controller");
 }
 
-drone::DroneController::DroneController(const std::string& ipAddress)
-  : m_pState(std::make_shared<drone::DroneControllerState>()),
+drone::DroneController::DroneController(const std::string& ipAddress,
+                                        int startingY)
+  : m_pState(std::make_shared<drone::DroneControllerState>(100, startingY)),
     m_running(true),
     m_controlCommunicator(),
     m_controlEndpoint(boost::asio::ip::address::from_string(ipAddress), 8889),
