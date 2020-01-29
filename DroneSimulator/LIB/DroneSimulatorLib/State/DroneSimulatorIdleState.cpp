@@ -34,9 +34,11 @@ namespace
         break;
       case 1:
         toReturn = std::make_shared<drone::DroneSimulatorPretestState>(
-          m_controlEndpoint, m_response.getEndpoint());
+          m_controlEndpoint, m_response.getEndpoint(), true);
         break;
       case 2:
+        toReturn = std::make_shared<drone::DroneSimulatorPretestState>(
+          m_controlEndpoint, m_response.getEndpoint(), false);
         break;
       default:
         m_controlEndpoint.sendMessage(

@@ -7,35 +7,51 @@
 
 #include "DroneManagerLib/DroneManager.hpp"
 #include "RegistryLib/Registry.hpp"
-#include "UDPLib/UDPCommunicatorReliable.hpp"
 #include "UDPLib/Response.hpp"
+#include "UDPLib/UDPCommunicatorReliable.hpp"
 
 namespace
 {
+  void runTest(udp::UDPCommunicatorReliable& com,
+               const messages::Message& m,
+               const boost::asio::ip::udp::endpoint& end,
+               std::function<bool(const std::string& msg)> validator)
+  {
+    com.sendMessage(
+      m.toString(), end, boost::posix_time::seconds(10), validator, 3);
+  }
+
   void runPretest(std::string ip)
   {
     udp::UDPCommunicatorReliable com;
     boost::asio::ip::udp::endpoint end(
       boost::asio::ip::address::from_string(ip), 8889);
-    com.sendMessage(messages::CommandMessage().toString(), end);
-    com.sendMessage(messages::BackMessage(50).toString(), end);
-    com.sendMessage(messages::BatteryMessage().toString(), end);
-    com.sendMessage(messages::ClockwiseMessage(53).toString(), end);
-    com.sendMessage(messages::CounterClockwiseMessage(54).toString(), end);
-    com.sendMessage(messages::DownMessage(55).toString(), end);
-    com.sendMessage(messages::FlipMessage("f").toString(), end);
-    com.sendMessage(messages::ForwardMessage(56).toString(), end);
-    com.sendMessage(messages::GoMessage(57, 58, 59, 60).toString(), end);
-    com.sendMessage(messages::LeftMessage(61).toString(), end);
-    com.sendMessage(messages::MDirectionMessage(1).toString(), end);
-    com.sendMessage(messages::MoffMessage().toString(), end);
-    com.sendMessage(messages::MonMessage().toString(), end);
-    com.sendMessage(messages::RightMessage(62).toString(), end);
-    com.sendMessage(messages::SpeedMessage().toString(), end);
-    com.sendMessage(messages::TakeoffMessage().toString(), end);
-    com.sendMessage(messages::TimeMessage().toString(), end);
-    com.sendMessage(messages::UpMessage(63).toString(), end);
-    com.sendMessage(messages::LandMessage().toString(), end);
+    auto isOkay = [](const std::string& msg) { return msg == "ok"; };
+    runTest(com, messages::CommandMessage(), end, isOkay);
+    runTest(com, messages::BackMessage(50), end, isOkay);
+    runTest(com, messages::BatteryMessage(), end, [](const std::string& msg) {
+      return msg == "95";
+    });
+    runTest(com, messages::ClockwiseMessage(53), end, isOkay);
+    runTest(com, messages::CounterClockwiseMessage(54), end, isOkay);
+    runTest(com, messages::DownMessage(55), end, isOkay);
+    runTest(com, messages::FlipMessage("f"), end, isOkay);
+    runTest(com, messages::ForwardMessage(56), end, isOkay);
+    runTest(com, messages::GoMessage(57, 58, 59, 60), end, isOkay);
+    runTest(com, messages::LeftMessage(61), end, isOkay);
+    runTest(com, messages::MDirectionMessage(1), end, isOkay);
+    runTest(com, messages::MoffMessage(), end, isOkay);
+    runTest(com, messages::MonMessage(), end, isOkay);
+    runTest(com, messages::RightMessage(62), end, isOkay);
+    runTest(com, messages::SpeedMessage(), end, [](const std::string& msg) {
+      return msg == "10";
+    });
+    runTest(com, messages::TakeoffMessage(), end, isOkay);
+    runTest(com, messages::TimeMessage(), end, [](const std::string& msg) {
+      return msg == "15";
+    });
+    runTest(com, messages::UpMessage(63), end, isOkay);
+    runTest(com, messages::LandMessage(), end, isOkay);
   }
 }
 

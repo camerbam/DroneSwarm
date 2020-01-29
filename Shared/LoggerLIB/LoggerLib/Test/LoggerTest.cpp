@@ -18,7 +18,7 @@ struct Msg
 
 BOOST_AUTO_TEST_CASE(LOGGER_TEST)
 {
-  GlobalRegistry::setRegistry(100, 20, {}, true);
+  GlobalRegistry::setRegistry(100, 20, {}, false);
 
   auto logPath = logger::getLogPath();
   auto logBoostPath = boost::filesystem::path(logPath);
