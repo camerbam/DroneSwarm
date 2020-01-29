@@ -2,6 +2,7 @@ set(lib_name registry)
 set(${lib_name}_srcs
   Registry.cpp
   Registry.hpp
+  Target.cpp
   Target.hpp
   )
 source_group("" FILES ${${lib_name}_srcs})

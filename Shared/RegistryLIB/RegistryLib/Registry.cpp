@@ -41,8 +41,24 @@ namespace
       if (y == target.MemberEnd() || !y->value.IsNumber()) continue;
       auto id = target.FindMember("id");
       if (id == target.MemberEnd() || !id->value.IsInt()) continue;
-      toReturn.emplace_back(
-        x->value.GetDouble(), y->value.GetDouble(), id->value.GetInt());
+      std::set<int> depends;
+      auto dependents = target.FindMember("Dependents");
+      if (dependents != target.MemberEnd() && dependents->value.IsArray())
+      {
+        for (auto& d : dependents->value.GetArray())
+        {
+          if (d.IsInt()) depends.emplace(d.GetInt());
+        }
+      }
+      auto falseAfter = target.FindMember("FalseAfter");
+      int f = 0;
+      if (falseAfter != target.MemberEnd() && falseAfter->value.IsInt())
+        f = falseAfter->value.GetInt();
+      toReturn.emplace_back(x->value.GetDouble(),
+                            y->value.GetDouble(),
+                            id->value.GetInt(),
+                            depends,
+                            f);
     }
     return toReturn;
   }
@@ -51,6 +67,7 @@ namespace
 GlobalRegistry::GlobalRegistry(const std::string& config)
   : m_pThreadPool(), m_speedRatio(1), m_decaySpeed(2)
 {
+  std::cout << config << std::endl;
   parseConfig(config);
 }
 
@@ -101,6 +118,23 @@ void GlobalRegistry::setRegistry(double speed,
       json::addNumberToObject(doc, targetJson, "x", target.getX());
       json::addNumberToObject(doc, targetJson, "y", target.getY());
       json::addIntToObject(doc, targetJson, "id", target.getId());
+
+      if (!target.getDependents().empty())
+      {
+        rapidjson::Document dependents(rapidjson::kArrayType);
+
+        for (auto&& id : target.getDependents())
+        {
+          json::addIntToArray(doc, dependents, id);
+        }
+        json::addArrayToObject(doc, targetJson, "Dependents", dependents);
+      }
+      if (target.getFalseAfter() != 0)
+      {
+        json::addIntToObject(
+          doc, targetJson, "FalseAfter", target.getFalseAfter());
+      }
+
       json::addObjectToArray(doc, targetsJson, targetJson);
     }
     json::addArrayToDoc(doc, "Targets", targetsJson);
