@@ -15,13 +15,13 @@ xpSetFlags()
 set(CMAKE_CXX_STANDARD 14)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_subdirectory(Shared)
-add_subdirectory(Cloud)
 add_subdirectory(Drone)
 add_subdirectory(DroneManager)
 add_subdirectory(DroneSimulator)
 add_subdirectory(MockGroundStation)
 add_subdirectory(Monitor)
 add_subdirectory(Playground)
+add_subdirectory(Referee)
 ###########################################
 set(random_srcs
   100Times.txt
