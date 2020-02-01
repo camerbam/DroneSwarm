@@ -15,6 +15,10 @@ set(${lib_name}_srcs
   Point.cpp
   Point.hpp
   SerializeDeserialize.hpp
+  StartGameMsg.cpp
+  StartGameMsg.hpp
+  StartGameRsp.cpp
+  StartGameRsp.hpp
   StringMsg.cpp
   StringMsg.hpp
   TargetMsg.cpp

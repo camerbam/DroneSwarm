@@ -1,5 +1,7 @@
 set(lib_name RefereeLib)
 set(${lib_name}_srcs
+  GameManager.cpp
+  GameManager.hpp
   Graph.cpp
   Graph.hpp
   RefereeController.cpp

@@ -7,6 +7,8 @@ set(${lib_name}_srcs
   FlightPathRsp.proto
   Point.proto
   StringMsg.proto
+  StartGameMsg.proto
+  StartGameRsp.proto
   TargetMsg.proto
   TargetRsp.proto
   ZConfigMsg.proto
