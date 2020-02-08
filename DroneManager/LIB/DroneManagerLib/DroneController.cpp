@@ -79,6 +79,7 @@ boost::optional<std::string> drone::DroneController::sendMessage(
   }
   auto str =
     boost::apply_visitor(DroneControllerMessagesToString(m_pState), message);
+  logger::logInfo(DRONE_CONTROLLER, str);
   auto response =
     m_controlCommunicator.sendMessage(str, m_controlEndpoint, timeout);
   if (!response.didSucceed())

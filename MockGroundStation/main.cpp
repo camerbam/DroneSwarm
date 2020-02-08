@@ -73,7 +73,7 @@ int main()
   for (auto&& drone : drones)
   {
     std::cout << "sending" << std::endl;
-    drone->send(msg::ZConfigMsg(150));
+    drone->send(msg::ZConfigMsg(80));
     drone->send(msg::FlightPathMsg({{100, 0}, {100, 100}, {200, 0}}));
   }
 
