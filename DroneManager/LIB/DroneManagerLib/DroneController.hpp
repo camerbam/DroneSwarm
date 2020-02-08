@@ -48,6 +48,9 @@ namespace drone
     udp::UDPCommunicator m_statusCommunicator;
     boost::signals2::scoped_connection m_connection;
     std::condition_variable m_cvStatus;
+    boost::signals2::signal<void(int)> m_midSignal;
+    boost::signals2::scoped_connection m_midConnection;
+    std::vector<int> m_mids;
     std::mutex m_statusMutex;
     std::thread m_statusThread;
   };

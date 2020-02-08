@@ -21,6 +21,9 @@ namespace drone
     void takeoff();
     void land();
     int getMid();
+    void changeX(const double& x);
+    void changeY(const double& y);
+    void changeZ(const double& z);
     double getX();
     double getY();
     double getZ();

@@ -95,7 +95,7 @@ void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
   }
   else
   {
-    std::cout << "Error on receive: " << ec.message() << "\n";
+    std::cout << "Closing socket: " << ec.message() << "\n";
     m_closedSignal(m_id);
   }
 }

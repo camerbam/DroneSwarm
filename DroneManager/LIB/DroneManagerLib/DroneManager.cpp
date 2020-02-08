@@ -167,6 +167,7 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
 {
   m_connections.push_back(m_controller.registerForMid([this](int id) {
     if (m_points.empty()) return;
+    std::cout << "check location" << std::endl;
     if (utils::checkWithinDouble(m_points[0].x(), m_controller.getX(), 10) &&
         utils::checkWithinDouble(m_points[0].y(), m_controller.getY(), 10))
     {
