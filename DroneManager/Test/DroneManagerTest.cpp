@@ -31,15 +31,6 @@ namespace
       msg = c.receiveMessage(timeout);
       BOOST_CHECK(msg.getMessage() == "takeoff");
       c.sendMessage(OK, msg.getEndpoint());
-      msg = c.receiveMessage(timeout);
-      BOOST_CHECK(msg.getMessage() == "up 200");
-      c.sendMessage(OK, msg.getEndpoint());
-      msg = c.receiveMessage(timeout);
-      BOOST_CHECK(msg.getMessage() == "forward 30");
-      c.sendMessage(OK, msg.getEndpoint());
-      msg = c.receiveMessage(timeout);
-      BOOST_CHECK(msg.getMessage() == "right 40");
-      c.sendMessage(OK, msg.getEndpoint());
       auto statusEndpoint = msg.getEndpoint();
       statusEndpoint.port(8890);
       udp::UDPCommunicator c2;
@@ -49,7 +40,18 @@ namespace
       c2.sendMessage(
         messages::DroneStatusMessage().toString(2, 30, 40, 200, 0, 270, 98, 5),
         statusEndpoint);
-      msg = c.receiveMessage();
+      msg = c.receiveMessage(timeout);
+      std::cout << msg.getMessage() << std::endl;
+      BOOST_CHECK(msg.getMessage() == "up 200");
+      c.sendMessage(OK, msg.getEndpoint());
+      msg = c.receiveMessage(timeout);
+      BOOST_CHECK(msg.getMessage() == "forward 30");
+      c.sendMessage(OK, msg.getEndpoint());
+      msg = c.receiveMessage(timeout);
+      BOOST_CHECK(msg.getMessage() == "right 40");
+      c.sendMessage(OK, msg.getEndpoint());
+      msg = c.receiveMessage(timeout);
+      std::cout << msg.getMessage() << std::endl;
       BOOST_CHECK(msg.getMessage() == "land");
       c.sendMessage(OK, msg.getEndpoint());
     });
@@ -135,14 +137,14 @@ BOOST_AUTO_TEST_CASE(DRONE_MANAGER_TEST)
 BOOST_AUTO_TEST_CASE(DRONE_MANAGER_PATH_TEST)
 {
   std::vector<msg::Point> points;
-  points.push_back({50, 50});   // 2
-  points.push_back({0, 0});     // 2
-  points.push_back({10, 10});   // 4
-  points.push_back({0, 0});     // 4
-  points.push_back({540, 540}); // 4
-  points.push_back({0, 0});     // 4
-  points.push_back({510, 510}); // 4
-  points.push_back({0, 0});     // 4
+  points.push_back({50, 50});   // generates 2 msgs
+  points.push_back({0, 0});     // generates 2 msgs
+  points.push_back({10, 10});   // generates 4 msgs
+  points.push_back({0, 0});     // generates 4 msgs
+  points.push_back({540, 540}); // generates 4 msgs
+  points.push_back({0, 0});     // generates 4 msgs
+  points.push_back({510, 510}); // generates 4 msgs
+  points.push_back({0, 0});     // generates 4 msgs
   auto rsp = drone::createFlightPath(0, 0, points);
 
   BOOST_REQUIRE(rsp.size() == 28);

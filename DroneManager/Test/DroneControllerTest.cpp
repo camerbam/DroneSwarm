@@ -23,7 +23,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 {
-  GlobalRegistry::setRegistry(100, 20);
+  GlobalRegistry::setRegistry(100, 20, { { 30, 40, 2 } });
 
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
 
@@ -92,15 +92,12 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
   BOOST_CHECK(controller->sendMessage(land));
 
   std::this_thread::sleep_for(std::chrono::milliseconds(510));
-  std::cout << controller->getX() << std::endl;
-  std::cout << controller->getY() << std::endl;
   BOOST_CHECK(utils::compareTwoDoubles(controller->getX(), -25));
   BOOST_CHECK(utils::compareTwoDoubles(controller->getY(), -20));
   BOOST_CHECK(utils::compareTwoDoubles(controller->getZ(), 0));
 
   BOOST_CHECK(controller->getSpeed() == 10);
 
-  std::cout << controller->getTime() << std::endl;
   BOOST_CHECK(utils::checkWithin(controller->getTime(), 90, 10));
   BOOST_CHECK(utils::checkWithin(
     static_cast<size_t>(controller->getTimeOfFlight()), 245, 5));

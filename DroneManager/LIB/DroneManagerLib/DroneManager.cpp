@@ -192,8 +192,10 @@ void drone::DroneManager::registerHandlers()
     [this](const msg::FlightPathMsg& msg) {
       auto path = createFlightPath(
         m_controller.getX(), m_controller.getY(), msg.points());
-      std::lock_guard<std::mutex> l(m_pathMutex);
-      std::swap(path, m_flightPath);
+      {
+        std::lock_guard<std::mutex> l(m_pathMutex);
+        std::swap(path, m_flightPath);
+      }
       auto points = msg.points();
       std::swap(points, m_points);
       startMessages();
@@ -209,7 +211,10 @@ void drone::DroneManager::registerHandlers()
 
   m_connections.push_back(
     m_client.registerHandler<msg::FinishMsg>([this](const msg::FinishMsg&) {
-      m_controller.sendMessage(messages::LandMessage());
+      {
+        std::lock_guard<std::mutex> l(m_pathMutex);
+        m_flightPath.push(messages::LandMessage());
+      }
       m_client.send(msg::FinishRsp());
     }));
 }

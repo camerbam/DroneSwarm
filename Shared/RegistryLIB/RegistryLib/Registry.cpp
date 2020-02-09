@@ -196,8 +196,9 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   if (doc.IsNull())
     throw std::runtime_error("Config does not point to valid json");
 
-  m_pThreadPool = std::make_shared<boost::asio::thread_pool>(
-    validateValue(static_cast<int>(json::getNumber(doc, "ThreadCount")), 1));
+  if (!m_pThreadPool)
+    m_pThreadPool = std::make_shared<boost::asio::thread_pool>(
+      validateValue(static_cast<int>(json::getNumber(doc, "ThreadCount")), 1));
   m_speedRatio = validateDValue(json::getNumber(doc, "Speed"), 2);
   m_decaySpeed = validateDValue(json::getNumber(doc, "BatteryDecaySpeed"), 1);
   m_targets = validateTargets(doc);

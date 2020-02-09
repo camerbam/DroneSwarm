@@ -21,8 +21,6 @@ BOOST_AUTO_TEST_CASE(DroneControllerStateTest)
   droneState.updateStatus(msg.toString(1, 5, 6, 200, 40, 100, 99, 5));
 
   BOOST_CHECK_EQUAL(droneState.getMid(), 1);
-  BOOST_CHECK_EQUAL(droneState.getX(), 5);
-  BOOST_CHECK_EQUAL(droneState.getY(), 6);
   BOOST_CHECK_EQUAL(droneState.getZ(), 200);
   BOOST_CHECK_EQUAL(droneState.getAngle(), 40);
   BOOST_CHECK_EQUAL(droneState.getTimeOfFlight(), 100);
@@ -41,8 +39,6 @@ BOOST_AUTO_TEST_CASE(DroneControllerStateTest)
 
   droneState.updateStatus(msg.toString(2, 6, 7, 200, 40, 100, 99, 5));
   BOOST_CHECK_EQUAL(droneState.getMid(), 2);
-  BOOST_CHECK_EQUAL(droneState.getX(), 11);
-  BOOST_CHECK_EQUAL(droneState.getY(), 13);
 
   BOOST_CHECK(reachedBattery);
   BOOST_CHECK(reachedMid);
