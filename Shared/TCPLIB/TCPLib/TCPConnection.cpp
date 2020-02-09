@@ -35,21 +35,21 @@ tcp::TcpConnection::TcpConnection(
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
           GlobalRegistry::getRegistry().postToThreadPool(
-                            [optMsg, handlers, format]() {
-                              msg::BaseMsg receivedMsg;
-                              auto msg = optMsg.get();
-                              if (!msg::parseString(receivedMsg, msg, format))
-                              {
-                                std::cout << "Could not parse msg" << std::endl;
-                                return;
-                              }
-                              auto handle = handlers->get(receivedMsg.type());
-                              if (!handle)
-                                std::cout << "Received unknown message"
-                                          << std::endl;
-                              else
-                              handle->execute(receivedMsg.msg(), format);
-                            });
+            [optMsg, handlers, format]() {
+              msg::BaseMsg receivedMsg;
+              auto msg = optMsg.get();
+              if (!msg::parseString(receivedMsg, msg, format))
+              {
+                std::cout << "Could not parse msg" << std::endl;
+                return;
+              }
+              auto handle = handlers->get(receivedMsg.type());
+              if (!handle)
+                std::cout << "Received unknown message: " << receivedMsg.type()
+                          << std::endl;
+              else
+                handle->execute(receivedMsg.msg(), format);
+            });
         }
       }))
 {
@@ -64,18 +64,18 @@ void tcp::TcpConnection::startRead()
     });
 }
 
- void tcp::TcpConnection::ready()
+void tcp::TcpConnection::ready()
 {
   m_acq.ready();
 }
 
- void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
+void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
                                      size_t)
 {
   if (ec) m_closedSignal(m_id);
 }
 
- void tcp::TcpConnection::close()
+void tcp::TcpConnection::close()
 {
   m_pSocket->close();
 }
@@ -83,7 +83,7 @@ void tcp::TcpConnection::startRead()
 void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
                                     std::size_t bytes_transferred)
 {
-   if (!ec)
+  if (!ec)
   {
     std::string toAdd(
       m_inputBuffer.begin(), m_inputBuffer.begin() + bytes_transferred);
@@ -93,9 +93,9 @@ void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
 
     startRead();
   }
-   else
+  else
   {
-    std::cout << "Error on receive: " << ec.message() << "\n";
+    std::cout << "Closing socket: " << ec.message() << "\n";
     m_closedSignal(m_id);
   }
 }

@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
   std::string ip;
   std::string sPort;
   std::string mPort;
+  int startingY(0);
   try
   {
     boost::program_options::options_description desc{"Options"};
@@ -72,12 +73,18 @@ int main(int argc, char* argv[])
                               "Port for the server")(
       "monitorport,m",
       boost::program_options::value<std::string>(),
-      "Port for the monitor")("pretest,p", "Run pretest");
+      "Port for the monitor")(
+      "y,y", boost::program_options::value<int>(), "Starting y position")(
+      "pretest,p", "Run pretest");
 
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
 
-    if (vm.count("help")) std::cout << desc << '\n';
+    if (vm.count("help"))
+    {
+      std::cout << desc << '\n';
+      return 0;
+    }
 
     notify(vm);
 
@@ -101,6 +108,7 @@ int main(int argc, char* argv[])
       std::cout << "Must specify monitor port" << std::endl;
       return 1;
     }
+    if (vm.count("y")) startingY = vm["y"].as<int>();
   }
   catch (const boost::program_options::error& ex)
   {
@@ -110,7 +118,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    drone::DroneManager manager(ip, sPort, mPort);
+    drone::DroneManager manager(ip, sPort, mPort, startingY);
     std::cout << "Enter \"exit\" to exit" << std::endl;
     std::string line;
     while (std::getline(std::cin, line))

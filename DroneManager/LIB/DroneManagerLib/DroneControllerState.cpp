@@ -9,13 +9,14 @@
 
 #include "DroneMessagesLib/DroneStatusMessage.hpp"
 
-drone::DroneControllerState::DroneControllerState(size_t startBattery)
+drone::DroneControllerState::DroneControllerState(size_t startBattery,
+                                                  int startingY)
   : m_flying(false),
     m_statusMutex(),
     m_mid(-1),
     m_direction(messages::DETECTION_DIRECTION::NONE),
     m_xCoordinate(0),
-    m_yCoordinate(0),
+    m_yCoordinate(startingY),
     m_zCoordinate(0),
     m_timeOfFlight(0),
     m_angle(0),
@@ -45,6 +46,21 @@ void drone::DroneControllerState::land()
 int drone::DroneControllerState::getMid()
 {
   return m_mid;
+}
+
+void drone::DroneControllerState::changeX(const double& x)
+{
+  m_xCoordinate = m_xCoordinate + x;
+}
+
+void drone::DroneControllerState::changeY(const double& y)
+{
+  m_yCoordinate = m_yCoordinate + y;
+}
+
+void drone::DroneControllerState::changeZ(const double& z)
+{
+  m_zCoordinate = m_zCoordinate + z;
 }
 
 double drone::DroneControllerState::getX()
@@ -124,18 +140,10 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   if (m_mid != mid)
   {
     m_midSignal(mid);
-    m_knownTargets.emplace_back(m_xCoordinate,
-                                m_yCoordinate,
-                                mid);
+    m_knownTargets.emplace_back(m_xCoordinate, m_yCoordinate, mid);
   }
   m_mid = mid;
 
-  auto currentTarget = std::find_if(
-    m_knownTargets.begin(), m_knownTargets.end(), [mid](const Target& target) {
-      return mid == target.getId();
-    });
-  m_xCoordinate = msg.getXCoordinate() + currentTarget->getX();
-  m_yCoordinate = msg.getYCoordinate() + currentTarget->getY();
   m_zCoordinate = msg.getZCoordinate();
   m_angle = msg.getAngle();
   m_time = msg.getTime();

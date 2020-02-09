@@ -22,9 +22,9 @@ int main()
   std::mutex m;
 
   std::vector<Target> targets;
-  targets.emplace_back(100, 0, 1);
-  targets.emplace_back(100, 100, 2);
-  targets.emplace_back(50, 0, 3);
+  targets.emplace_back(100, 0, 2);
+  targets.emplace_back(100, 100, 3);
+  targets.emplace_back(200, 0, 4);
 
   connections.push_back(
     server.registerConnection([&connections, &drones, &server, &cv,&targets](
@@ -73,8 +73,8 @@ int main()
   for (auto&& drone : drones)
   {
     std::cout << "sending" << std::endl;
-    drone->send(msg::ZConfigMsg(150));
-    drone->send(msg::FlightPathMsg({{100, 0}, {100, 100}, {50, 0}}));
+    drone->send(msg::ZConfigMsg(80));
+    drone->send(msg::FlightPathMsg({{100, 0}, {100, 100}, {200, 0}}));
   }
 
   std::unique_lock<std::mutex> lock(m);

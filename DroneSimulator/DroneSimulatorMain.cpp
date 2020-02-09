@@ -22,7 +22,10 @@ int main(int argc, char* argv[])
     store(parse_command_line(argc, argv, desc), vm);
     notify(vm);
     if (vm.empty() || vm.count("help"))
+    {
       std::cout << desc << '\n';
+      return 0;
+    }
     else if (vm.count("config"))
     {
       auto config = vm["config"].as<std::string>();

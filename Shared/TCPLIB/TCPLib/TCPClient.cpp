@@ -24,7 +24,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
           GlobalRegistry::getRegistry().postToThreadPool(
-            [msg = optMsg.get(), m_handlers, format]() {
+            [ msg = optMsg.get(), m_handlers, format ]() {
               msg::BaseMsg receivedMsg;
               if (!parseString(receivedMsg, msg, format))
               {
@@ -34,7 +34,8 @@ tcp::TcpClient::TcpClient(std::string hostname,
               auto handle = m_handlers->get(receivedMsg.type());
               if (!handle)
               {
-                std::cout << "1Received unknown message" << std::endl;
+                std::cout << "Received unknown message: " << receivedMsg.type()
+                          << std::endl;
                 return;
               }
               handle->execute(receivedMsg.msg(), format);
