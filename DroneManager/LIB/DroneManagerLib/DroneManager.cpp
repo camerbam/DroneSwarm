@@ -152,8 +152,9 @@ std::queue<messages::Message_t> drone::createFlightPath(
 
 drone::DroneManager::DroneManager(const std::string& ipAddress,
                                   const std::string& serverPort,
-                                  const std::string& monitorPort)
-  : m_controller(ipAddress),
+                                  const std::string& monitorPort,
+                                  int startingY)
+  : m_controller(ipAddress, startingY),
     m_client(boost::asio::ip::host_name(), serverPort),
     m_pathMutex(),
     m_flightPath(),
@@ -166,6 +167,7 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
 {
   m_connections.push_back(m_controller.registerForMid([this](int id) {
     if (m_points.empty()) return;
+    std::cout << "check location" << std::endl;
     if (utils::checkWithinDouble(m_points[0].x(), m_controller.getX(), 10) &&
         utils::checkWithinDouble(m_points[0].y(), m_controller.getY(), 10))
     {

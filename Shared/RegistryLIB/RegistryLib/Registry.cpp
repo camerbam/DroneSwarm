@@ -67,7 +67,6 @@ namespace
 GlobalRegistry::GlobalRegistry(const std::string& config)
   : m_pThreadPool(), m_speedRatio(1), m_decaySpeed(2)
 {
-  std::cout << config << std::endl;
   parseConfig(config);
 }
 

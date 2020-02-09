@@ -15,14 +15,18 @@ namespace
   const std::string DRONE_CONTROLLER("Drone Controller");
 }
 
-drone::DroneController::DroneController(const std::string& ipAddress)
-  : m_pState(std::make_shared<drone::DroneControllerState>()),
+drone::DroneController::DroneController(const std::string& ipAddress,
+                                        int startingY)
+  : m_pState(std::make_shared<drone::DroneControllerState>(100, startingY)),
     m_running(true),
     m_controlCommunicator(),
     m_controlEndpoint(boost::asio::ip::address::from_string(ipAddress), 8889),
     m_statusCommunicator(8890),
     m_connection(),
     m_cvStatus(),
+    m_midSignal(),
+    m_midConnection(),
+    m_mids(),
     m_statusMutex(),
     m_statusThread([this]() {
       while (m_running)
@@ -48,6 +52,10 @@ drone::DroneController::DroneController(const std::string& ipAddress)
         battery->toString(), m_controlEndpoint);
     },
     boost::posix_time::seconds(8));
+
+  m_midConnection =
+    m_pState->registerForMid([this](int id) { m_mids.push_back(id); });
+
   messages::Message_t command = messages::CommandMessage();
   sendMessage(command);
 }
@@ -71,6 +79,7 @@ boost::optional<std::string> drone::DroneController::sendMessage(
   }
   auto str =
     boost::apply_visitor(DroneControllerMessagesToString(m_pState), message);
+  logger::logInfo(DRONE_CONTROLLER, str);
   auto response =
     m_controlCommunicator.sendMessage(str, m_controlEndpoint, timeout);
   if (!response.didSucceed())
@@ -79,6 +88,14 @@ boost::optional<std::string> drone::DroneController::sendMessage(
     return boost::none;
   }
   boost::apply_visitor(DroneControllerStateChanges(m_pState), message);
+
+  if (!m_mids.empty())
+  {
+    for (auto&& id : m_mids)
+      m_midSignal(id);
+    m_mids.clear();
+  }
+
   return response.getMessage();
 }
 
@@ -131,5 +148,5 @@ void drone::DroneController::waitForStatusMsg()
 boost::signals2::scoped_connection drone::DroneController::registerForMid(
   std::function<void(int)> callback)
 {
-  return m_pState->registerForMid(callback);
+  return m_midSignal.connect(callback);
 }

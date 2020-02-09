@@ -246,6 +246,9 @@ void drone::DroneSimulatorStateImpl::startUpdate()
         m_updateSignal("ok");
       }
 
+      std::cout << m_currentLocation.getXCoordinate() << " "
+                << m_currentLocation.getYCoordinate() << std::endl;
+
       for (auto&& target : m_targets)
       {
         if (utils::checkWithin(

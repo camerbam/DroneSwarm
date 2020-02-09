@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(DRONE_MANAGER_TEST)
     std::unique_lock<std::mutex> lock(m);
     startManager.wait_for(lock, std::chrono::milliseconds(100));
   }
-  drone::DroneManager manager("127.0.0.1", "65000", "13000");
+  drone::DroneManager manager("127.0.0.1", "65000", "13000", 0);
 
   startManager.notify_one();
 
