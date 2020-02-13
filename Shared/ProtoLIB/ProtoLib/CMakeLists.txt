@@ -1,16 +1,20 @@
 set(lib_name Proto)
 set(${lib_name}_srcs
   BaseMsg.proto
+  EncryptedMsg.proto
   FinishMsg.proto
   FinishRsp.proto
   FlightPathMsg.proto
   FlightPathRsp.proto
-  Point.proto
+  HitTargetMsg.proto
+  HitTargetRsp.proto
+  PingMsg.proto
+  PingRsp.proto
+  ReadyMsg.proto
+  ReadyRsp.proto
+  ReadyRspRsp.proto
   StringMsg.proto
-  StartGameMsg.proto
-  StartGameRsp.proto
-  TargetMsg.proto
-  TargetRsp.proto
+  Target.proto
   ZConfigMsg.proto
   ZConfigRsp.proto
   )

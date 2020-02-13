@@ -3,17 +3,12 @@
 #include <rapidjson/document.h>
 #include <rapidxml/rapidxml.hpp>
 
-#include "JSONLib/Deserialize.hpp"
-#include "JSONLib/Serialize.hpp"
-#include "XMLLib/Deserialize.hpp"
 #include "XMLLib/Serialize.hpp"
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
 #include "ProtoLib/FlightPathRsp.pb.h"
 #pragma warning(pop)
-
-#include "Point.hpp"
 
 msg::FlightPathRsp::FlightPathRsp() 
 {

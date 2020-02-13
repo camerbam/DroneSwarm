@@ -1,4 +1,4 @@
-#include "BaseMsg.hpp"
+#include "EncryptedMsg.hpp"
 
 #include <iostream>
 #include <string>
@@ -13,7 +13,7 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
-#include "ProtoLib/BaseMsg.pb.h"
+#include "ProtoLib/EncryptedMsg.pb.h"
 #pragma warning(pop)
 
 namespace
@@ -23,18 +23,18 @@ namespace
   const std::string N_MSG("msg");
 } // namespace
 
-msg::BaseMsg::BaseMsg(const std::string& msgId,
-                      const std::string& type,
-                      const std::string& msg)
+msg::EncryptedMsg::EncryptedMsg(const std::string& msgId,
+                                const std::string& type,
+                                const std::string& msg)
   : m_msgId(msgId), m_type(type), m_msg(msg)
 {
 }
 
-msg::BaseMsg::BaseMsg() : m_msgId(), m_type(), m_msg()
+msg::EncryptedMsg::EncryptedMsg() : m_msgId(), m_type(), m_msg()
 {
 }
 
-bool msg::BaseMsg::parseFromJson(const std::string& msg)
+bool msg::EncryptedMsg::parseFromJson(const std::string& msg)
 {
   rapidjson::Document json(rapidjson::kObjectType);
   json.Parse(msg.c_str());
@@ -44,9 +44,9 @@ bool msg::BaseMsg::parseFromJson(const std::string& msg)
   return true;
 }
 
-bool msg::BaseMsg::parseFromProto(const std::string& msg)
+bool msg::EncryptedMsg::parseFromProto(const std::string& msg)
 {
-  proto::BaseMsg m;
+  proto::EncryptedMsg m;
   m.ParseFromString(msg);
   m_msgId = m.msgid();
   m_type = m.type();
@@ -54,7 +54,7 @@ bool msg::BaseMsg::parseFromProto(const std::string& msg)
   return true;
 }
 
-bool msg::BaseMsg::parseFromXml(const std::string& msg)
+bool msg::EncryptedMsg::parseFromXml(const std::string& msg)
 {
   auto pDoc = new rapidxml::xml_document<>;
   char* cstr = new char[msg.size() + 1];
@@ -68,7 +68,7 @@ bool msg::BaseMsg::parseFromXml(const std::string& msg)
   return true;
 }
 
-std::string msg::BaseMsg::toJsonString() const
+std::string msg::EncryptedMsg::toJsonString() const
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addStringToDoc(doc, N_ID, m_msgId);
@@ -77,16 +77,16 @@ std::string msg::BaseMsg::toJsonString() const
   return json::jsonToString(doc);
 }
 
-std::string msg::BaseMsg::toProtoString() const
+std::string msg::EncryptedMsg::toProtoString() const
 {
-  proto::BaseMsg msg;
+  proto::EncryptedMsg msg;
   msg.set_msgid(m_msgId);
   msg.set_type(m_type);
   msg.set_msg(m_msg);
   return msg.SerializeAsString();
 }
 
-std::string msg::BaseMsg::toXMLString() const
+std::string msg::EncryptedMsg::toXMLString() const
 {
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_ID, m_msgId);

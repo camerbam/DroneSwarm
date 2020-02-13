@@ -1,5 +1,5 @@
-#ifndef START_GAME_RSP_HPP
-#define START_GAME_RSP_HPP
+#ifndef READY_MSG_hpp
+#define READY_MSG_hpp
 
 #include <string>
 
@@ -7,11 +7,11 @@
 
 namespace msg
 {
-  class StartGameRsp
+  class ReadyMsg
   {
   public:
-    StartGameRsp();
-    static std::string name() { return "StartGameRsp"; }
+    ReadyMsg();
+    static std::string name() { return "ReadyMsg"; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);

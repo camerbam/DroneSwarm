@@ -1,5 +1,5 @@
-#ifndef BaseMsg_hpp
-#define BaseMsg_hpp
+#ifndef ENCRYPTED_MSG_HPP
+#define ENCRYPTED_MSG_HPP
 
 #include <string>
 
@@ -7,14 +7,14 @@
 
 namespace msg
 {
-  class BaseMsg
+  class EncryptedMsg
   {
   public:
-    BaseMsg();
-    BaseMsg(const std::string& msgId,
-            const std::string& type,
-            const std::string& msg);
-    static std::string name() { return "BaseMsg"; }
+    EncryptedMsg();
+    EncryptedMsg(const std::string& msgId,
+                 const std::string& type,
+                 const std::string& msg);
+    static std::string name() { return "EncryptedMsg"; }
 
     std::string msgId() const { return m_msgId; }
     std::string type() const { return m_type; }

@@ -1,4 +1,4 @@
-#include "FlightPathMsg.hpp"
+#include "ReadyRsp.hpp"
 
 #include <rapidjson/document.h>
 #include <rapidxml/rapidxml.hpp>
@@ -10,32 +10,33 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
-#include "ProtoLib/FlightPathMsg.pb.h"
+#include "ProtoLib/ReadyRsp.pb.h"
 #pragma warning(pop)
-
-#include "Target.hpp"
 
 namespace
 {
-  const std::string N_POINTS("targets");
-} // namespace
+  const std::string N_GAME_ID("gameId");
+  const std::string N_TARGETS("targets");
+}
 
-msg::FlightPathMsg::FlightPathMsg(const std::vector<Target>& targets)
-  : m_targets(targets)
+msg::ReadyRsp::ReadyRsp()
 {
 }
 
-msg::FlightPathMsg::FlightPathMsg() : m_targets()
+msg::ReadyRsp::ReadyRsp(int gameId, const std::vector<Target>& targets)
+  : m_gameId(gameId), m_targets(targets)
 {
 }
 
-bool msg::FlightPathMsg::parseFromJson(const std::string& point)
+bool msg::ReadyRsp::parseFromJson(const std::string& msg)
 {
   rapidjson::Document json(rapidjson::kObjectType);
-  json.Parse(point.c_str());
-  auto targets = json::getObjectOrArray(json, N_POINTS);
-  if (!targets) return false;
-  auto& targetsArray = targets.get();
+  json.Parse(msg.c_str());
+  m_gameId = json::getInt(json, N_GAME_ID);
+
+  auto optTarget = json::getObjectOrArray(json, N_TARGETS);
+  if (!optTarget) return false;
+  auto& targetsArray = optTarget.get();
   if (!targetsArray.IsArray()) return false;
   msg::Target tTarget;
   for (auto& point : targetsArray.GetArray())
@@ -43,32 +44,38 @@ bool msg::FlightPathMsg::parseFromJson(const std::string& point)
     if (!tTarget.parseFromJson(point)) return false;
     m_targets.emplace_back(tTarget);
   }
+
   return true;
 }
 
-bool msg::FlightPathMsg::parseFromProto(const std::string& msg)
+bool msg::ReadyRsp::parseFromProto(const std::string& msg)
 {
-  proto::FlightPathMsg m;
+  proto::ReadyRsp m;
   m.ParseFromString(msg);
+  m_gameId = m.gameid();
+
   msg::Target tTarget;
   for (auto&& p : m.targets())
   {
     if (!tTarget.parseFromProto(p)) return false;
     m_targets.emplace_back(tTarget);
   }
+
   return true;
 }
 
-bool msg::FlightPathMsg::parseFromXml(const std::string& msg)
+bool msg::ReadyRsp::parseFromXml(const std::string& msg)
 {
   auto pDoc = new rapidxml::xml_document<>;
   char* cstr = new char[msg.size() + 1];
   strcpy(cstr, msg.c_str());
   pDoc->parse<0>(cstr);
-  auto targets = xml::getObject(pDoc, N_POINTS);
-  msg::Target tTarget;
+  m_gameId = static_cast<int>(xml::getNumber(pDoc, N_GAME_ID));
 
-  for (; targets != nullptr; targets = targets->next_sibling(N_POINTS.c_str()))
+  msg::Target tTarget;
+  auto targets = xml::getObject(pDoc, N_TARGETS);
+
+  for (; targets != nullptr; targets = targets->next_sibling(N_TARGETS.c_str()))
   {
     if (!tTarget.parseFromXml(targets)) return false;
     m_targets.emplace_back(tTarget);
@@ -79,43 +86,49 @@ bool msg::FlightPathMsg::parseFromXml(const std::string& msg)
   return true;
 }
 
-std::string msg::FlightPathMsg::toJsonString() const
+std::string msg::ReadyRsp::toJsonString() const
 {
   rapidjson::Document doc(rapidjson::kObjectType);
-  rapidjson::Value arr(rapidjson::kArrayType);
+  json::addIntToDoc(doc, N_GAME_ID, m_gameId);
 
   msg::Target tTarget;
+  rapidjson::Value arr(rapidjson::kArrayType);
+
   for (auto&& p : m_targets)
   {
     rapidjson::Value obj(rapidjson::kObjectType);
     p.toJson(doc, obj);
     json::addObjectToArray(doc, arr, obj);
   }
-
-  json::addArrayToDoc(doc, N_POINTS, arr);
+  json::addArrayToDoc(doc, N_TARGETS, arr);
   return json::jsonToString(doc);
 }
 
-std::string msg::FlightPathMsg::toProtoString() const
+std::string msg::ReadyRsp::toProtoString() const
 {
-  proto::FlightPathMsg msg;
-  for (auto&& p : m_targets)
+  proto::ReadyRsp msg;
+  msg.set_gameid(m_gameId);
+
+  for (auto&& t : m_targets)
   {
-    auto point = msg.mutable_targets()->Add();
-    p.toProto(point);
+    auto target = msg.mutable_targets()->Add();
+    t.toProto(target);
   }
+
   return msg.SerializeAsString();
 }
 
-std::string msg::FlightPathMsg::toXMLString() const
+std::string msg::ReadyRsp::toXMLString() const
 {
   auto pDoc = new rapidxml::xml_document<>;
+  xml::addDataToNode(pDoc, N_GAME_ID, static_cast<int>(m_gameId));
 
   for (auto&& p : m_targets)
   {
-    auto targetsNode = xml::addDataToNode(pDoc, N_POINTS);
+    auto targetsNode = xml::addDataToNode(pDoc, N_TARGETS);
     p.toXML(targetsNode);
   }
+
   auto toReturn = xml::xmlToString(pDoc);
   delete pDoc;
   return toReturn;

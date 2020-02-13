@@ -1,5 +1,5 @@
-#ifndef FINISH_RSP_HPP
-#define FINISH_RSP_HPP
+#ifndef READY_RSP_HPP
+#define READY_RSP_HPP
 
 #include <string>
 #include <vector>
@@ -8,16 +8,18 @@
 
 namespace msg
 {
-  class FinishRsp
+  class ReadyRsp
   {
   public:
-    FinishRsp();
-    FinishRsp(const std::vector<Target>& targets);
-    static std::string name() { return "FinishRsp"; }
+    ReadyRsp();
+    ReadyRsp(int gameId, const std::vector<Target>& targets);
+    static std::string name() { return "ReadyRsp"; }
 
+    int gameId() const { return m_gameId; }
     std::vector<Target> targets() const { return m_targets; }
 
-    void targets(std::vector<Target> targets) { m_targets = targets; }
+    void gameId(const int& gameId) { m_gameId = gameId; }
+    void targets(const std::vector<Target>& targets) { m_targets = targets; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -28,6 +30,7 @@ namespace msg
     std::string toXMLString() const;
 
   private:
+    int m_gameId;
     std::vector<Target> m_targets;
   };
 } // namespace msg

@@ -2,6 +2,8 @@ set(lib_name Msg)
 set(${lib_name}_srcs
   BaseMsg.cpp
   BaseMsg.hpp
+  EncryptedMsg.cpp
+  EncryptedMsg.hpp
   FinishMsg.cpp
   FinishMsg.hpp
   FinishRsp.cpp
@@ -10,21 +12,27 @@ set(${lib_name}_srcs
   FlightPathMsg.hpp
   FlightPathRsp.cpp
   FlightPathRsp.hpp
+  HitTargetMsg.cpp
+  HitTargetMsg.hpp
+  HitTargetRsp.cpp
+  HitTargetRsp.hpp
   MsgTypes.cpp
   MsgTypes.hpp
-  Point.cpp
-  Point.hpp
+  PingMsg.cpp
+  PingMsg.hpp
+  PingRsp.cpp
+  PingRsp.hpp
   SerializeDeserialize.hpp
-  StartGameMsg.cpp
-  StartGameMsg.hpp
-  StartGameRsp.cpp
-  StartGameRsp.hpp
+  ReadyMsg.cpp
+  ReadyMsg.hpp
+  ReadyRsp.cpp
+  ReadyRsp.hpp
+  ReadyRspRsp.cpp
+  ReadyRspRsp.hpp
   StringMsg.cpp
   StringMsg.hpp
-  TargetMsg.cpp
-  TargetMsg.hpp
-  TargetRsp.cpp
-  TargetRsp.hpp
+  Target.cpp
+  Target.hpp
   ZConfigMsg.cpp
   ZConfigMsg.hpp
   ZConfigRsp.cpp

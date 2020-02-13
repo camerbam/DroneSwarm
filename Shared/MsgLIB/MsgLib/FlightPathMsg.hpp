@@ -1,8 +1,8 @@
 #ifndef FLIGHT_PATH_MSG_HPP
 #define FLIGHT_PATH_MSG_HPP
 
+#include "Target.hpp"
 #include <vector>
-#include "Point.hpp"
 
 namespace msg
 {
@@ -10,11 +10,11 @@ namespace msg
   {
   public:
     FlightPathMsg();
-    FlightPathMsg(const std::vector<Point>& points);
+    FlightPathMsg(const std::vector<Target>& m_targets);
     static std::string name() { return "FlightPathMsg"; }
 
-    std::vector<Point> points() const { return m_points; }
-    void points(const std::vector<Point>& points) { m_points = points; }
+    std::vector<Target> targets() const { return m_targets; }
+    void targets(const std::vector<Target>& targets) { m_targets = targets; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -23,8 +23,9 @@ namespace msg
     std::string toJsonString() const;
     std::string toProtoString() const;
     std::string toXMLString() const;
+
   private:
-    std::vector<Point> m_points;
+    std::vector<Target> m_targets;
   };
 }
 

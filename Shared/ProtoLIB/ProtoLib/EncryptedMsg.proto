@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-message BaseMsg {
+message EncryptedMsg {
   string msgId = 1;
   string type = 2;
   bytes msg = 3;

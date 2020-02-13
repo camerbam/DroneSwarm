@@ -1,5 +1,5 @@
-#ifndef StringMsg_hpp
-#define StringMsg_hpp
+#ifndef READY_RSP_RSP_HPP
+#define READY_RSP_RSP_HPP
 
 #include <string>
 
@@ -7,15 +7,15 @@
 
 namespace msg
 {
-  class StringMsg
+  class ReadyRspRsp
   {
   public:
-    StringMsg();
-    StringMsg(const std::string& msg);
-    static std::string name() { return "StringMsg"; }
+    ReadyRspRsp();
+    ReadyRspRsp(int gameId);
+    static std::string name() { return "ReadyRspRsp"; }
 
-    std::string msg() const { return m_msg; }
-    void msg(const std::string& msg) { m_msg = msg; }
+    void gameId(const int& gameId) { m_gameId = gameId; }
+    int gameId() const { return m_gameId; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -24,8 +24,9 @@ namespace msg
     std::string toJsonString() const;
     std::string toProtoString() const;
     std::string toXMLString() const;
+
   private:
-    std::string m_msg;
+    int m_gameId;
   };
 } // namespace msg
 

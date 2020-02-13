@@ -1,15 +1,15 @@
-#ifndef ZCONFIG_RSP_HPP
-#define ZCONFIG_RSP_HPP
+#ifndef PING_HPP
+#define PING_HPP
 
 #include <string>
 
 namespace msg
 {
-  class ZConfigRsp
+  class PingMsg
   {
   public:
-    ZConfigRsp();
-    static std::string name() { return "ZConfigRsp"; }
+    PingMsg();
+    static std::string name() { return "PingMsg"; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -20,6 +20,6 @@ namespace msg
     std::string toXMLString() const;
   private:
   };
-} // namespace msg
+}
 
 #endif

@@ -1,6 +1,9 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package proto;
 
+import "Target.proto";
+
 message FinishRsp {
+  repeated Target targets = 1;
 }
