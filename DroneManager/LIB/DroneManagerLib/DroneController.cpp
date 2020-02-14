@@ -54,7 +54,10 @@ drone::DroneController::DroneController(const std::string& ipAddress,
     boost::posix_time::seconds(8));
 
   m_midConnection =
-    m_pState->registerForMid([this](int id) { m_mids.push_back(id); });
+    m_pState->registerForMid([this](int id) { 
+    std::cout << "got " << id << std::endl;
+    m_mids.push_back(id); 
+  });
 
   messages::Message_t command = messages::CommandMessage();
   sendMessage(command);
@@ -91,6 +94,7 @@ boost::optional<std::string> drone::DroneController::sendMessage(
 
   if (!m_mids.empty())
   {
+    std::cout << "check ids" << std::endl;
     for (auto&& id : m_mids)
       m_midSignal(id);
     m_mids.clear();

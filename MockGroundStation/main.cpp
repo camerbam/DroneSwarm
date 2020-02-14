@@ -5,8 +5,8 @@
 
 #include "MsgLib/FinishMsg.hpp"
 #include "MsgLib/FlightPathMsg.hpp"
-#include "MsgLib/TargetMsg.hpp"
-#include "MsgLib/TargetRsp.hpp"
+#include "MsgLib/HitTargetMsg.hpp"
+#include "MsgLib/HitTargetRsp.hpp"
 #include "MsgLib/ZConfigMsg.hpp"
 #include "MsgLib/ZConfigRsp.hpp"
 #include "UtilsLib/Utils.hpp"
@@ -27,31 +27,30 @@ int main()
   targets.emplace_back(200, 0, 4);
 
   connections.push_back(
-    server.registerConnection([&connections, &drones, &server, &cv,&targets](
+    server.registerConnection([&connections, &drones, &server, &cv, &targets](
       std::shared_ptr<tcp::TcpConnection> connection) {
       drones.push_back(connection);
 
       connections.push_back(connection->registerHandler<msg::ZConfigRsp>(
-        [](const msg::ZConfigRsp&) {
-        std::cout << "received" << std::endl;
-      }));
+        [](const msg::ZConfigRsp&) { std::cout << "received" << std::endl; }));
 
-      connections.push_back(connection->registerHandler<msg::TargetMsg>(
-        [connection, &server, &targets, &cv](const msg::TargetMsg& target) {
+      connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
+        [connection, &server, &targets, &cv](const msg::HitTargetMsg& target) {
           std::cout << "received" << std::endl;
           auto nextTarget = targets.front();
-          if (utils::compareTwoDoubles(nextTarget.getX(), target.point().x()) &&
-              utils::compareTwoDoubles(nextTarget.getY(), target.point().y()) &&
-              utils::compareTwoDoubles(nextTarget.getId(), target.id()))
+          if (utils::checkWithin(nextTarget.getX(), target.target().x(), 20) &&
+              utils::checkWithin(nextTarget.getY(), target.target().y(), 20) &&
+              nextTarget.getId() == target.id())
           {
             std::cout << "correct" << std::endl;
-            connection->send(msg::TargetRsp());
+            connection->send(msg::HitTargetRsp());
             targets.erase(targets.begin());
           }
           else
           {
             std::cout << "wrong place" << std::endl;
-            connection->send(msg::TargetRsp("Wrong id, or wrong location"));
+            connection->send(msg::HitTargetRsp(
+              false, false, {}, {}));
           }
 
           if (targets.empty())

@@ -23,18 +23,18 @@ BOOST_AUTO_TEST_CASE(DroneControllerMessagesToStringTest)
   auto pDroneState = std::make_shared<drone::DroneControllerState>();
 
   checkMsg("takeoff", pDroneState, "takeoff");
-  checkMsg("back 50", pDroneState, "back 50");
+  checkMsg("back 55", pDroneState, "back 55");
   checkMsg("battery?", pDroneState, "battery?");
   checkMsg("cw 50", pDroneState, "cw 50");
   checkMsg("command", pDroneState, "command");
   checkMsg("ccw 50", pDroneState, "ccw 50");
-  checkMsg("down 50", pDroneState, "down 50");
+  checkMsg("down 55", pDroneState, "down 55");
   checkMsg("flip f", pDroneState, "flip f");
   checkMsg("flip r", pDroneState, "flip r");
   checkMsg("flip l", pDroneState, "flip l");
   checkMsg("flip b", pDroneState, "flip b");
   checkMsg("forward 50", pDroneState, "forward 50");
-  checkMsg("left 50", pDroneState, "left 50");
+  checkMsg("left 55", pDroneState, "left 55");
   checkMsg("right 50", pDroneState, "right 50");
   checkMsg("speed?", pDroneState, "speed?");
   checkMsg("go 50 50 50 50", pDroneState, "go 50 50 50 50");
@@ -56,8 +56,6 @@ BOOST_AUTO_TEST_CASE(DroneControllerMessagesToStringTest)
   checkMsg("flip l", pDroneState, "left 20");
   checkMsg("flip b", pDroneState, "back 20");
 
-  BOOST_CHECK_EQUAL(pDroneState->getX(), 5);
-  BOOST_CHECK_EQUAL(pDroneState->getY(), 6);  
   BOOST_CHECK_EQUAL(pDroneState->getZ(), 100);
   BOOST_CHECK_EQUAL(pDroneState->getMid(), 1);
 }

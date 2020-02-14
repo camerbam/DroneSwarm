@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
   {
     BOOST_CHECK(droneState.changeTargetX(100).empty());
     std::unique_lock<std::mutex> lk(mutex);
-    cv.wait_for(lk, std::chrono::seconds(6));
+    cv.wait_for(lk, std::chrono::seconds(60));
     BOOST_CHECK(utils::compareTwoDoubles(droneState.getX(), 100));
     BOOST_CHECK(droneState.getMid() == 2);
   }

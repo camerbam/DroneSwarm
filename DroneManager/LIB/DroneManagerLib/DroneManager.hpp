@@ -10,13 +10,13 @@
 
 namespace msg
 {
-  class Point;
+  class TargetMsg;
 }
 
 namespace drone
 {
   std::queue<messages::Message_t> createFlightPath(
-    double x, double y, const std::vector<msg::Point>& points);
+    double x, double y, const std::vector<msg::TargetMsg>& targets);
 
   class DroneManager
   {
@@ -37,7 +37,7 @@ namespace drone
     tcp::TcpClient m_client;
     std::mutex m_pathMutex;
     std::queue<messages::Message_t> m_flightPath;
-    std::vector<msg::Point> m_points;
+    std::vector<msg::TargetMsg> m_targets;
     std::vector<boost::signals2::scoped_connection> m_connections;
     logger::MonitorLogger m_logger;
     std::shared_ptr<std::thread> m_sendThread;

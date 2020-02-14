@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package proto;
+
+import "Target.proto";
+
+message HitTargetRsp {
+  bool success = 1;
+  bool complete = 2;
+  repeated Target newTargets = 3;
+  repeated Target badTargets = 4;
+}

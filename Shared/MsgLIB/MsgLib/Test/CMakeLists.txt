@@ -1,17 +1,23 @@
 set(exe_name MsgTest)
 set(${exe_name}_srcs
   BaseMsgTest.cpp
-  FinishMsg.cpp
-  FinishRsp.cpp
-  FlightPathMsg.cpp
-  FlightPathRsp.cpp
+  EncryptedMsgTest.cpp
+  FinishMsgTest.cpp
+  FinishRspTest.cpp
+  FlightPathMsgTest.cpp
+  FlightPathRspTest.cpp
+  HitTargetMsgTest.cpp
+  HitTargetRspTest.cpp
   MsgTest.cpp
-  Point.cpp
+  PingMsgTest.cpp
+  PingRspTest.cpp
+  ReadyMsgTest.cpp
+  ReadyRspTest.cpp
+  ReadyRspRspTest.cpp
   StringMsgTest.cpp
-  TargetMsg.cpp
-  TargetRsp.cpp
-  ZConfigMsg.cpp
-  ZConfigRsp.cpp
+  TargetTest.cpp
+  ZConfigMsgTest.cpp
+  ZConfigRspTest.cpp
   )
 source_group("" FILES ${${exe_name}_srcs})
 add_executable(${exe_name} ${${exe_name}_srcs})

@@ -1,18 +1,15 @@
-#ifndef TARGET_RSP_HPP
-#define TARGET_RSP_HPP
+#ifndef PING_RSP_HPP
+#define PING_RSP_HPP
 
 #include <string>
 
 namespace msg
 {
-  class TargetRsp
+  class PingRsp
   {
   public:
-    TargetRsp(const std::string& errorMsg = "");
-    static std::string name() { return "TargetRsp"; }
-
-    void errorMsg(const std::string& errorMsg) { m_errorMsg = errorMsg; }
-    std::string errorMsg() { return m_errorMsg; }
+    PingRsp();
+    static std::string name() { return "PingRsp"; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -21,9 +18,7 @@ namespace msg
     std::string toJsonString() const;
     std::string toProtoString() const;
     std::string toXMLString() const;
-
   private:
-    std::string m_errorMsg;
   };
 }
 

@@ -6,14 +6,14 @@
 class Target
 {
 public:
-  Target(double x,
-         double y,
+  Target(int x,
+         int y,
          int id,
          std::set<int> dependents = {},
          int falseAfter = 0);
 
-  double getX() const;
-  double getY() const;
+  int getX() const;
+  int getY() const;
   int getId() const;
   std::set<int> getDependents() const;
   int getFalseAfter() const;
@@ -21,8 +21,8 @@ public:
   bool isReady() const;
 
 private:
-  double m_x;
-  double m_y;
+  int m_x;
+  int m_y;
   int m_id;
   std::set<int> m_dependents;
   int m_falseAfter;

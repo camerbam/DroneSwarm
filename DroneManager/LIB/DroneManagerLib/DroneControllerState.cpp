@@ -140,7 +140,8 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   if (m_mid != mid)
   {
     m_midSignal(mid);
-    m_knownTargets.emplace_back(m_xCoordinate, m_yCoordinate, mid);
+    m_knownTargets.emplace_back(
+      static_cast<int>(m_xCoordinate), static_cast<int>(m_yCoordinate), mid);
   }
   m_mid = mid;
 

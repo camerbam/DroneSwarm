@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package proto;
 
-import "Point.proto";
+import "Target.proto";
 
 message FlightPathMsg {
-  repeated Point points = 1;
+  repeated Target targets = 1;
 }

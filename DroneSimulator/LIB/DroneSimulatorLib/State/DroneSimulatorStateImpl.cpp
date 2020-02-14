@@ -239,12 +239,9 @@ void drone::DroneSimulatorStateImpl::startUpdate()
     {
       auto now = std::chrono::steady_clock::now();
       m_configuration.update(now);
-      if (m_pUpdater &&
-          m_pUpdater->updateState(m_currentLocation, m_configuration))
-      {
-        m_pUpdater.reset();
-        m_updateSignal("ok");
-      }
+      auto succeeded =
+        m_pUpdater &&
+        m_pUpdater->updateState(m_currentLocation, m_configuration);
 
       std::cout << m_currentLocation.getXCoordinate() << " "
                 << m_currentLocation.getYCoordinate() << std::endl;
@@ -263,6 +260,12 @@ void drone::DroneSimulatorStateImpl::startUpdate()
           m_currentLocation.setMid(target.getId());
           break;
         }
+      }
+
+      if (succeeded)
+      {
+        m_pUpdater.reset();
+        m_updateSignal("ok");
       }
 
       std::this_thread::sleep_for(
