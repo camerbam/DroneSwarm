@@ -31,17 +31,24 @@ namespace tcp
       msg::FORMAT format);
 
     template <class T>
-    void send(T message)
+    void send(T message, bool expectReturn = false)
     {
+      static int count = 0;
       msg::BaseMsg msg;
       msg.msg(msg::toString(message, m_format));
       msg.type(T::name());
+      msg.msgId(std::to_string(m_id) + ":" + std::to_string(count++));
       auto pMessage = std::make_shared<std::string>(
         tcp::getProcessedString(msg::toString(msg, m_format)));
       m_pSocket->async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
+      if (expectReturn)
+        (*m_pMessages)[msg.msgId()] = {
+          msg, std::chrono::steady_clock::now() + std::chrono::seconds(10)};
     }
+
+    void resend(const msg::BaseMsg& msg);
 
     int getId() { return m_id; }
 
@@ -52,6 +59,8 @@ namespace tcp
     void ready();
 
     void close();
+
+    void checkMsgs(const std::chrono::steady_clock::time_point& now);
 
     void handleRead(const boost::system::error_code& ec,
                     std::size_t bytes_transferred);
@@ -84,6 +93,7 @@ namespace tcp
     boost::signals2::signal<void(int)> m_closedSignal;
     std::vector<char> m_inputBuffer;
     std::shared_ptr<tcp::HandlerMap> m_handlers;
+    std::shared_ptr<std::map<std::string, msg::ResendMsg>> m_pMessages;
     AutoConsumedQueue m_acq;
   };
 } // namespace tcp

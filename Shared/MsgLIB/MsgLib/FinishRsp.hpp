@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Target.hpp"
+#include "TargetMsg.hpp"
 
 namespace msg
 {
@@ -12,12 +12,12 @@ namespace msg
   {
   public:
     FinishRsp();
-    FinishRsp(const std::vector<Target>& targets);
+    FinishRsp(const std::vector<TargetMsg>& targets);
     static std::string name() { return "FinishRsp"; }
 
-    std::vector<Target> targets() const { return m_targets; }
+    std::vector<TargetMsg> targets() const { return m_targets; }
 
-    void targets(std::vector<Target> targets) { m_targets = targets; }
+    void targets(std::vector<TargetMsg> targets) { m_targets = targets; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -28,7 +28,7 @@ namespace msg
     std::string toXMLString() const;
 
   private:
-    std::vector<Target> m_targets;
+    std::vector<TargetMsg> m_targets;
   };
 } // namespace msg
 

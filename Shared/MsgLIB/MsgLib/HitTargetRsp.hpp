@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "Target.hpp"
+#include "TargetMsg.hpp"
 
 namespace msg
 {
@@ -14,23 +14,25 @@ namespace msg
     HitTargetRsp();
     HitTargetRsp(bool success,
                  bool complete,
-                 const std::string& error,
-                 const std::vector<Target>& newTargets,
-                 const std::vector<Target>& badTargets);
+                 const std::vector<TargetMsg>& newTargets,
+                 const std::vector<TargetMsg>& badTargets);
     static std::string name() { return "HitTargetRsp"; }
 
     void success(const bool& success) { m_success = success; }
     void complete(const bool& complete) { m_complete = complete; }
-    void errorMsg(const std::string& errorMsg) { m_errorMsg = errorMsg; }
+    void newTargets(const std::vector<TargetMsg>& newTargets)
+    {
+      m_newTargets = newTargets;
+    }
+    void badTargets(const std::vector<TargetMsg>& badTargets)
+    {
+      m_badTargets = badTargets;
+    }
 
-    void newTargets(const std::vector<Target>& newTargets) { m_newTargets = newTargets; }
-    void badTargets(const std::vector<Target>& badTargets) { m_badTargets = badTargets; }
-    
-    bool success() { return m_success; }
-    bool complete() { return m_complete; }
-    std::string errorMsg() { return m_errorMsg; }
-    std::vector<Target> newTargets() { return m_newTargets; }
-    std::vector<Target> badTargets() { return m_badTargets; }
+    bool success() const { return m_success; }
+    bool complete() const { return m_complete; }
+    std::vector<TargetMsg> newTargets() const { return m_newTargets; }
+    std::vector<TargetMsg> badTargets() const { return m_badTargets; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -43,9 +45,8 @@ namespace msg
   private:
     bool m_success;
     bool m_complete;
-    std::string m_errorMsg;
-    std::vector<Target> m_newTargets;
-    std::vector<Target> m_badTargets;
+    std::vector<TargetMsg> m_newTargets;
+    std::vector<TargetMsg> m_badTargets;
   };
 }
 

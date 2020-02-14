@@ -23,7 +23,7 @@ msg::ReadyRsp::ReadyRsp()
 {
 }
 
-msg::ReadyRsp::ReadyRsp(int gameId, const std::vector<Target>& targets)
+msg::ReadyRsp::ReadyRsp(int gameId, std::vector<TargetMsg> targets)
   : m_gameId(gameId), m_targets(targets)
 {
 }
@@ -38,7 +38,7 @@ bool msg::ReadyRsp::parseFromJson(const std::string& msg)
   if (!optTarget) return false;
   auto& targetsArray = optTarget.get();
   if (!targetsArray.IsArray()) return false;
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto& point : targetsArray.GetArray())
   {
     if (!tTarget.parseFromJson(point)) return false;
@@ -54,7 +54,7 @@ bool msg::ReadyRsp::parseFromProto(const std::string& msg)
   m.ParseFromString(msg);
   m_gameId = m.gameid();
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto&& p : m.targets())
   {
     if (!tTarget.parseFromProto(p)) return false;
@@ -72,7 +72,7 @@ bool msg::ReadyRsp::parseFromXml(const std::string& msg)
   pDoc->parse<0>(cstr);
   m_gameId = static_cast<int>(xml::getNumber(pDoc, N_GAME_ID));
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   auto targets = xml::getObject(pDoc, N_TARGETS);
 
   for (; targets != nullptr; targets = targets->next_sibling(N_TARGETS.c_str()))
@@ -91,7 +91,7 @@ std::string msg::ReadyRsp::toJsonString() const
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addIntToDoc(doc, N_GAME_ID, m_gameId);
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   rapidjson::Value arr(rapidjson::kArrayType);
 
   for (auto&& p : m_targets)

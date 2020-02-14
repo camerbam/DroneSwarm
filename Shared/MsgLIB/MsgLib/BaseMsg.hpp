@@ -1,6 +1,7 @@
 #ifndef BaseMsg_hpp
 #define BaseMsg_hpp
 
+#include <chrono>
 #include <string>
 
 #include "MsgTypes.hpp"
@@ -37,6 +38,8 @@ namespace msg
     std::string m_type;
     std::string m_msg;
   };
+
+  typedef std::pair<BaseMsg, std::chrono::steady_clock::time_point> ResendMsg;
 } // namespace msg
 
 #endif

@@ -17,24 +17,21 @@ namespace
 {
   const std::string N_SUCESS("success");
   const std::string N_COMPLETE("complete");
-  const std::string N_ERROR("error");
   const std::string N_NEW_TARGETS("newTargets");
   const std::string N_BAD_TARGETS("badTargets");
 }
 
 msg::HitTargetRsp::HitTargetRsp()
-  : m_success(), m_complete(), m_errorMsg(), m_newTargets(), m_badTargets()
+  : m_success(), m_complete(), m_newTargets(), m_badTargets()
 {
 }
 
 msg::HitTargetRsp::HitTargetRsp(bool success,
                                 bool complete,
-                                const std::string& error,
-                                const std::vector<Target>& newTargets,
-                                const std::vector<Target>& badTargets)
+                                const std::vector<TargetMsg>& newTargets,
+                                const std::vector<TargetMsg>& badTargets)
   : m_success(success),
     m_complete(complete),
-    m_errorMsg(error),
     m_newTargets(newTargets),
     m_badTargets(badTargets)
 {
@@ -46,14 +43,13 @@ bool msg::HitTargetRsp::parseFromJson(const std::string& msg)
   json.Parse(msg.c_str());
   m_success = json::getBool(json, N_SUCESS);
   m_complete = json::getBool(json, N_COMPLETE);
-  m_errorMsg = json::getString(json, N_ERROR);
 
   {
     auto optTarget = json::getObjectOrArray(json, N_NEW_TARGETS);
     if (!optTarget) return false;
     auto& targetsArray = optTarget.get();
     if (!targetsArray.IsArray()) return false;
-    msg::Target tTarget;
+    msg::TargetMsg tTarget;
     for (auto& point : targetsArray.GetArray())
     {
       if (!tTarget.parseFromJson(point)) return false;
@@ -65,7 +61,7 @@ bool msg::HitTargetRsp::parseFromJson(const std::string& msg)
     if (!optTarget) return false;
     auto& targetsArray = optTarget.get();
     if (!targetsArray.IsArray()) return false;
-    msg::Target tTarget;
+    msg::TargetMsg tTarget;
     for (auto& point : targetsArray.GetArray())
     {
       if (!tTarget.parseFromJson(point)) return false;
@@ -82,9 +78,8 @@ bool msg::HitTargetRsp::parseFromProto(const std::string& msg)
   m.ParseFromString(msg);
   m_success = m.success();
   m_complete = m.complete();
-  m_errorMsg = m.error();
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   {
     for (auto&& p : m.newtargets())
     {
@@ -111,9 +106,8 @@ bool msg::HitTargetRsp::parseFromXml(const std::string& msg)
   pDoc->parse<0>(cstr);
   m_success = xml::getBool(pDoc, N_SUCESS);
   m_complete = xml::getBool(pDoc, N_COMPLETE);
-  m_errorMsg = xml::getString(pDoc, N_ERROR);
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   {
     auto targets = xml::getObject(pDoc, N_NEW_TARGETS);
 
@@ -145,9 +139,8 @@ std::string msg::HitTargetRsp::toJsonString() const
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addBoolToDoc(doc, N_SUCESS, m_success);
   json::addBoolToDoc(doc, N_COMPLETE, m_complete);
-  json::addStringToDoc(doc, N_ERROR, m_errorMsg);
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   {
     rapidjson::Value arr(rapidjson::kArrayType);
 
@@ -177,7 +170,6 @@ std::string msg::HitTargetRsp::toProtoString() const
   proto::HitTargetRsp msg;
   msg.set_success(m_success);
   msg.set_complete(m_complete);
-  msg.set_error(m_errorMsg);
 
   for (auto&& p : m_newTargets)
   {
@@ -198,7 +190,6 @@ std::string msg::HitTargetRsp::toXMLString() const
   auto pDoc = new rapidxml::xml_document<>;
   xml::addDataToNode(pDoc, N_SUCESS, m_success);
   xml::addDataToNode(pDoc, N_COMPLETE, m_complete);
-  xml::addDataToNode(pDoc, N_ERROR, m_errorMsg);
 
   for (auto&& p : m_newTargets)
   {

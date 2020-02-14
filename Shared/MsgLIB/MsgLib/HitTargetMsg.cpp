@@ -24,7 +24,7 @@ namespace
 
 msg::HitTargetMsg::HitTargetMsg(const int& gameId,
                                 const int& id,
-                                const Target& target)
+                                const TargetMsg& target)
   : m_gameId(gameId), m_id(id), m_target(target)
 {
 }

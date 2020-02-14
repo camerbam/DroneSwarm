@@ -7,7 +7,6 @@ import "Target.proto";
 message HitTargetRsp {
   bool success = 1;
   bool complete = 2;
-  string error = 3;
-  repeated Target newTargets = 4;
-  repeated Target badTargets = 5;
+  repeated Target newTargets = 3;
+  repeated Target badTargets = 4;
 }

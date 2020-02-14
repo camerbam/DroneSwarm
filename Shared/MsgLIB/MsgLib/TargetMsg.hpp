@@ -9,13 +9,16 @@ namespace proto
   class Target;
 }
 
+class Target;
+
 namespace msg
 {
-  class Target
+  class TargetMsg
   {
   public:
-    Target();
-    Target(const int& x, const int& y);
+    TargetMsg();
+    TargetMsg(const Target& target);
+    TargetMsg(const int& x, const int& y);
 
     int x() const { return m_x; }
     int y() const { return m_y; }
@@ -33,7 +36,7 @@ namespace msg
     int m_y;
   };
 
-  bool operator==(const Target& lhs, const Target& rhs);
+  bool operator==(const TargetMsg& lhs, const TargetMsg& rhs);
 }
 
 #endif

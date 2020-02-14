@@ -15,7 +15,7 @@ namespace
   const std::string N_TARGETS("targets");
 } // namespace
 
-msg::FinishRsp::FinishRsp(const std::vector<Target>& targets)
+msg::FinishRsp::FinishRsp(const std::vector<TargetMsg>& targets)
   : m_targets(targets)
 {
 }
@@ -32,7 +32,7 @@ bool msg::FinishRsp::parseFromJson(const std::string& msg)
   if (!points) return false;
   auto& pointsArray = points.get();
   if (!pointsArray.IsArray()) return false;
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto& point : pointsArray.GetArray())
   {
     if (!tTarget.parseFromJson(point)) return false;
@@ -45,7 +45,7 @@ bool msg::FinishRsp::parseFromProto(const std::string& msg)
 {
   proto::FinishRsp m;
   m.ParseFromString(msg);
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto&& p : m.targets())
   {
     if (!tTarget.parseFromProto(p)) return false;
@@ -61,7 +61,7 @@ bool msg::FinishRsp::parseFromXml(const std::string& msg)
   strcpy(cstr, msg.c_str());
   pDoc->parse<0>(cstr);
   auto points = xml::getObject(pDoc, N_TARGETS);
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
 
   for (; points != nullptr; points = points->next_sibling(N_TARGETS.c_str()))
   {
@@ -79,7 +79,7 @@ std::string msg::FinishRsp::toJsonString() const
   rapidjson::Document doc(rapidjson::kObjectType);
   rapidjson::Value arr(rapidjson::kArrayType);
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto&& p : m_targets)
   {
     rapidjson::Value obj(rapidjson::kObjectType);

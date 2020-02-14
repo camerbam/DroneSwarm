@@ -7,8 +7,8 @@
 #include "MsgLib/FinishRsp.hpp"
 #include "MsgLib/FlightPathMsg.hpp"
 #include "MsgLib/FlightPathRsp.hpp"
-#include "MsgLib/Point.hpp"
 #include "MsgLib/TargetMsg.hpp"
+#include "MsgLib/HitTargetMsg.hpp"
 #include "MsgLib/ZConfigMsg.hpp"
 #include "MsgLib/ZConfigRsp.hpp"
 #include "UtilsLib/Utils.hpp"
@@ -137,7 +137,7 @@ namespace
 }
 
 std::queue<messages::Message_t> drone::createFlightPath(
-  double x, double y, const std::vector<msg::Point>& points)
+  double x, double y, const std::vector<msg::TargetMsg>& points)
 {
   std::queue<messages::Message_t> toReturn;
   static int i;
@@ -158,7 +158,7 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
     m_client(boost::asio::ip::host_name(), serverPort),
     m_pathMutex(),
     m_flightPath(),
-    m_points(),
+  m_targets(),
     m_connections(),
     m_logger("Drone Manager", monitorPort),
     m_sendThread(),
@@ -166,14 +166,14 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
     m_zConfig(100)
 {
   m_connections.push_back(m_controller.registerForMid([this](int id) {
-    if (m_points.empty()) return;
+    if (m_targets.empty()) return;
     std::cout << "check location" << std::endl;
-    if (utils::checkWithinDouble(m_points[0].x(), m_controller.getX(), 10) &&
-        utils::checkWithinDouble(m_points[0].y(), m_controller.getY(), 10))
+    if (utils::checkWithinDouble(m_targets[0].x(), m_controller.getX(), 10) &&
+        utils::checkWithinDouble(m_targets[0].y(), m_controller.getY(), 10))
     {
-      msg::TargetMsg msg(id, {m_points[0].x(), m_points[0].y()});
+      msg::HitTargetMsg msg(0, id, {m_targets[0].x(), m_targets[0].y()});
       m_client.send(msg);
-      m_points.erase(m_points.begin());
+      m_targets.erase(m_targets.begin());
     }
   }));
   registerHandlers();
@@ -191,13 +191,13 @@ void drone::DroneManager::registerHandlers()
   m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>(
     [this](const msg::FlightPathMsg& msg) {
       auto path = createFlightPath(
-        m_controller.getX(), m_controller.getY(), msg.points());
+        m_controller.getX(), m_controller.getY(), msg.targets());
       {
         std::lock_guard<std::mutex> l(m_pathMutex);
         std::swap(path, m_flightPath);
       }
-      auto points = msg.points();
-      std::swap(points, m_points);
+      auto targets = msg.targets();
+      std::swap(targets, m_targets);
       startMessages();
       msg::FlightPathRsp rsp;
       m_client.send(rsp);

@@ -54,8 +54,8 @@ namespace
       int f = 0;
       if (falseAfter != target.MemberEnd() && falseAfter->value.IsInt())
         f = falseAfter->value.GetInt();
-      toReturn.emplace_back(x->value.GetDouble(),
-                            y->value.GetDouble(),
+      toReturn.emplace_back(x->value.GetInt(),
+                            y->value.GetInt(),
                             id->value.GetInt(),
                             depends,
                             f);
@@ -114,8 +114,8 @@ void GlobalRegistry::setRegistry(double speed,
     for (auto&& target : targets)
     {
       rapidjson::Document targetJson(rapidjson::kObjectType);
-      json::addNumberToObject(doc, targetJson, "x", target.getX());
-      json::addNumberToObject(doc, targetJson, "y", target.getY());
+      json::addIntToObject(doc, targetJson, "x", target.getX());
+      json::addIntToObject(doc, targetJson, "y", target.getY());
       json::addIntToObject(doc, targetJson, "id", target.getId());
 
       if (!target.getDependents().empty())

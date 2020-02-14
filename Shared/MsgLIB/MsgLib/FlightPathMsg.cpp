@@ -13,14 +13,14 @@
 #include "ProtoLib/FlightPathMsg.pb.h"
 #pragma warning(pop)
 
-#include "Target.hpp"
+#include "TargetMsg.hpp"
 
 namespace
 {
   const std::string N_POINTS("targets");
 } // namespace
 
-msg::FlightPathMsg::FlightPathMsg(const std::vector<Target>& targets)
+msg::FlightPathMsg::FlightPathMsg(const std::vector<TargetMsg>& targets)
   : m_targets(targets)
 {
 }
@@ -37,7 +37,7 @@ bool msg::FlightPathMsg::parseFromJson(const std::string& point)
   if (!targets) return false;
   auto& targetsArray = targets.get();
   if (!targetsArray.IsArray()) return false;
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto& point : targetsArray.GetArray())
   {
     if (!tTarget.parseFromJson(point)) return false;
@@ -50,7 +50,7 @@ bool msg::FlightPathMsg::parseFromProto(const std::string& msg)
 {
   proto::FlightPathMsg m;
   m.ParseFromString(msg);
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto&& p : m.targets())
   {
     if (!tTarget.parseFromProto(p)) return false;
@@ -66,7 +66,7 @@ bool msg::FlightPathMsg::parseFromXml(const std::string& msg)
   strcpy(cstr, msg.c_str());
   pDoc->parse<0>(cstr);
   auto targets = xml::getObject(pDoc, N_POINTS);
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
 
   for (; targets != nullptr; targets = targets->next_sibling(N_POINTS.c_str()))
   {
@@ -84,7 +84,7 @@ std::string msg::FlightPathMsg::toJsonString() const
   rapidjson::Document doc(rapidjson::kObjectType);
   rapidjson::Value arr(rapidjson::kArrayType);
 
-  msg::Target tTarget;
+  msg::TargetMsg tTarget;
   for (auto&& p : m_targets)
   {
     rapidjson::Value obj(rapidjson::kObjectType);

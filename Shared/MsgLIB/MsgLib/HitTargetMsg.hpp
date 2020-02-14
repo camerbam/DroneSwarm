@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "Target.hpp"
+#include "TargetMsg.hpp"
 
 namespace msg
 {
@@ -11,7 +11,7 @@ namespace msg
   {
   public:
     HitTargetMsg();
-    HitTargetMsg(const int& gameId, const int& id, const Target& target);
+    HitTargetMsg(const int& gameId, const int& id, const TargetMsg& target);
     static std::string name() { return "HitTargetMsg"; }
 
     int gameId() const { return m_gameId; }
@@ -20,8 +20,8 @@ namespace msg
     int id() const { return m_id; }
     void id(const int& id) { m_id = id; }
 
-    Target target() const { return m_target; }
-    void target(const Target& target) { m_target = target; }
+    TargetMsg target() const { return m_target; }
+    void target(const TargetMsg& target) { m_target = target; }
 
     bool parseFromJson(const std::string& msg);
     bool parseFromProto(const std::string& msg);
@@ -34,7 +34,7 @@ namespace msg
   private:
     int m_gameId;
     int m_id;
-    Target m_target;
+    TargetMsg m_target;
   };
 }
 

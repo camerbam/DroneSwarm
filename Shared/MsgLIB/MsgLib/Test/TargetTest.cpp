@@ -8,12 +8,12 @@
 #include "ProtoLib/Target.pb.h"
 #pragma warning(pop)
 
-#include "MsgLib/Target.hpp"
+#include "MsgLib/TargetMsg.hpp"
 
 BOOST_AUTO_TEST_CASE(TargetTest)
 {
   {
-    msg::Target target(3, 2);
+    msg::TargetMsg target(3, 2);
     BOOST_CHECK_EQUAL(target.x(), 3);
     BOOST_CHECK_EQUAL(target.y(), 2);
     rapidjson::Document doc(rapidjson::kObjectType);
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(TargetTest)
     BOOST_CHECK_EQUAL(target.y(), 2);
   }
   {
-    msg::Target target(3, 2);
+    msg::TargetMsg target(3, 2);
     BOOST_CHECK_EQUAL(target.x(), 3);
     BOOST_CHECK_EQUAL(target.y(), 2);
 
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(TargetTest)
     BOOST_CHECK_EQUAL(target.y(), 2);
   }
   {
-    msg::Target target(3, 2);
+    msg::TargetMsg target(3, 2);
     BOOST_CHECK_EQUAL(target.x(), 3);
     BOOST_CHECK_EQUAL(target.y(), 2);
     auto pDoc = new rapidxml::xml_document<>;
