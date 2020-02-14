@@ -18,17 +18,17 @@ msg::ReadyMsg::ReadyMsg()
 {
 }
 
-bool msg::ReadyMsg::parseFromJson(const std::string& msg)
+bool msg::ReadyMsg::parseFromJson(const std::string&)
 {
   return true;
 }
 
-bool msg::ReadyMsg::parseFromProto(const std::string& msg)
+bool msg::ReadyMsg::parseFromProto(const std::string&)
 {
   return true;
 }
 
-bool msg::ReadyMsg::parseFromXml(const std::string& msg)
+bool msg::ReadyMsg::parseFromXml(const std::string&)
 {
   return true;
 }
