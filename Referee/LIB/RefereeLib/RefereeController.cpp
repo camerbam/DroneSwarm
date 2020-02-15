@@ -24,21 +24,29 @@ namespace
 
 referee::RefereeController::RefereeController(unsigned short port,
                                               msg::FORMAT format)
-  : m_server(port, format), m_connections(), m_gameManagers()
+  : m_pCtx(std::make_shared<boost::asio::io_context>()),
+    m_optCork(*m_pCtx),
+    m_timer(*m_pCtx),
+    m_server(port, format),
+    m_connections(),
+    m_gameManagers(),
+    m_iocThread([pCtx = m_pCtx]() { pCtx->run(); })
 {
   m_connections.push_back(m_server.registerConnection(
     [this](std::shared_ptr<tcp::TcpConnection> connection) {
+    std::cout << "new connection" << std::endl;
+    logger::logInfo("RefereeController", "New connection");
       m_connections.push_back(connection->registerHandler<msg::ReadyMsg>(
-        [this, connection](const msg::ReadyMsg&) {
+        [this, connection](const msg::ReadyMsg&, const std::string& msgId) {
           int i = static_cast<int>(m_gameManagers.size());
           auto& game = m_gameManagers[i];
           std::vector<Target> targets = game.startGame();
-          connection->send(msg::ReadyRsp(i, convertTargets(targets)), true);
+          connection->send(msg::ReadyRsp(i, convertTargets(targets)));
           m_gameManagers[i].addMsg(msg::ReadyMsg::name());
         }));
 
       m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
-        [this](const msg::ReadyRspRsp& msg) {
+        [this](const msg::ReadyRspRsp& msg, const std::string& msgId) {
           auto game = m_gameManagers.find(msg.gameId());
           if (game == m_gameManagers.end())
             logger::logError(
@@ -47,7 +55,7 @@ referee::RefereeController::RefereeController(unsigned short port,
         }));
 
       m_connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
-        [this, connection](const msg::HitTargetMsg& msg) {
+        [this, connection](const msg::HitTargetMsg& msg, const std::string& msgId) {
           auto& game = m_gameManagers[msg.gameId()];
           std::cout << msg.gameId() << std::endl;
 
@@ -66,29 +74,41 @@ referee::RefereeController::RefereeController(unsigned short port,
             toSend.badTargets(convertTargets(hit.get().targetsToAdd));
             toSend.badTargets(convertTargets(hit.get().targetsToRemove));
           }
-          connection->send(toSend);
+          connection->respond(toSend, msgId);
 
           game.addMsg(msg::HitTargetMsg::name());
         }));
 
       m_connections.push_back(connection->registerHandler<msg::FinishMsg>(
-        [this, connection](const msg::FinishMsg& msg) {
+        [this, connection](const msg::FinishMsg& msg, const std::string& msgId) {
           std::cout << msg.gameId() << std::endl;
           auto& game = m_gameManagers[msg.gameId()];
           auto targets = game.finish();
-          connection->send(msg::FinishRsp(convertTargets(targets)));
+          connection->respond(msg::FinishRsp(convertTargets(targets)), msgId);
           game.addMsg(msg::FinishMsg::name());
         }));
 
-      m_connections.push_back(
-        connection->registerHandler<msg::PingMsg>([this, connection](
-          const msg::PingMsg&) { connection->send(msg::PingRsp()); }));
-
       connection->ready();
     }));
+  m_timer.expires_after(boost::asio::chrono::seconds(1));
+  m_timer.async_wait([this](const boost::system::error_code& e) {
+    if (!e) sendPing();
+  });
 }
 
 referee::RefereeController::~RefereeController()
 {
+  m_optCork = boost::none;
+  if (m_iocThread.joinable()) m_iocThread.join();
   m_server.close();
+}
+
+void referee::RefereeController::sendPing()
+{
+  m_timer.expires_after(boost::asio::chrono::seconds(1));
+  m_timer.async_wait([this](const boost::system::error_code& e) {
+    if (!e) sendPing();
+  });
+  logger::logInfo("Referee Controller", "sending ping msg");
+  m_server.sendToAll(msg::PingMsg());
 }

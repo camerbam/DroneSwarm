@@ -15,7 +15,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
     m_optCork(m_ctx),
     m_format(format),
     m_name(name),
-    m_timer(m_ctx),
+    m_timer(m_ctx, boost::asio::chrono::seconds(1)),
     m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
     m_socket(m_ctx),
     m_inputBuffer(1024),
@@ -38,9 +38,11 @@ tcp::TcpClient::TcpClient(std::string hostname,
               }
               auto msgSent = m_pMessages->find(receivedMsg.msgId());
               auto handle = m_handlers->get(receivedMsg.type());
-              if (handle) handle->execute(receivedMsg.msg(), format);
-              if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
-              if (msgSent == m_pMessages->end() && !handle)
+              if (handle)
+                handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
+              if (msgSent != m_pMessages->end())
+                m_pMessages->erase(msgSent);
+              else if (!handle)
                 std::cout << "Received unknown message: " << receivedMsg.type()
                           << std::endl;
             });
@@ -153,6 +155,7 @@ void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
 
 void tcp::TcpClient::close()
 {
+  m_timer.cancel();
   m_optCork = boost::none;
   m_ctx.stop();
 }
@@ -180,8 +183,10 @@ void tcp::TcpClient::resend(const msg::BaseMsg& msg)
 
 void tcp::TcpClient::checkMsgs()
 {
-  m_timer = boost::asio::steady_timer(m_ctx, boost::asio::chrono::seconds(1));
+  m_timer.async_wait([this](const boost::system::error_code& e) {
+    if (!e) checkMsgs();
+  });
   auto now = std::chrono::steady_clock::now();
   for (auto m : *m_pMessages)
-    if (m.second.second < now) send<msg::BaseMsg>(m.second.first, true);
+    if (m.second.second < now) send<msg::BaseMsg>(m.second.first);
 }

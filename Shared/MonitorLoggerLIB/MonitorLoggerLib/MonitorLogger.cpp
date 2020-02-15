@@ -4,8 +4,8 @@
 
 #include <boost/asio/ip/host_name.hpp>
 
-#include "MsgLib/StringMsg.hpp"
 #include "LoggerLib/Logger.hpp"
+#include "MsgLib/StringMsg.hpp"
 
 namespace
 {
@@ -31,10 +31,9 @@ namespace
        << ": " << getTime() << ": " << msg;
     auto str = ss.str();
     log(component, str);
-    if (m_client.isConnected()) 
+    if (m_client.isConnected())
     {
-      msg::StringMsg msg(str);
-      m_client.send(msg);
+      m_client.sendString(str);
     }
   }
 } // namespace
@@ -44,8 +43,16 @@ logger::MonitorLogger::MonitorLogger(const std::string& name,
   : m_client(boost::asio::ip::host_name(), port, msg::FORMAT::PROTOBUF)
 {
   m_client.ready();
-  msg::StringMsg msg(name);
-  m_client.send(msg);
+  m_client.sendString(name);
+}
+
+logger::MonitorLogger::MonitorLogger(const std::string& name,
+                                     const std::string& hostname,
+                                     const std::string& port)
+  : m_client(hostname, port, msg::FORMAT::PROTOBUF)
+{
+  m_client.ready();
+  m_client.sendString(name);
 }
 
 void logger::MonitorLogger::logError(const std::string& component,

@@ -13,27 +13,31 @@ namespace tcp
   class HandlerBase
   {
   public:
-    virtual void execute(const std::string& data, const msg::FORMAT& format) = 0;
+    virtual void execute(const std::string& data,
+                         const msg::FORMAT& format,
+                         const std::string& msgId) = 0;
   };
 
   template <class T>
   class Handler : public HandlerBase
   {
   public:
-    void execute(const std::string& data, const msg::FORMAT& format)
+    void execute(const std::string& data,
+                 const msg::FORMAT& format,
+                 const std::string& msgId)
     {
       std::string name = T::name();
 
       T msg;
       bool success = msg::parseString(msg, data, format);
       if (!success) std::cout << "Could not parse data" << std::endl;
-      m_signal(msg);
+      m_signal(msg, msgId);
     }
 
-    boost::signals2::signal<void(T)>& signal() { return m_signal; }
+    boost::signals2::signal<void(T, std::string)>& signal() { return m_signal; }
 
   private:
-    boost::signals2::signal<void(T)> m_signal;
+    boost::signals2::signal<void(T, std::string)> m_signal;
   };
 
   class HandlerMap

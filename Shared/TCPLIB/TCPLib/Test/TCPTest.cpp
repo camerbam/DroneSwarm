@@ -2,8 +2,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include "TCPLib/TCPClient.hpp"
-#include "TCPLib/TCPServer.hpp"
 #include "TCPLib/TCPConnection.hpp"
+#include "TCPLib/TCPServer.hpp"
 
 #include "MsgLib/StringMsg.hpp"
 #include "RegistryLib/Registry.hpp"
@@ -15,8 +15,8 @@ std::shared_ptr<std::thread> startClientToRecieve()
 
     tcp::TcpClient client("localhost", "8080");
 
-    connections.push_back(
-      client.registerHandler<msg::StringMsg>([&client](msg::StringMsg msg) {
+    connections.push_back(client.registerHandler<msg::StringMsg>(
+      [&client](msg::StringMsg msg, const std::string& msgId) {
         static std::vector<std::string> msgsToGet{
           "json test", "protobuf test", "xml test"};
         static size_t msgsLeft = 3;
@@ -40,21 +40,21 @@ BOOST_AUTO_TEST_CASE(TCPServerSend)
 
   tcp::TcpServer server(8080);
 
-  auto connection = server.registerConnection([&server](
-    std::shared_ptr<tcp::TcpConnection> pConnection) {
-    pConnection->ready();
+  auto connection = server.registerConnection(
+    [&server](std::shared_ptr<tcp::TcpConnection> pConnection) {
+      pConnection->ready();
 
-    std::vector<std::string> msgsToSend{
-      "json test", "protobuf test", "xml test"};
+      std::vector<std::string> msgsToSend{
+        "json test", "protobuf test", "xml test"};
 
-    msg::StringMsg msg1(msgsToSend[0]);
-    pConnection->send(msg1);
-    msg::StringMsg msg2(msgsToSend[1]);
-    pConnection->send(msg2);
-    msg::StringMsg msg3(msgsToSend[2]);
-    pConnection->send(msg3);
+      msg::StringMsg msg1(msgsToSend[0]);
+      pConnection->send(msg1);
+      msg::StringMsg msg2(msgsToSend[1]);
+      pConnection->send(msg2);
+      msg::StringMsg msg3(msgsToSend[2]);
+      pConnection->send(msg3);
 
-  });
+    });
   auto pThread = startClientToRecieve();
   pThread->join();
   server.close();
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
   auto connection = server.registerConnection([&connections, &server](
     std::shared_ptr<tcp::TcpConnection> pConnection) {
     connections.push_back(pConnection->registerHandler<msg::StringMsg>(
-      [pConnection](msg::StringMsg msg) {
+      [pConnection](msg::StringMsg msg, const std::string& msgId) {
         static size_t msgsLeft = 3;
         static std::vector<std::string> msgsToGet{
           "json test", "protobuf test", "xml test"};

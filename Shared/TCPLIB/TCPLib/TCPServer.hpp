@@ -49,10 +49,13 @@ namespace tcp
 
     void close();
 
+    void checkMsgs();
+
   private:
     std::shared_ptr<boost::asio::io_context> m_pCtx;
     boost::optional<boost::asio::io_context::work> m_optCork;
     msg::FORMAT m_format;
+    boost::asio::steady_timer m_timer;
     boost::asio::ip::tcp::acceptor m_pAcceptor;
     std::map<int, std::shared_ptr<TcpConnection>> m_connections;
     boost::signals2::signal<void(std::shared_ptr<TcpConnection>)>

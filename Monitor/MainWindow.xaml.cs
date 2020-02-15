@@ -53,7 +53,7 @@ namespace Monitor
       {
         this.Dispatcher.Invoke(() =>
         {
-          this.MainStackPanel.Children.Remove(boxToType);
+          //this.MainStackPanel.Children.Remove(boxToType);
         });
       }
     }
@@ -70,6 +70,7 @@ namespace Monitor
         {
           TextBox a = new TextBox();
           a.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+          a.TextWrapping = System.Windows.TextWrapping.Wrap;
           a.Width = 175;
           a.Text = "";
           a.VerticalAlignment = VerticalAlignment.Stretch;
@@ -99,6 +100,7 @@ namespace Monitor
 
     ~MainWindow()
     {
+      Console.WriteLine("This is C#");
       Server.Stop();
       t.Join();
     }

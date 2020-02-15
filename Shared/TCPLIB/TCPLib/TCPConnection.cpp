@@ -47,9 +47,10 @@ tcp::TcpConnection::TcpConnection(
               }
               auto msgSent = m_pMessages->find(receivedMsg.msgId());
               auto handle = handlers->get(receivedMsg.type());
-              if (handle) handle->execute(receivedMsg.msg(), format);
+              if (handle)
+                handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
               if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
-              if (msgSent == m_pMessages->end() && !handle)
+              else if (!handle)
                 std::cout << "Received unknown message: " << receivedMsg.type()
                           << std::endl;
             });
@@ -87,7 +88,7 @@ void tcp::TcpConnection::checkMsgs(
   const std::chrono::steady_clock::time_point& now)
 {
   for (auto m : *m_pMessages)
-    if (m.second.second < now) send<msg::BaseMsg>(m.second.first, true);
+    if (m.second.second < now) send<msg::BaseMsg>(m.second.first);
 }
 
 void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,

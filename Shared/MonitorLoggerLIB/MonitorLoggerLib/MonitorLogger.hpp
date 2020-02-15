@@ -11,6 +11,9 @@ namespace logger
   {
   public:
     MonitorLogger(const std::string& name, const std::string& port);
+    MonitorLogger(const std::string& name,
+                  const std::string& hostname,
+                  const std::string& port);
 
     void logError(const std::string& component, const std::string& msg);
     void logWarning(const std::string& component, const std::string& msg);

@@ -33,14 +33,14 @@ BOOST_AUTO_TEST_CASE(RefereeControllerTest)
   tcp::TcpClient client("localhost", "65001");
 
   connections.push_back(client.registerHandler<msg::ReadyRsp>(
-    [&client, &cv, &readyRsp](const msg::ReadyRsp& msg) {
-      client.send(msg::ReadyRspRsp(msg.gameId()));
+    [&client, &cv, &readyRsp](const msg::ReadyRsp& msg, const std::string& msgId) {
+      client.respond(msg::ReadyRspRsp(msg.gameId()), msgId);
       cv.notify_one();
       readyRsp = true;
     }));
 
   connections.push_back(client.registerHandler<msg::HitTargetRsp>(
-    [&hitTargetRsp, &cv](const msg::HitTargetRsp& msg) {
+    [&hitTargetRsp, &cv](const msg::HitTargetRsp& msg, const std::string& msgId) {
       BOOST_CHECK(msg.badTargets().empty());
       BOOST_CHECK(msg.newTargets().empty());
       BOOST_CHECK(msg.success());
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(RefereeControllerTest)
     }));
 
   connections.push_back(client.registerHandler<msg::FinishRsp>(
-    [&finishMsg, &cv](const msg::FinishRsp& msg) {
+    [&finishMsg, &cv](const msg::FinishRsp& msg, const std::string& msgId) {
       BOOST_CHECK(msg.targets().size() == 3);
       finishMsg = true;
       cv.notify_one();
@@ -58,19 +58,19 @@ BOOST_AUTO_TEST_CASE(RefereeControllerTest)
 
   client.ready();
 
-  client.send(msg::ReadyMsg(), true);
+  client.send(msg::ReadyMsg());
   {
     std::unique_lock<std::mutex> lock(m);
     cv.wait_for(lock, std::chrono::seconds(10));
   }
 
-  client.send(msg::HitTargetMsg(0, 2, {0, 40}), true);
+  client.send(msg::HitTargetMsg(0, 2, {0, 40}));
   {
     std::unique_lock<std::mutex> lock(m);
     cv.wait_for(lock, std::chrono::seconds(10));
   }
 
-  client.send(msg::FinishMsg(0), true);
+  client.send(msg::FinishMsg(0));
   {
     std::unique_lock<std::mutex> lock(m);
     cv.wait_for(lock, std::chrono::seconds(10));

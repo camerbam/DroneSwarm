@@ -7,8 +7,8 @@
 #include "MsgLib/FinishRsp.hpp"
 #include "MsgLib/FlightPathMsg.hpp"
 #include "MsgLib/FlightPathRsp.hpp"
-#include "MsgLib/TargetMsg.hpp"
 #include "MsgLib/HitTargetMsg.hpp"
+#include "MsgLib/TargetMsg.hpp"
 #include "MsgLib/ZConfigMsg.hpp"
 #include "MsgLib/ZConfigRsp.hpp"
 #include "UtilsLib/Utils.hpp"
@@ -158,7 +158,7 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
     m_client(boost::asio::ip::host_name(), serverPort),
     m_pathMutex(),
     m_flightPath(),
-  m_targets(),
+    m_targets(),
     m_connections(),
     m_logger("Drone Manager", monitorPort),
     m_sendThread(),
@@ -188,29 +188,29 @@ drone::DroneManager::~DroneManager()
 
 void drone::DroneManager::registerHandlers()
 {
-  m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>(
-    [this](const msg::FlightPathMsg& msg) {
-      auto path = createFlightPath(
-        m_controller.getX(), m_controller.getY(), msg.targets());
-      {
-        std::lock_guard<std::mutex> l(m_pathMutex);
-        std::swap(path, m_flightPath);
-      }
-      auto targets = msg.targets();
-      std::swap(targets, m_targets);
-      startMessages();
-      msg::FlightPathRsp rsp;
-      m_client.send(rsp);
-    }));
+  m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>([this](
+    const msg::FlightPathMsg& msg, const std::string& msgId) {
+    auto path =
+      createFlightPath(m_controller.getX(), m_controller.getY(), msg.targets());
+    {
+      std::lock_guard<std::mutex> l(m_pathMutex);
+      std::swap(path, m_flightPath);
+    }
+    auto targets = msg.targets();
+    std::swap(targets, m_targets);
+    startMessages();
+    msg::FlightPathRsp rsp;
+    m_client.send(rsp);
+  }));
 
   m_connections.push_back(m_client.registerHandler<msg::ZConfigMsg>(
-    [this](const msg::ZConfigMsg& msg) {
+    [this](const msg::ZConfigMsg& msg, const std::string& msgId) {
       m_zConfig = msg.zAxis();
       m_client.send(msg::ZConfigRsp());
     }));
 
-  m_connections.push_back(
-    m_client.registerHandler<msg::FinishMsg>([this](const msg::FinishMsg&) {
+  m_connections.push_back(m_client.registerHandler<msg::FinishMsg>(
+    [this](const msg::FinishMsg&, const std::string& msgId) {
       {
         std::lock_guard<std::mutex> l(m_pathMutex);
         m_flightPath.push(messages::LandMessage());
