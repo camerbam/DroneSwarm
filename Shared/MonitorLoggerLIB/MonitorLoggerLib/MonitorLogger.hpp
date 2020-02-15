@@ -15,6 +15,8 @@ namespace logger
                   const std::string& hostname,
                   const std::string& port);
 
+    ~MonitorLogger();
+
     void logError(const std::string& component, const std::string& msg);
     void logWarning(const std::string& component, const std::string& msg);
     void logInfo(const std::string& component, const std::string& msg);

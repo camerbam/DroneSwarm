@@ -80,7 +80,8 @@ namespace tcp
         tcp::getProcessedString(toString(msg, m_format)));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
-        [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
+        [this, pMessage](auto a, auto b) { 
+this->handleWrite(a, b); });
     }
 
     void handleWrite(const boost::system::error_code& error, size_t bt);

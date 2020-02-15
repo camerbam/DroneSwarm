@@ -108,9 +108,6 @@ referee::GraphResponse referee::Graph::hitTarget(const Target& target)
     }
   }
 
-  std::cout << m_notReady.size() << std::endl;
-  std::cout << m_ready.size() << std::endl;
-
   return toReturn;
 }
 

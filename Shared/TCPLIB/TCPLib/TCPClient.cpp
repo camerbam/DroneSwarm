@@ -4,6 +4,7 @@
 
 #include <boost/asio/write.hpp>
 
+#include "LoggerLib/Logger.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
 
@@ -42,7 +43,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
                 handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
               if (msgSent != m_pMessages->end())
                 m_pMessages->erase(msgSent);
-              else if (!handle)
+              if (!handle)
                 std::cout << "Received unknown message: " << receivedMsg.type()
                           << std::endl;
             });
@@ -61,6 +62,7 @@ tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
   if (m_ctxThread.joinable()) m_ctxThread.join();
+  std::cout << "closed client" << std::endl;
 }
 
 void tcp::TcpClient::startConnect(
@@ -84,8 +86,13 @@ void tcp::TcpClient::startConnect(
   }
 }
 
-void tcp::TcpClient::handleWrite(const boost::system::error_code&, size_t)
+void tcp::TcpClient::handleWrite(const boost::system::error_code& e, size_t a)
 {
+  // if (e)
+  //{
+  //  std::cout << e.message() << std::endl;
+  //}
+  // std::cout << a << std::endl;
 }
 
 void tcp::TcpClient::handleConnect(
@@ -177,8 +184,9 @@ void tcp::TcpClient::resend(const msg::BaseMsg& msg)
   m_socket.async_write_some(
     boost::asio::buffer(*pMessage, pMessage.get()->size()),
     [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
-  (*m_pMessages)[msg.msgId()].second =
+  (*m_pMessages)[msg.msgId()].expireTime =
     std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  (*m_pMessages)[msg.msgId()].retries++;
 }
 
 void tcp::TcpClient::checkMsgs()
@@ -188,5 +196,5 @@ void tcp::TcpClient::checkMsgs()
   });
   auto now = std::chrono::steady_clock::now();
   for (auto m : *m_pMessages)
-    if (m.second.second < now) send<msg::BaseMsg>(m.second.first);
+    if (m.second.expireTime < now) send<msg::BaseMsg>(m.second.msg);
 }

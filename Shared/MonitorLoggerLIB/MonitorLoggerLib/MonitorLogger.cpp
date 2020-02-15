@@ -30,7 +30,7 @@ namespace
     ss << std::left << std::setw(8) << kind << std::setw(20) << component
        << ": " << getTime() << ": " << msg;
     auto str = ss.str();
-    log(component, str);
+    log(component, msg);
     if (m_client.isConnected())
     {
       m_client.sendString(str);
@@ -53,6 +53,11 @@ logger::MonitorLogger::MonitorLogger(const std::string& name,
 {
   m_client.ready();
   m_client.sendString(name);
+}
+
+logger::MonitorLogger::~MonitorLogger()
+{
+  m_client.close();
 }
 
 void logger::MonitorLogger::logError(const std::string& component,

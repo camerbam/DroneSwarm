@@ -53,7 +53,7 @@ namespace Monitor
       {
         this.Dispatcher.Invoke(() =>
         {
-          //this.MainStackPanel.Children.Remove(boxToType);
+          this.MainStackPanel.Children.Remove(boxToType);
         });
       }
     }

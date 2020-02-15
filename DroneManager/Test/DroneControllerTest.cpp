@@ -10,6 +10,7 @@
 #include "DroneMessagesLib/Messages/LandMessage.hpp"
 #include "DroneMessagesLib/Messages/TakeoffMessage.hpp"
 #include "DroneSimulatorLib/DroneSimulator.hpp"
+#include "MonitorLoggerLib/MonitorLogger.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
 
@@ -27,7 +28,10 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
 
-  auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
+  logger::MonitorLogger logger("Drone Manager", "localhost", "13000");
+
+  auto controller =
+    std::make_shared<drone::DroneController>(logger, "127.0.0.1");
 
   messages::Message_t command = messages::CommandMessage();
   messages::Message_t takeoff = messages::TakeoffMessage();
@@ -83,7 +87,10 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
 {
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
-  auto controller = std::make_shared<drone::DroneController>("127.0.0.1");
+  logger::MonitorLogger logger("Drone Manager", "localhost", "13000");
+
+  auto controller =
+    std::make_shared<drone::DroneController>(logger, "127.0.0.1");
 
   messages::Message_t takeoff = messages::TakeoffMessage();
   messages::Message_t back = messages::BackMessage(25);

@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
     std::cout << "Enter ready to start" << std::endl;
     std::string line;
 
-    while (std::getline(std::cin, line) && line != "start")
+    while (std::getline(std::cin, line) && line != "ready")
       ;
 
     ground.start();

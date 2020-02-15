@@ -35,18 +35,23 @@ ground::GroundStationController::GroundStationController(std::string host,
   m_connections.push_back(m_droneServer.registerConnection(
     [this](std::shared_ptr<tcp::TcpConnection> drone) {
       createDroneMsgHandlers(drone);
+      drone->ready();
     }));
   m_toReferee.ready();
 }
 
 ground::GroundStationController::~GroundStationController()
 {
-  std::unique_lock<std::mutex> lock(m_m);
-  m_cv.wait(lock);
+  {
+    std::unique_lock<std::mutex> lock(m_m);
+    m_cv.wait(lock);
+    m_droneServer.close();
+  }
 }
 
 void ground::GroundStationController::start()
 {
+  m_logger.logInfo("Ground Station", "Starting the game");
   m_toReferee.send(msg::ReadyMsg());
 }
 
@@ -54,6 +59,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
 {
   m_connections.push_back(m_toReferee.registerHandler<msg::ReadyRsp>(
     [this](const msg::ReadyRsp& msg, const std::string& msgId) {
+      m_logger.logInfo("Referee Controller", "Received ReadyRsp");
       m_gameId = msg.gameId();
       m_targets = msg.targets();
 
@@ -69,6 +75,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
 
   m_connections.push_back(m_toReferee.registerHandler<msg::FinishRsp>(
     [this](const msg::FinishRsp& msg, const std::string& msgId) {
+      m_logger.logInfo("Referee Controller", "Received FinishRsp");
       auto targets = msg.targets();
       if (targets.empty())
         m_logger.logInfo("GroundStation", "Completed all targets");
@@ -81,6 +88,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
         drone->send(msg::FinishMsg());
       for (auto&& drone : m_busyDrones)
         drone->send(msg::FinishMsg());
+      m_connections.clear();
       m_toReferee.close();
       m_cv.notify_one();
     }));
@@ -93,12 +101,14 @@ void ground::GroundStationController::createRefereeMsgHandlers()
 
   m_connections.push_back(m_toReferee.registerHandler<msg::HitTargetRsp>(
     [this](const msg::HitTargetRsp& msg, const std::string& msgId) {
+      m_logger.logInfo("Referee Controller", "Received HitTargetRsp");
       if (msg.complete())
       {
         for (auto&& drone : m_idleDrones)
           drone->send(msg::FinishMsg());
         for (auto&& drone : m_busyDrones)
           drone->send(msg::FinishMsg());
+        m_connections.clear();
         m_toReferee.close();
         m_cv.notify_one();
         return;
@@ -129,17 +139,17 @@ void ground::GroundStationController::createDroneMsgHandlers(
 {
   m_connections.push_back(drone->registerHandler<msg::HitTargetMsg>(
     [this, drone](const msg::HitTargetMsg& msg, const std::string& msgId) {
-      bool found(false);
-      for (auto&& target : m_targets)
+      m_logger.logInfo("Referee Controller", "Received HitTargetMsg");
+      for (auto target = m_targets.begin(); target != m_targets.end(); target++)
       {
-        if (utils::checkWithin(msg.target().x(), target.x(), 20) &&
-            utils::checkWithin(msg.target().x(), target.x(), 20))
+        if (utils::checkWithin(msg.target().x(), target->x(), 20) &&
+            utils::checkWithin(msg.target().y(), target->y(), 20))
         {
-          m_toReferee.send(msg::HitTargetMsg(m_gameId, msg.id(), target));
+          m_toReferee.send(msg::HitTargetMsg(m_gameId, msg.id(), *target));
+          m_targets.erase(target);
           if (!m_targets.empty())
           {
             drone->send(msg::FlightPathMsg({m_targets[0]}));
-            m_targets.erase(m_targets.begin());
           }
           else
           {
@@ -147,10 +157,10 @@ void ground::GroundStationController::createDroneMsgHandlers(
             m_busyDrones.erase(
               std::find(m_busyDrones.begin(), m_busyDrones.end(), drone));
           }
-          found = true;
           break;
         }
       }
+      drone->send(msg::HitTargetRsp());
     }));
 
   m_idleDrones.push_back(drone);
@@ -164,9 +174,10 @@ void ground::GroundStationController::assignTargets()
     if (!m_targets.empty())
     {
       drone->send(msg::FlightPathMsg({m_targets[0]}));
-      m_targets.erase(m_targets.begin());
       m_busyDrones.push_back(drone);
     }
   }
-  m_idleDrones.erase(m_idleDrones.begin(), m_idleDrones.begin() + toRemove);
+  m_idleDrones.erase(
+    m_idleDrones.begin(),
+    m_idleDrones.begin() + std::min(toRemove, m_idleDrones.size()));
 }
