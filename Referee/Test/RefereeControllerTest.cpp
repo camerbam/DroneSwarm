@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <vector>
+#include <condition_variable>
 
 #include "MsgLib/FinishMsg.hpp"
 #include "MsgLib/FinishRsp.hpp"

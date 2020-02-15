@@ -15,12 +15,12 @@ tcp::TcpClient::TcpClient(std::string hostname,
     m_optCork(m_ctx),
     m_format(format),
     m_name(name),
-    m_timer(m_ctx, boost::asio::chrono::seconds(1)),
+    m_timer(m_ctx),
+    m_pMessages(std::make_shared<std::map<std::string, msg::ResendMsg>>()),
     m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); }),
     m_socket(m_ctx),
     m_inputBuffer(1024),
     m_handlers(std::make_shared<tcp::HandlerMap>()),
-    m_pMessages(std::make_shared<std::map<std::string, msg::ResendMsg>>()),
     m_acq(std::function<void(std::string)>(
       [ m_handlers = m_handlers, format = m_format, m_pMessages = m_pMessages ](
         std::string input) {
