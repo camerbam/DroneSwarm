@@ -39,9 +39,10 @@ bool msg::StringMsg::parseFromJson(const std::string& msg)
 
 bool msg::StringMsg::parseFromProto(const std::string& msg)
 {
-  proto::StringMsg m;
-  m.ParseFromString(msg.c_str());
-  m_msg = m.msg();
+  //proto::StringMsg m;
+  //m.ParseFromString(msg.c_str());
+  //m_msg = m.msg();
+  m_msg = msg;
   return true;
 }
 
@@ -66,9 +67,10 @@ std::string msg::StringMsg::toJsonString() const
 
 std::string msg::StringMsg::toProtoString() const
 {
-  proto::StringMsg msg;
-  msg.set_msg(m_msg);
-  return msg.SerializeAsString();
+  //proto::StringMsg msg;
+  //msg.set_msg(m_msg);
+  //return msg.SerializeAsString();
+  return m_msg;
 }
 
 std::string msg::StringMsg::toXMLString() const

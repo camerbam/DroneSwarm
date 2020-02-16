@@ -33,7 +33,7 @@ namespace
     log(component, msg);
     if (m_client.isConnected())
     {
-      m_client.sendString(str);
+      m_client.respond(msg::StringMsg(str), "");
     }
   }
 } // namespace
@@ -43,7 +43,7 @@ logger::MonitorLogger::MonitorLogger(const std::string& name,
   : m_client(boost::asio::ip::host_name(), port, msg::FORMAT::PROTOBUF)
 {
   m_client.ready();
-  m_client.sendString(name);
+  m_client.respond(msg::StringMsg(name), "");
 }
 
 logger::MonitorLogger::MonitorLogger(const std::string& name,
@@ -52,7 +52,7 @@ logger::MonitorLogger::MonitorLogger(const std::string& name,
   : m_client(hostname, port, msg::FORMAT::PROTOBUF)
 {
   m_client.ready();
-  m_client.sendString(name);
+  m_client.respond(msg::StringMsg(name), "");
 }
 
 logger::MonitorLogger::~MonitorLogger()

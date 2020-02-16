@@ -62,7 +62,6 @@ tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
   if (m_ctxThread.joinable()) m_ctxThread.join();
-  std::cout << "closed client" << std::endl;
 }
 
 void tcp::TcpClient::startConnect(

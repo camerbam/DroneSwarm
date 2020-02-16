@@ -38,10 +38,15 @@ namespace Monitor
           int i;
 
           // Loop to receive all the data sent by the client.
-          while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+          while ((i = stream.Read(bytes, 0, 1)) != 0)
           {
+            if (bytes[0] != 0x01) continue;
+            if ((i = stream.Read(bytes, 0, 5)) == 0) continue;
+            Int32 size = System.Convert.ToInt32(System.Text.Encoding.ASCII.GetString(bytes, 0, 5));
+            if ((i = stream.Read(bytes, 0, size)) == 0) continue;
+
             // Translate data bytes to a ASCII string.
-            data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+            data = System.Text.Encoding.ASCII.GetString(bytes, 0, size);
             this.Dispatcher.Invoke(() =>
             {
               boxToType.Text += data + "\n";

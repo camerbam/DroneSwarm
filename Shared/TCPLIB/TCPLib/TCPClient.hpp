@@ -61,14 +61,6 @@ namespace tcp
         msg, std::chrono::steady_clock::now() + std::chrono::seconds(10)};
     }
 
-    void sendString(const std::string& message)
-    {
-      auto pMessage = std::make_shared<std::string>(message);
-      m_socket.async_write_some(
-        boost::asio::buffer(*pMessage, pMessage.get()->size()),
-        [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
-    }
-
     template <class T>
     void respond(T message, const std::string& msgId)
     {
@@ -80,8 +72,7 @@ namespace tcp
         tcp::getProcessedString(toString(msg, m_format)));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
-        [this, pMessage](auto a, auto b) { 
-this->handleWrite(a, b); });
+        [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
     }
 
     void handleWrite(const boost::system::error_code& error, size_t bt);
