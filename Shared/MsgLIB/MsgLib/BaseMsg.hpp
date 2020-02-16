@@ -39,7 +39,18 @@ namespace msg
     std::string m_msg;
   };
 
-  typedef std::pair<BaseMsg, std::chrono::steady_clock::time_point> ResendMsg;
+  struct ResendMsg
+  {
+    BaseMsg msg;
+    std::chrono::steady_clock::time_point expireTime;
+    int retries;
+    ResendMsg(BaseMsg msg, std::chrono::steady_clock::time_point expireTime)
+      : msg(msg), expireTime(expireTime), retries(0)
+    {
+    }
+
+    ResendMsg() : msg(), expireTime(), retries(0) {}
+  };
 } // namespace msg
 
 #endif

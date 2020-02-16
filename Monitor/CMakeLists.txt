@@ -25,6 +25,7 @@ set(${exe_name}_xaml
   App.xaml.cs
   MainWindow.xaml
   MainWindow.xaml.cs
+  StringMsg.cs
   )
 list(APPEND ${exe_name}_libsrcs ${${exe_name}_xaml})
 source_group(xaml FILES ${${exe_name}_xaml})

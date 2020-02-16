@@ -1,4 +1,4 @@
-#include "RefereeLib/RefereeController.hpp"
+#include "GroundStationLib/GroundStationController.hpp"
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -28,13 +28,15 @@ int main(int argc, char* argv[])
       GlobalRegistry::setRegistry(boost::filesystem::path(config));
     }
 
-    referee::RefereeController controller(65000, msg::FORMAT::PROTOBUF);
+    ground::GroundStationController ground("localhost", "65000");
 
-    std::cout << "Enter exit to finish" << std::endl;
+    std::cout << "Enter ready to start" << std::endl;
     std::string line;
 
-    while (std::getline(std::cin, line) && line != "exit")
+    while (std::getline(std::cin, line) && line != "ready")
       ;
+
+    ground.start();
   }
   catch (const boost::program_options::error& ex)
   {

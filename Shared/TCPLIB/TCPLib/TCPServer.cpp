@@ -13,11 +13,12 @@ tcp::TcpServer::TcpServer(unsigned short port, msg::FORMAT format)
   : m_pCtx(std::make_shared<boost::asio::io_context>()),
     m_optCork(*m_pCtx),
     m_format(format),
+    m_timer(*m_pCtx, boost::asio::chrono::seconds(1)),
     m_pAcceptor(
       *m_pCtx,
       boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-     m_connections(),
-     m_connectionHandler(),
+    m_connections(),
+    m_connectionHandler(),
     m_iocThread([pCtx = m_pCtx]() { pCtx->run(); })
 {
   startAccept();
@@ -26,8 +27,7 @@ tcp::TcpServer::TcpServer(unsigned short port, msg::FORMAT format)
 tcp::TcpServer::~TcpServer()
 {
   m_optCork = boost::none;
-  if (m_iocThread.joinable())
-    m_iocThread.join();
+  if (m_iocThread.joinable()) m_iocThread.join();
 }
 
 void tcp::TcpServer::startAccept()
@@ -58,7 +58,17 @@ void tcp::TcpServer::handleAccept(
 
 void tcp::TcpServer::close()
 {
+  m_timer.cancel();
   m_optCork = boost::none;
   m_pCtx->stop();
-  //if (m_iocThread.joinable()) m_iocThread.join();
+}
+
+void tcp::TcpServer::checkMsgs()
+{
+  m_timer.async_wait([this](const boost::system::error_code& e) {
+    if (!e) checkMsgs();
+  });
+  auto now = std::chrono::steady_clock::now();
+  for (auto m : m_connections)
+    m.second->checkMsgs(now);
 }

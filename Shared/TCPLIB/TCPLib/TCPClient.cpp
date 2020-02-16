@@ -4,6 +4,7 @@
 
 #include <boost/asio/write.hpp>
 
+#include "LoggerLib/Logger.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
 
@@ -38,9 +39,11 @@ tcp::TcpClient::TcpClient(std::string hostname,
               }
               auto msgSent = m_pMessages->find(receivedMsg.msgId());
               auto handle = m_handlers->get(receivedMsg.type());
-              if (handle) handle->execute(receivedMsg.msg(), format);
-              if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
-              if (msgSent == m_pMessages->end() && !handle)
+              if (handle)
+                handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
+              if (msgSent != m_pMessages->end())
+                m_pMessages->erase(msgSent);
+              if (!handle)
                 std::cout << "Received unknown message: " << receivedMsg.type()
                           << std::endl;
             });
@@ -84,6 +87,11 @@ void tcp::TcpClient::startConnect(
 
 void tcp::TcpClient::handleWrite(const boost::system::error_code&, size_t)
 {
+  // if (e)
+  //{
+  //  std::cout << e.message() << std::endl;
+  //}
+  // std::cout << a << std::endl;
 }
 
 void tcp::TcpClient::handleConnect(
@@ -153,6 +161,7 @@ void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
 
 void tcp::TcpClient::close()
 {
+  m_timer.cancel();
   m_optCork = boost::none;
   m_ctx.stop();
 }
@@ -174,14 +183,17 @@ void tcp::TcpClient::resend(const msg::BaseMsg& msg)
   m_socket.async_write_some(
     boost::asio::buffer(*pMessage, pMessage.get()->size()),
     [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
-  (*m_pMessages)[msg.msgId()].second =
+  (*m_pMessages)[msg.msgId()].expireTime =
     std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  (*m_pMessages)[msg.msgId()].retries++;
 }
 
 void tcp::TcpClient::checkMsgs()
 {
-  m_timer = boost::asio::steady_timer(m_ctx, boost::asio::chrono::seconds(1));
+  m_timer.async_wait([this](const boost::system::error_code& e) {
+    if (!e) checkMsgs();
+  });
   auto now = std::chrono::steady_clock::now();
   for (auto m : *m_pMessages)
-    if (m.second.second < now) send<msg::BaseMsg>(m.second.first, true);
+    if (m.second.expireTime < now) send<msg::BaseMsg>(m.second.msg);
 }

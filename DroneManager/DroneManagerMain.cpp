@@ -57,7 +57,6 @@ namespace
 
 int main(int argc, char* argv[])
 {
-  GlobalRegistry::setRegistry();
   std::string ip;
   std::string sPort;
   std::string mPort;
@@ -68,12 +67,13 @@ int main(int argc, char* argv[])
     desc.add_options()("help,h", "Help screen")(
       "ip,i",
       boost::program_options::value<std::string>()->required(),
-      "IP Address for Drone")("serverport,s",
-                              boost::program_options::value<std::string>(),
-                              "Port for the server")(
-      "monitorport,m",
+      "IP Address for Drone")(
+      "config,c", boost::program_options::value<std::string>()->required())(
+      "serverport,s",
       boost::program_options::value<std::string>(),
-      "Port for the monitor")(
+      "Port for the server")("monitorport,m",
+                             boost::program_options::value<std::string>(),
+                             "Port for the monitor")(
       "y,y", boost::program_options::value<int>(), "Starting y position")(
       "pretest,p", "Run pretest");
 
@@ -109,6 +109,11 @@ int main(int argc, char* argv[])
       return 1;
     }
     if (vm.count("y")) startingY = vm["y"].as<int>();
+
+    auto config = vm["config"].as<std::string>();
+    if (!boost::filesystem::exists(config))
+      throw std::runtime_error("Cannot access config");
+    GlobalRegistry::setRegistry(boost::filesystem::path(config));
   }
   catch (const boost::program_options::error& ex)
   {
@@ -119,12 +124,6 @@ int main(int argc, char* argv[])
   try
   {
     drone::DroneManager manager(ip, sPort, mPort, startingY);
-    std::cout << "Enter \"exit\" to exit" << std::endl;
-    std::string line;
-    while (std::getline(std::cin, line))
-    {
-      if (line == "exit") return 0;
-    }
   }
   catch (const std::runtime_error& error)
   {

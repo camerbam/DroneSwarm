@@ -24,8 +24,7 @@ drone::DroneControllerState::DroneControllerState(size_t startBattery,
     m_battery(startBattery),
     m_time(0),
     m_batterySignal(),
-    m_midSignal(),
-    m_knownTargets({{0, 0, -1}})
+    m_midSignal()
 {
 }
 
@@ -140,10 +139,8 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   if (m_mid != mid)
   {
     m_midSignal(mid);
-    m_knownTargets.emplace_back(
-      static_cast<int>(m_xCoordinate), static_cast<int>(m_yCoordinate), mid);
+    m_mid = mid;
   }
-  m_mid = mid;
 
   m_zCoordinate = msg.getZCoordinate();
   m_angle = msg.getAngle();

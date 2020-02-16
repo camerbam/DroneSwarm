@@ -9,6 +9,7 @@
 #include "DroneControllerState.hpp"
 #include "DroneMessagesLib/Message.hpp"
 #include "DroneMessagesLib/Message_t.hpp"
+#include "MonitorLoggerLib/MonitorLogger.hpp"
 #include "UDPLib/UDPCommunicator.hpp"
 #include "UDPLib/UDPCommunicatorReliable.hpp"
 
@@ -17,7 +18,8 @@ namespace drone
   class DroneController
   {
   public:
-    DroneController(const std::string& ipAddress = std::string("127.0.0.1"),
+    DroneController(logger::MonitorLogger& logger,
+                    const std::string& ipAddress = std::string("127.0.0.1"),
                     int startingY = 0);
 
     ~DroneController();
@@ -36,11 +38,14 @@ namespace drone
     double getTimeOfFlight();
     bool getIsRunning();
     void waitForStatusMsg();
+    bool isFlying();
+    void stopRunning();
 
     boost::signals2::scoped_connection registerForMid(
       std::function<void(int)> callback);
 
   private:
+    logger::MonitorLogger& m_logger;
     std::shared_ptr<DroneControllerState> m_pState;
     std::atomic<bool> m_running;
     udp::UDPCommunicatorReliable m_controlCommunicator;
