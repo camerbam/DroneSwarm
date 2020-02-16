@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(RefereeControllerTest)
     }));
 
   connections.push_back(client.registerHandler<msg::HitTargetRsp>(
-    [&hitTargetRsp, &cv](const msg::HitTargetRsp& msg, const std::string& msgId) {
+    [&hitTargetRsp, &cv](const msg::HitTargetRsp& msg, const std::string&) {
       BOOST_CHECK(msg.badTargets().empty());
       BOOST_CHECK(msg.newTargets().empty());
       BOOST_CHECK(msg.success());
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(RefereeControllerTest)
     }));
 
   connections.push_back(client.registerHandler<msg::FinishRsp>(
-    [&finishMsg, &cv](const msg::FinishRsp& msg, const std::string& msgId) {
+    [&finishMsg, &cv](const msg::FinishRsp& msg, const std::string&) {
       BOOST_CHECK(msg.targets().size() == 3);
       finishMsg = true;
       cv.notify_one();

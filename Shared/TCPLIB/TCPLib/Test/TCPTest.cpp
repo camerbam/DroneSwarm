@@ -16,7 +16,7 @@ std::shared_ptr<std::thread> startClientToRecieve()
     tcp::TcpClient client("localhost", "8080");
 
     connections.push_back(client.registerHandler<msg::StringMsg>(
-      [&client](msg::StringMsg msg, const std::string& msgId) {
+      [&client](msg::StringMsg msg, const std::string&) {
         static std::vector<std::string> msgsToGet{
           "json test", "protobuf test", "xml test"};
         static size_t msgsLeft = 3;
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
   auto connection = server.registerConnection([&connections, &server](
     std::shared_ptr<tcp::TcpConnection> pConnection) {
     connections.push_back(pConnection->registerHandler<msg::StringMsg>(
-      [pConnection](msg::StringMsg msg, const std::string& msgId) {
+      [pConnection](msg::StringMsg msg, const std::string&) {
         static size_t msgsLeft = 3;
         static std::vector<std::string> msgsToGet{
           "json test", "protobuf test", "xml test"};

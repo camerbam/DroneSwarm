@@ -58,7 +58,7 @@ void ground::GroundStationController::start()
 void ground::GroundStationController::createRefereeMsgHandlers()
 {
   m_connections.push_back(m_toReferee.registerHandler<msg::ReadyRsp>(
-    [this](const msg::ReadyRsp& msg, const std::string& msgId) {
+    [this](const msg::ReadyRsp& msg, const std::string&) {
       m_logger.logInfo("Referee Controller", "Received ReadyRsp");
       m_gameId = msg.gameId();
       m_targets = msg.targets();
@@ -74,7 +74,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
     }));
 
   m_connections.push_back(m_toReferee.registerHandler<msg::FinishRsp>(
-    [this](const msg::FinishRsp& msg, const std::string& msgId) {
+    [this](const msg::FinishRsp& msg, const std::string&) {
       m_logger.logInfo("Referee Controller", "Received FinishRsp");
       auto targets = msg.targets();
       if (targets.empty())
@@ -100,7 +100,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
     }));
 
   m_connections.push_back(m_toReferee.registerHandler<msg::HitTargetRsp>(
-    [this](const msg::HitTargetRsp& msg, const std::string& msgId) {
+    [this](const msg::HitTargetRsp& msg, const std::string&) {
       m_logger.logInfo("Referee Controller", "Received HitTargetRsp");
       if (msg.complete())
       {
@@ -138,7 +138,7 @@ void ground::GroundStationController::createDroneMsgHandlers(
   std::shared_ptr<tcp::TcpConnection> drone)
 {
   m_connections.push_back(drone->registerHandler<msg::HitTargetMsg>(
-    [this, drone](const msg::HitTargetMsg& msg, const std::string& msgId) {
+    [this, drone](const msg::HitTargetMsg& msg, const std::string&) {
       m_logger.logInfo("Referee Controller", "Received HitTargetMsg");
       for (auto target = m_targets.begin(); target != m_targets.end(); target++)
       {

@@ -32,13 +32,13 @@ int main()
       drones.push_back(connection);
 
       connections.push_back(connection->registerHandler<msg::ZConfigRsp>(
-        [](const msg::ZConfigRsp&, const std::string& msgId) {
+        [](const msg::ZConfigRsp&, const std::string&) {
           std::cout << "received" << std::endl;
         }));
 
       connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
         [connection, &server, &targets, &cv](
-          const msg::HitTargetMsg& target, const std::string& msgId) {
+          const msg::HitTargetMsg& target, const std::string&) {
           std::cout << "received" << std::endl;
           auto nextTarget = targets.front();
           if (utils::checkWithin(nextTarget.getX(), target.target().x(), 20) &&

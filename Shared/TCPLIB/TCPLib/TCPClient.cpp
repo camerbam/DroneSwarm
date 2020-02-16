@@ -85,7 +85,7 @@ void tcp::TcpClient::startConnect(
   }
 }
 
-void tcp::TcpClient::handleWrite(const boost::system::error_code& e, size_t a)
+void tcp::TcpClient::handleWrite(const boost::system::error_code&, size_t)
 {
   // if (e)
   //{

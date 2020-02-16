@@ -36,7 +36,7 @@ referee::RefereeController::RefereeController(unsigned short port,
     std::shared_ptr<tcp::TcpConnection> connection) {
     logger::logInfo("RefereeController", "New connection");
     m_connections.push_back(connection->registerHandler<msg::ReadyMsg>(
-      [this, connection](const msg::ReadyMsg&, const std::string& msgId) {
+      [this, connection](const msg::ReadyMsg&, const std::string&) {
         logger::logInfo("RefereeController", "received ReadyMsg");
         int i = static_cast<int>(m_gameManagers.size());
         auto& game = m_gameManagers[i];
@@ -46,7 +46,7 @@ referee::RefereeController::RefereeController(unsigned short port,
       }));
 
     m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
-      [this](const msg::ReadyRspRsp& msg, const std::string& msgId) {
+      [this](const msg::ReadyRspRsp& msg, const std::string&) {
         logger::logInfo("RefereeController", "received ReadyRspRsp");
 
         auto game = m_gameManagers.find(msg.gameId());

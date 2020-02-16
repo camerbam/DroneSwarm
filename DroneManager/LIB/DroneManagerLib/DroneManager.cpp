@@ -198,7 +198,7 @@ drone::DroneManager::~DroneManager()
 void drone::DroneManager::registerHandlers()
 {
   m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>([this](
-    const msg::FlightPathMsg& msg, const std::string& msgId) {
+    const msg::FlightPathMsg& msg, const std::string&) {
     m_logger.logInfo("DroneManager", "Received FlightPathMsg");
 
     auto path =
@@ -215,14 +215,14 @@ void drone::DroneManager::registerHandlers()
   }));
 
   m_connections.push_back(m_client.registerHandler<msg::ZConfigMsg>(
-    [this](const msg::ZConfigMsg& msg, const std::string& msgId) {
+    [this](const msg::ZConfigMsg& msg, const std::string&) {
       m_logger.logInfo("DroneManager", "Received ZConfigMsg");
       m_zConfig = msg.zAxis();
       m_client.send(msg::ZConfigRsp());
     }));
 
   m_connections.push_back(m_client.registerHandler<msg::FinishMsg>(
-    [this](const msg::FinishMsg&, const std::string& msgId) {
+    [this](const msg::FinishMsg&, const std::string&) {
       m_logger.logInfo("DroneManager", "Received FinishMsg");
       {
         std::lock_guard<std::mutex> l(m_pathMutex);
