@@ -1,10 +1,12 @@
 #include "TCPConnection.hpp"
 
 #include <iostream>
+#include <fstream>
 
 #include <boost/asio.hpp>
 #include <boost/asio/write.hpp>
 
+#include "LoggerLib/Logger.hpp"
 #include "MsgLib/BaseMsg.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
@@ -28,14 +30,16 @@ tcp::TcpConnection::TcpConnection(
     m_closedSignal(),
     m_inputBuffer(1024),
     m_handlers(std::make_shared<tcp::HandlerMap>()),
+    m_pMessages(std::make_shared<std::map<std::string, msg::ResendMsg>>()),
     m_acq(std::function<void(std::string)>(
-      [ handlers = m_handlers, format = m_format ](std::string input) {
+      [ handlers = m_handlers, format = m_format, m_pMessages = m_pMessages ](
+        std::string input) {
         while (true)
         {
           auto optMsg = tcp::getNextStringMessage(input);
           if (!optMsg) return;
           GlobalRegistry::getRegistry().postToThreadPool(
-            [optMsg, handlers, format]() {
+            [optMsg, handlers, format, m_pMessages]() {
               msg::BaseMsg receivedMsg;
               auto msg = optMsg.get();
               if (!msg::parseString(receivedMsg, msg, format))
@@ -43,12 +47,15 @@ tcp::TcpConnection::TcpConnection(
                 std::cout << "Could not parse msg" << std::endl;
                 return;
               }
+              auto msgSent = m_pMessages->find(receivedMsg.msgId());
               auto handle = handlers->get(receivedMsg.type());
+              if (handle)
+                handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
+              if (msgSent != m_pMessages->end())
+                m_pMessages->erase(msgSent);
               if (!handle)
                 std::cout << "Received unknown message: " << receivedMsg.type()
                           << std::endl;
-              else
-                handle->execute(receivedMsg.msg(), format);
             });
         }
       }))
@@ -80,6 +87,23 @@ void tcp::TcpConnection::close()
   m_pSocket->close();
 }
 
+void tcp::TcpConnection::checkMsgs(
+  const std::chrono::steady_clock::time_point& now)
+{
+  for (auto m = m_pMessages->begin(); m != m_pMessages->end();)
+  {
+    if (m->second.expireTime < now && m->second.retries > 2)
+      m = m_pMessages->erase(m);
+    else
+      m++;
+  }
+
+  for (auto m : *m_pMessages)
+  {
+    if (m.second.expireTime < now) send<msg::BaseMsg>(m.second.msg);
+  }
+}
+
 void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
                                     std::size_t bytes_transferred)
 {
@@ -95,7 +119,7 @@ void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
   }
   else
   {
-    std::cout << "Error on receive: " << ec.message() << "\n";
+    std::cout << "Closing socket: " << ec.message() << "\n";
     m_closedSignal(m_id);
   }
 }
@@ -104,4 +128,16 @@ void tcp::TcpConnection::registerDisconnect(
   boost::signals2::signal<void(int)>::slot_type slot)
 {
   m_closedSignal.connect(slot);
+}
+
+void tcp::TcpConnection::resend(const msg::BaseMsg& msg)
+{
+  auto pMessage = std::make_shared<std::string>(
+    tcp::getProcessedString(msg::toString(msg, m_format)));
+  m_pSocket->async_write_some(
+    boost::asio::buffer(*pMessage, pMessage.get()->size()),
+    [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
+  (*m_pMessages)[msg.msgId()].expireTime =
+    std::chrono::steady_clock::now() + std::chrono::seconds(10);
+  (*m_pMessages)[msg.msgId()].retries++;
 }

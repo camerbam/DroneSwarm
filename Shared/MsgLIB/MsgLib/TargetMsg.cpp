@@ -1,96 +1,79 @@
 #include "TargetMsg.hpp"
 
-#include <string>
-
-#include <rapidjson/document.h>
-#include <rapidxml/rapidxml.hpp>
-
 #include "JSONLib/Deserialize.hpp"
 #include "JSONLib/Serialize.hpp"
+#include "UtilsLib/Utils.hpp"
 #include "XMLLib/Deserialize.hpp"
 #include "XMLLib/Serialize.hpp"
 
 #pragma warning(push)
 #pragma warning(disable : 4267)
-#include "ProtoLib/TargetMsg.pb.h"
+#include "ProtoLib/Target.pb.h"
 #pragma warning(pop)
+
+#include "RegistryLib/Target.hpp"
 
 namespace
 {
-  const std::string N_POINT("point");
-  const std::string N_ID("id");
+  const std::string N_X("x");
+  const std::string N_Y("y");
 } // namespace
 
-msg::TargetMsg::TargetMsg(const int& id, const Point& point)
-  : m_id(id), m_point(point)
+msg::TargetMsg::TargetMsg() : m_x(0), m_y(0)
 {
 }
 
-msg::TargetMsg::TargetMsg() : m_id(0), m_point()
+msg::TargetMsg::TargetMsg(const Target& target)
+  : m_x(target.getX()), m_y(target.getY())
 {
 }
 
-bool msg::TargetMsg::parseFromJson(const std::string& msg)
+msg::TargetMsg::TargetMsg(const int& x, const int& y) : m_x(x), m_y(y)
 {
-  rapidjson::Document json(rapidjson::kObjectType);
-  json.Parse(msg.c_str());
-  auto optPoint = json::getObjectOrArray(json, N_POINT);
-  if (!optPoint) return false;
-  auto& point = optPoint.get();
-  if (!m_point.parseFromJson(point)) return false;
-  m_id = json::getInt(json, N_ID);
+}
+
+bool msg::TargetMsg::parseFromJson(rapidjson::Value& obj)
+{
+  m_x = json::getInt(obj, N_X);
+  m_y = json::getInt(obj, N_Y);
   return true;
 }
 
-bool msg::TargetMsg::parseFromProto(const std::string& msg)
+bool msg::TargetMsg::parseFromProto(const proto::Target& TargetMsg)
 {
-  proto::TargetMsg m;
-  m.ParseFromString(msg);
-  m_id = m.id();
-  return m_point.parseFromProto(m.point());
-}
-
-bool msg::TargetMsg::parseFromXml(const std::string& msg)
-{
-  auto pDoc = new rapidxml::xml_document<>;
-  char* cstr = new char[msg.size() + 1];
-  strcpy(cstr, msg.c_str());
-  pDoc->parse<0>(cstr);
-  auto point = xml::getObject(pDoc, N_POINT);
-
-  if (!m_point.parseFromXml(point)) return false;
-  m_id = static_cast<int>(xml::getNumber(pDoc, N_ID));
-
-  delete[] cstr;
-  delete pDoc;
+  m_x = TargetMsg.x();
+  m_y = TargetMsg.y();
   return true;
 }
 
-std::string msg::TargetMsg::toJsonString() const
+bool msg::TargetMsg::parseFromXml(rapidxml::xml_node<>* pTargetMsg)
 {
-  rapidjson::Document doc(rapidjson::kObjectType);
-  rapidjson::Value obj(rapidjson::kObjectType);
-  m_point.toJson(doc, obj);
-  json::addObjectToDoc(doc, N_POINT, obj);
-  json::addIntToDoc(doc, N_ID, m_id);
-  return json::jsonToString(doc);
+  m_x = static_cast<int>(xml::getNumber(pTargetMsg, N_X));
+  m_y = static_cast<int>(xml::getNumber(pTargetMsg, N_Y));
+  return true;
 }
 
-std::string msg::TargetMsg::toProtoString() const
+void msg::TargetMsg::toJson(rapidjson::Document& doc,
+                            rapidjson::Value& TargetMsg) const
 {
-  proto::TargetMsg msg;
-  m_point.toProto(msg.mutable_point());
-  msg.set_id(m_id);
-  return msg.SerializeAsString();
+  json::addIntToObject(doc, TargetMsg, N_X, m_x);
+  json::addIntToObject(doc, TargetMsg, N_Y, m_y);
 }
 
-std::string msg::TargetMsg::toXMLString() const
+void msg::TargetMsg::toProto(proto::Target* pTargetMsg) const
 {
-  auto pDoc = new rapidxml::xml_document<>;
-  auto pointNode = xml::addDataToNode(pDoc, N_POINT);
-  m_point.toXML(pointNode);
-  xml::addDataToNode(pDoc, N_ID, m_id);
-  auto toReturn = xml::xmlToString(pDoc);
-  delete pDoc;
-  return toReturn;
+  pTargetMsg->set_x(m_x);
+  pTargetMsg->set_y(m_y);
+}
+
+void msg::TargetMsg::toXML(rapidxml::xml_node<>* node) const
+{
+  xml::addDataToNode(node, N_X, m_x);
+  xml::addDataToNode(node, N_Y, m_y);
+}
+
+bool msg::operator==(const msg::TargetMsg& lhs, const msg::TargetMsg& rhs)
+{
+  return utils::compareTwoDoubles(lhs.x(), rhs.x()) &&
+         utils::compareTwoDoubles(lhs.y(), rhs.y());
 }

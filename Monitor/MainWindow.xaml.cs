@@ -16,6 +16,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.ComponentModel;
+using global::Proto;
 
 namespace Monitor
 {
@@ -26,6 +28,8 @@ namespace Monitor
   {
     private bool running;
     private List<Thread> Threads;
+    private Proto.StringMsg msg;
+
     private void ListenForMessages(TextBox boxToType, TcpClient client)
     {
       try
@@ -34,17 +38,20 @@ namespace Monitor
         {
           NetworkStream stream = client.GetStream();
           Byte[] bytes = new Byte[1000];
-          String data = "";
           int i;
 
           // Loop to receive all the data sent by the client.
-          while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
+          while ((i = stream.Read(bytes, 0, 1)) != 0)
           {
-            // Translate data bytes to a ASCII string.
-            data = System.Text.Encoding.ASCII.GetString(bytes, 0, i);
+            if (bytes[0] != 0x01) continue;
+            if ((i = stream.Read(bytes, 0, 5)) == 0) continue;
+            Int32 size = System.Convert.ToInt32(System.Text.Encoding.ASCII.GetString(bytes, 0, 5));
+            if ((i = stream.Read(bytes, 0, size)) == 0) continue;
+
+            msg = StringMsg.Parser.ParseFrom(bytes, 0, size);
             this.Dispatcher.Invoke(() =>
             {
-              boxToType.Text += data + "\n";
+              boxToType.Text += msg.Msg + "\n";
             });
           }
         }
@@ -70,6 +77,7 @@ namespace Monitor
         {
           TextBox a = new TextBox();
           a.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
+          a.TextWrapping = System.Windows.TextWrapping.Wrap;
           a.Width = 175;
           a.Text = "";
           a.VerticalAlignment = VerticalAlignment.Stretch;
@@ -97,10 +105,15 @@ namespace Monitor
       t.Start();
     }
 
-    ~MainWindow()
+    public void DataWindow_Closing(object sender, CancelEventArgs e)
     {
+      Console.WriteLine("This is C#");
       Server.Stop();
       t.Join();
+    }
+
+    ~MainWindow()
+    {
     }
   }
 }

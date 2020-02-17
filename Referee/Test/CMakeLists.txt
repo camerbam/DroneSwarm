@@ -1,5 +1,6 @@
 set(exe_name RefereeTest)
 set(${exe_name}_srcs
+  RefereeControllerTest.cpp
   RefereeGraphTest.cpp
   RefereeMainTest.cpp
   )

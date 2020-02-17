@@ -13,19 +13,19 @@
 #include "ProtoLib/FlightPathMsg.pb.h"
 #pragma warning(pop)
 
-#include "Point.hpp"
+#include "TargetMsg.hpp"
 
 namespace
 {
-  const std::string N_POINTS("points");
+  const std::string N_POINTS("targets");
 } // namespace
 
-msg::FlightPathMsg::FlightPathMsg(const std::vector<Point>& points)
-  : m_points(points)
+msg::FlightPathMsg::FlightPathMsg(const std::vector<TargetMsg>& targets)
+  : m_targets(targets)
 {
 }
 
-msg::FlightPathMsg::FlightPathMsg() : m_points()
+msg::FlightPathMsg::FlightPathMsg() : m_targets()
 {
 }
 
@@ -33,15 +33,15 @@ bool msg::FlightPathMsg::parseFromJson(const std::string& point)
 {
   rapidjson::Document json(rapidjson::kObjectType);
   json.Parse(point.c_str());
-  auto points = json::getObjectOrArray(json, N_POINTS);
-  if (!points) return false;
-  auto& pointsArray = points.get();
-  if (!pointsArray.IsArray()) return false;
-  msg::Point tPoint;
-  for (auto& point : pointsArray.GetArray())
+  auto targets = json::getObjectOrArray(json, N_POINTS);
+  if (!targets) return false;
+  auto& targetsArray = targets.get();
+  if (!targetsArray.IsArray()) return false;
+  msg::TargetMsg tTarget;
+  for (auto& point : targetsArray.GetArray())
   {
-    if (!tPoint.parseFromJson(point)) return false;
-    m_points.emplace_back(tPoint);
+    if (!tTarget.parseFromJson(point)) return false;
+    m_targets.emplace_back(tTarget);
   }
   return true;
 }
@@ -50,11 +50,11 @@ bool msg::FlightPathMsg::parseFromProto(const std::string& msg)
 {
   proto::FlightPathMsg m;
   m.ParseFromString(msg);
-  msg::Point tPoint;
-  for (auto&& p : m.points())
+  msg::TargetMsg tTarget;
+  for (auto&& p : m.targets())
   {
-    if (!tPoint.parseFromProto(p)) return false;
-    m_points.emplace_back(tPoint);
+    if (!tTarget.parseFromProto(p)) return false;
+    m_targets.emplace_back(tTarget);
   }
   return true;
 }
@@ -65,13 +65,13 @@ bool msg::FlightPathMsg::parseFromXml(const std::string& msg)
   char* cstr = new char[msg.size() + 1];
   strcpy(cstr, msg.c_str());
   pDoc->parse<0>(cstr);
-  auto points = xml::getObject(pDoc, N_POINTS);
-  msg::Point tPoint;
+  auto targets = xml::getObject(pDoc, N_POINTS);
+  msg::TargetMsg tTarget;
 
-  for (; points != nullptr; points = points->next_sibling(N_POINTS.c_str()))
+  for (; targets != nullptr; targets = targets->next_sibling(N_POINTS.c_str()))
   {
-    if (!tPoint.parseFromXml(points)) return false;
-    m_points.emplace_back(tPoint);
+    if (!tTarget.parseFromXml(targets)) return false;
+    m_targets.emplace_back(tTarget);
   }
 
   delete[] cstr;
@@ -84,8 +84,8 @@ std::string msg::FlightPathMsg::toJsonString() const
   rapidjson::Document doc(rapidjson::kObjectType);
   rapidjson::Value arr(rapidjson::kArrayType);
 
-  msg::Point tPoint;
-  for (auto&& p : m_points)
+  msg::TargetMsg tTarget;
+  for (auto&& p : m_targets)
   {
     rapidjson::Value obj(rapidjson::kObjectType);
     p.toJson(doc, obj);
@@ -99,9 +99,9 @@ std::string msg::FlightPathMsg::toJsonString() const
 std::string msg::FlightPathMsg::toProtoString() const
 {
   proto::FlightPathMsg msg;
-  for (auto&& p : m_points)
+  for (auto&& p : m_targets)
   {
-    auto point = msg.mutable_points()->Add();
+    auto point = msg.mutable_targets()->Add();
     p.toProto(point);
   }
   return msg.SerializeAsString();
@@ -111,10 +111,10 @@ std::string msg::FlightPathMsg::toXMLString() const
 {
   auto pDoc = new rapidxml::xml_document<>;
 
-  for (auto&& p : m_points)
+  for (auto&& p : m_targets)
   {
-    auto pointsNode = xml::addDataToNode(pDoc, N_POINTS);
-    p.toXML(pointsNode);
+    auto targetsNode = xml::addDataToNode(pDoc, N_POINTS);
+    p.toXML(targetsNode);
   }
   auto toReturn = xml::xmlToString(pDoc);
   delete pDoc;

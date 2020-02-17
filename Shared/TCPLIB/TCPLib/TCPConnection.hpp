@@ -33,15 +33,35 @@ namespace tcp
     template <class T>
     void send(T message)
     {
+      static int count = 0;
       msg::BaseMsg msg;
       msg.msg(msg::toString(message, m_format));
       msg.type(T::name());
+      msg.msgId(std::to_string(m_id) + ":" + std::to_string(count++));
+      auto pMessage = std::make_shared<std::string>(
+        tcp::getProcessedString(msg::toString(msg, m_format)));
+      m_pSocket->async_write_some(
+        boost::asio::buffer(*pMessage, pMessage.get()->size()),
+        [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
+      (*m_pMessages)[msg.msgId()] = {
+        msg, std::chrono::steady_clock::now() + std::chrono::seconds(10)};
+    }
+
+    template <class T>
+    void respond(T message, const std::string& msgId)
+    {
+      msg::BaseMsg msg;
+      msg.msg(msg::toString(message, m_format));
+      msg.type(T::name());
+      msg.msgId(msgId);
       auto pMessage = std::make_shared<std::string>(
         tcp::getProcessedString(msg::toString(msg, m_format)));
       m_pSocket->async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
     }
+
+    void resend(const msg::BaseMsg& msg);
 
     int getId() { return m_id; }
 
@@ -53,19 +73,23 @@ namespace tcp
 
     void close();
 
+    void checkMsgs(const std::chrono::steady_clock::time_point& now);
+
     void handleRead(const boost::system::error_code& ec,
                     std::size_t bytes_transferred);
 
     template <class T>
     boost::signals2::scoped_connection registerHandler(
-      std::function<void(T)> handler)
+      std::function<void(T, std::string)> handler)
     {
-      auto poster = [this](T msg, std::function<void(T)> f) {
-        GlobalRegistry::getRegistry().postToThreadPool([msg, f]() { f(msg); });
+      auto poster = [this](T msg,
+                           std::function<void(T, std::string)> f,
+                           const std::string& msgId) {
+        GlobalRegistry::getRegistry().postToThreadPool(
+          [msg, f, msgId]() { f(msg, msgId); });
       };
-      boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
-        poster(msg, handler);
-      };
+      boost::signals2::slot<void(T, std::string)> slot = [poster, handler](
+        T msg, const std::string& msgId) { poster(msg, handler, msgId); };
       auto pHandle = std::make_shared<Handler<T>>();
       m_handlers->add(T::name(), pHandle);
       return pHandle->signal().connect(slot);
@@ -84,6 +108,7 @@ namespace tcp
     boost::signals2::signal<void(int)> m_closedSignal;
     std::vector<char> m_inputBuffer;
     std::shared_ptr<tcp::HandlerMap> m_handlers;
+    std::shared_ptr<std::map<std::string, msg::ResendMsg>> m_pMessages;
     AutoConsumedQueue m_acq;
   };
 } // namespace tcp

@@ -15,15 +15,20 @@ namespace
   const std::string DRONE_CONTROLLER("Drone Controller");
 }
 
-drone::DroneController::DroneController(const std::string& ipAddress,
+drone::DroneController::DroneController(logger::MonitorLogger& logger,
+                                        const std::string& ipAddress,
                                         int startingY)
-  : m_pState(std::make_shared<drone::DroneControllerState>(100, startingY)),
+  : m_logger(logger),
+    m_pState(std::make_shared<drone::DroneControllerState>(100, startingY)),
     m_running(true),
     m_controlCommunicator(),
     m_controlEndpoint(boost::asio::ip::address::from_string(ipAddress), 8889),
     m_statusCommunicator(8890),
     m_connection(),
     m_cvStatus(),
+    m_midSignal(),
+    m_midConnection(),
+    m_mids(),
     m_statusMutex(),
     m_statusThread([this]() {
       while (m_running)
@@ -45,10 +50,16 @@ drone::DroneController::DroneController(const std::string& ipAddress,
   m_controlCommunicator.startPing(
     [this]() {
       auto battery = std::make_shared<messages::BatteryMessage>();
+      m_logger.logInfo(DRONE_CONTROLLER, battery->toString());
       auto response = m_controlCommunicator.sendMessage(
         battery->toString(), m_controlEndpoint);
     },
     boost::posix_time::seconds(8));
+
+  m_midConnection = m_pState->registerForMid([this](int id) {
+    m_mids.push_back(id);
+  });
+
   messages::Message_t command = messages::CommandMessage();
   sendMessage(command);
 }
@@ -67,19 +78,32 @@ boost::optional<std::string> drone::DroneController::sendMessage(
     boost::apply_visitor(DroneControllerCheckMsgToSend(m_pState), message);
   if (error)
   {
-    logger::logError(DRONE_CONTROLLER, error.get());
+    m_logger.logError(DRONE_CONTROLLER, error.get());
     return boost::none;
   }
   auto str =
     boost::apply_visitor(DroneControllerMessagesToString(m_pState), message);
+  m_logger.logInfo(DRONE_CONTROLLER, str);
   auto response =
     m_controlCommunicator.sendMessage(str, m_controlEndpoint, timeout);
   if (!response.didSucceed())
   {
-    logger::logError(DRONE_CONTROLLER, response.getMessage());
+    m_logger.logError(DRONE_CONTROLLER, response.getMessage());
     return boost::none;
   }
+  else
+  {
+    m_logger.logInfo(DRONE_CONTROLLER, response.getMessage());
+  }
   boost::apply_visitor(DroneControllerStateChanges(m_pState), message);
+
+  if (!m_mids.empty())
+  {
+    for (auto&& id : m_mids)
+      m_midSignal(id);
+    m_mids.clear();
+  }
+
   return response.getMessage();
 }
 
@@ -129,8 +153,18 @@ void drone::DroneController::waitForStatusMsg()
   m_cvStatus.wait_for(lock, std::chrono::seconds(1));
 }
 
+bool drone::DroneController::isFlying()
+{
+  return m_pState->isFlying();
+}
+
+void drone::DroneController::stopRunning()
+{
+  m_running = false;
+}
+
 boost::signals2::scoped_connection drone::DroneController::registerForMid(
   std::function<void(int)> callback)
 {
-  return m_pState->registerForMid(callback);
+  return m_midSignal.connect(callback);
 }

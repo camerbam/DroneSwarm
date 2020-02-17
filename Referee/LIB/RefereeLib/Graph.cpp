@@ -1,5 +1,7 @@
 #include "Graph.hpp"
 
+#include <iostream>
+
 #include "LoggerLib/Logger.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
@@ -63,7 +65,8 @@ bool referee::Graph::validateTarget(const Target& target) const
 referee::GraphResponse referee::Graph::hitTarget(const Target& target)
 {
   referee::GraphResponse toReturn;
-  m_ready.erase(std::remove(m_ready.begin(), m_ready.end(), target), m_ready.end());
+  m_ready.erase(
+    std::remove(m_ready.begin(), m_ready.end(), target), m_ready.end());
 
   for (auto&& t : m_notReady)
   {
@@ -111,4 +114,13 @@ referee::GraphResponse referee::Graph::hitTarget(const Target& target)
 bool referee::Graph::isDone()
 {
   return m_notReady.empty() && m_ready.empty();
+}
+
+std::vector<Target> referee::Graph::getAllLeft()
+{
+  std::vector<Target> toReturn;
+  toReturn.reserve(m_notReady.size() + m_ready.size()); // preallocate memory
+  toReturn.insert(toReturn.end(), m_notReady.begin(), m_notReady.end());
+  toReturn.insert(toReturn.end(), m_ready.begin(), m_ready.end());
+  return toReturn;
 }

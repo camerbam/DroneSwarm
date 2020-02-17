@@ -3,6 +3,7 @@ syntax = "proto3";
 package proto;
 
 message BaseMsg {
-  string type = 1;
-  bytes msg = 2;
+  string msgId = 1;
+  string type = 2;
+  bytes msg = 3;
 }

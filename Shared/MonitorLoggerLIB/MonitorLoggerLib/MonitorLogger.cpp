@@ -4,8 +4,8 @@
 
 #include <boost/asio/ip/host_name.hpp>
 
-#include "MsgLib/StringMsg.hpp"
 #include "LoggerLib/Logger.hpp"
+#include "MsgLib/StringMsg.hpp"
 
 namespace
 {
@@ -30,11 +30,10 @@ namespace
     ss << std::left << std::setw(8) << kind << std::setw(20) << component
        << ": " << getTime() << ": " << msg;
     auto str = ss.str();
-    log(component, str);
-    if (m_client.isConnected()) 
+    log(component, msg);
+    if (m_client.isConnected())
     {
-      msg::StringMsg msg(str);
-      m_client.send(msg);
+      m_client.respond(msg::StringMsg(str), "");
     }
   }
 } // namespace
@@ -44,8 +43,21 @@ logger::MonitorLogger::MonitorLogger(const std::string& name,
   : m_client(boost::asio::ip::host_name(), port, msg::FORMAT::PROTOBUF)
 {
   m_client.ready();
-  msg::StringMsg msg(name);
-  m_client.send(msg);
+  m_client.respond(msg::StringMsg(name), "");
+}
+
+logger::MonitorLogger::MonitorLogger(const std::string& name,
+                                     const std::string& hostname,
+                                     const std::string& port)
+  : m_client(hostname, port, msg::FORMAT::PROTOBUF)
+{
+  m_client.ready();
+  m_client.respond(msg::StringMsg(name), "");
+}
+
+logger::MonitorLogger::~MonitorLogger()
+{
+  m_client.close();
 }
 
 void logger::MonitorLogger::logError(const std::string& component,

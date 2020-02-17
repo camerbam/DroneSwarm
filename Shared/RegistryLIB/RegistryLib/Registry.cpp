@@ -54,8 +54,8 @@ namespace
       int f = 0;
       if (falseAfter != target.MemberEnd() && falseAfter->value.IsInt())
         f = falseAfter->value.GetInt();
-      toReturn.emplace_back(x->value.GetDouble(),
-                            y->value.GetDouble(),
+      toReturn.emplace_back(x->value.GetInt(),
+                            y->value.GetInt(),
                             id->value.GetInt(),
                             depends,
                             f);
@@ -114,8 +114,8 @@ void GlobalRegistry::setRegistry(double speed,
     for (auto&& target : targets)
     {
       rapidjson::Document targetJson(rapidjson::kObjectType);
-      json::addNumberToObject(doc, targetJson, "x", target.getX());
-      json::addNumberToObject(doc, targetJson, "y", target.getY());
+      json::addIntToObject(doc, targetJson, "x", target.getX());
+      json::addIntToObject(doc, targetJson, "y", target.getY());
       json::addIntToObject(doc, targetJson, "id", target.getId());
 
       if (!target.getDependents().empty())
@@ -196,8 +196,9 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   if (doc.IsNull())
     throw std::runtime_error("Config does not point to valid json");
 
-  m_pThreadPool = std::make_shared<boost::asio::thread_pool>(
-    validateValue(static_cast<int>(json::getNumber(doc, "ThreadCount")), 1));
+  if (!m_pThreadPool)
+    m_pThreadPool = std::make_shared<boost::asio::thread_pool>(
+      validateValue(static_cast<int>(json::getNumber(doc, "ThreadCount")), 1));
   m_speedRatio = validateDValue(json::getNumber(doc, "Speed"), 2);
   m_decaySpeed = validateDValue(json::getNumber(doc, "BatteryDecaySpeed"), 1);
   m_targets = validateTargets(doc);

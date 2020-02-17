@@ -9,14 +9,14 @@
 
 BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
 {
-  GlobalRegistry::setRegistry(100, 20, { { 0, 0, 0 },{ 100, 0, 2 } });
+  GlobalRegistry::setRegistry(100, 20, {{0, 0, 0}, {100, 0, 2}});
 
   drone::DroneSimulatorStateImpl droneState;
   std::condition_variable cv;
   std::mutex mutex;
 
-  auto connection =
-    droneState.registerForCompletedUpdate([&cv](std::string) { cv.notify_one(); });
+  auto connection = droneState.registerForCompletedUpdate(
+    [&cv](std::string) { cv.notify_one(); });
 
   BOOST_CHECK(!droneState.land().empty());
   {
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
   {
     BOOST_CHECK(droneState.changeTargetX(100).empty());
     std::unique_lock<std::mutex> lk(mutex);
-    cv.wait_for(lk, std::chrono::seconds(6));
+    cv.wait_for(lk, std::chrono::seconds(60));
     BOOST_CHECK(utils::compareTwoDoubles(droneState.getX(), 100));
     BOOST_CHECK(droneState.getMid() == 2);
   }
@@ -73,8 +73,10 @@ BOOST_AUTO_TEST_CASE(DroneSimulatorStateImplTest)
   BOOST_CHECK(droneState.changeSpeed(64).empty());
   BOOST_CHECK_EQUAL(droneState.getSpeed(), 64);
 
-  BOOST_CHECK(utils::checkWithin(droneState.getBattery(), 92u, 2u));
-  BOOST_CHECK(utils::checkWithin(droneState.getTime(), 160u, 10u));
+  BOOST_CHECK(
+    utils::checkWithin(static_cast<int>(droneState.getBattery()), 92, 2));
+  BOOST_CHECK(
+    utils::checkWithin(static_cast<int>(droneState.getTime()), 160, 10));
 
   BOOST_CHECK(!droneState.getStatusMessage().empty());
 }

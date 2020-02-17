@@ -7,7 +7,7 @@
 #include "MsgLib/FinishRsp.hpp"
 #include "MsgLib/FlightPathMsg.hpp"
 #include "MsgLib/FlightPathRsp.hpp"
-#include "MsgLib/Point.hpp"
+#include "MsgLib/HitTargetMsg.hpp"
 #include "MsgLib/TargetMsg.hpp"
 #include "MsgLib/ZConfigMsg.hpp"
 #include "MsgLib/ZConfigRsp.hpp"
@@ -137,7 +137,7 @@ namespace
 }
 
 std::queue<messages::Message_t> drone::createFlightPath(
-  double x, double y, const std::vector<msg::Point>& points)
+  double x, double y, const std::vector<msg::TargetMsg>& points)
 {
   std::queue<messages::Message_t> toReturn;
   static int i;
@@ -154,25 +154,31 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
                                   const std::string& serverPort,
                                   const std::string& monitorPort,
                                   int startingY)
-  : m_controller(ipAddress, startingY),
+  : m_cv(),
+    m_m(),
+    m_logger("Drone Manager", "localhost", monitorPort),
+    m_controller(m_logger, ipAddress, startingY),
     m_client(boost::asio::ip::host_name(), serverPort),
     m_pathMutex(),
     m_flightPath(),
-    m_points(),
+    m_targets(),
     m_connections(),
-    m_logger("Drone Manager", monitorPort),
     m_sendThread(),
     m_toQuit(false),
     m_zConfig(100)
 {
   m_connections.push_back(m_controller.registerForMid([this](int id) {
-    if (m_points.empty()) return;
-    if (utils::checkWithinDouble(m_points[0].x(), m_controller.getX(), 10) &&
-        utils::checkWithinDouble(m_points[0].y(), m_controller.getY(), 10))
+    if (m_targets.empty()) return;
+    for (auto target = m_targets.begin(); target != m_targets.end(); target++)
     {
-      msg::TargetMsg msg(id, {m_points[0].x(), m_points[0].y()});
-      m_client.send(msg);
-      m_points.erase(m_points.begin());
+      if (utils::checkWithinDouble(target->x(), m_controller.getX(), 10) &&
+          utils::checkWithinDouble(target->y(), m_controller.getY(), 10))
+      {
+        msg::HitTargetMsg msg(0, id, {target->x(), target->y()});
+        m_client.send(msg);
+        m_targets.erase(target);
+        return;
+      }
     }
   }));
   registerHandlers();
@@ -181,35 +187,49 @@ drone::DroneManager::DroneManager(const std::string& ipAddress,
 
 drone::DroneManager::~DroneManager()
 {
-  m_toQuit = true;
+  {
+    std::unique_lock<std::mutex> lock(m_m);
+    m_cv.wait(lock);
+  }
+  m_client.close();
   if (m_sendThread && m_sendThread->joinable()) m_sendThread->join();
 }
 
 void drone::DroneManager::registerHandlers()
 {
-  m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>(
-    [this](const msg::FlightPathMsg& msg) {
-      auto path = createFlightPath(
-        m_controller.getX(), m_controller.getY(), msg.points());
+  m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>([this](
+    const msg::FlightPathMsg& msg, const std::string&) {
+    m_logger.logInfo("DroneManager", "Received FlightPathMsg");
+
+    auto path =
+      createFlightPath(m_controller.getX(), m_controller.getY(), msg.targets());
+    {
       std::lock_guard<std::mutex> l(m_pathMutex);
       std::swap(path, m_flightPath);
-      auto points = msg.points();
-      std::swap(points, m_points);
-      startMessages();
-      msg::FlightPathRsp rsp;
-      m_client.send(rsp);
-    }));
+    }
+    auto targets = msg.targets();
+    std::swap(targets, m_targets);
+    if (!m_controller.isFlying()) startMessages();
+    msg::FlightPathRsp rsp;
+    m_client.send(rsp);
+  }));
 
   m_connections.push_back(m_client.registerHandler<msg::ZConfigMsg>(
-    [this](const msg::ZConfigMsg& msg) {
+    [this](const msg::ZConfigMsg& msg, const std::string&) {
+      m_logger.logInfo("DroneManager", "Received ZConfigMsg");
       m_zConfig = msg.zAxis();
       m_client.send(msg::ZConfigRsp());
     }));
 
-  m_connections.push_back(
-    m_client.registerHandler<msg::FinishMsg>([this](const msg::FinishMsg&) {
-      m_controller.sendMessage(messages::LandMessage());
+  m_connections.push_back(m_client.registerHandler<msg::FinishMsg>(
+    [this](const msg::FinishMsg&, const std::string&) {
+      m_logger.logInfo("DroneManager", "Received FinishMsg");
+      {
+        std::lock_guard<std::mutex> l(m_pathMutex);
+        m_flightPath.push(messages::LandMessage());
+      }
       m_client.send(msg::FinishRsp());
+      m_toQuit = true;
     }));
 }
 
@@ -222,7 +242,7 @@ void drone::DroneManager::startMessages()
   auto diff = m_zConfig - m_controller.getZ();
   if (diff > 20) m_controller.sendMessage(messages::UpMessage(diff));
   m_sendThread = std::make_shared<std::thread>([this]() {
-    while (!m_toQuit)
+    while (!m_toQuit || !m_flightPath.empty())
     {
       if (m_flightPath.empty())
       {
@@ -237,5 +257,7 @@ void drone::DroneManager::startMessages()
       }
       m_controller.sendMessage(toGoTo);
     }
+    m_controller.stopRunning();
+    m_cv.notify_one();
   });
 }

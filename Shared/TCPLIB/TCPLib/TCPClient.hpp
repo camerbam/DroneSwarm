@@ -3,6 +3,7 @@
 
 #include <map>
 #include <mutex>
+#include <thread>
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/thread_pool.hpp>
@@ -21,20 +22,23 @@ namespace tcp
   public:
     TcpClient(std::string hostname,
               std::string port,
-              msg::FORMAT format = msg::FORMAT::PROTOBUF);
+              msg::FORMAT format = msg::FORMAT::PROTOBUF,
+              std::string name = "");
 
     ~TcpClient();
 
     template <class T>
     boost::signals2::scoped_connection registerHandler(
-      std::function<void(T)> handler)
+      std::function<void(T, std::string)> handler)
     {
-      auto poster = [this](T msg, std::function<void(T)> f) {
-        GlobalRegistry::getRegistry().postToThreadPool([msg, f]() { f(msg); });
+      auto poster = [this](T msg,
+                           std::function<void(T, std::string)> f,
+                           const std::string& msgId) {
+        GlobalRegistry::getRegistry().postToThreadPool(
+          [msg, f, msgId]() { f(msg, msgId); });
       };
-      boost::signals2::slot<void(T)> slot = [poster, handler](T msg) {
-        poster(msg, handler);
-      };
+      boost::signals2::slot<void(T, std::string)> slot = [poster, handler](
+        T msg, const std::string& msgId) { poster(msg, handler, msgId); };
       auto pHandle = std::make_shared<Handler<T>>();
       m_handlers->add(T::name(), pHandle);
       return pHandle->signal().connect(slot);
@@ -43,9 +47,27 @@ namespace tcp
     template <class T>
     void send(T message)
     {
+      static int c = 0;
       msg::BaseMsg msg;
       msg.msg(msg::toString(message, m_format));
       msg.type(T::name());
+      msg.msgId(m_name + std::to_string(c++));
+      auto pMessage = std::make_shared<std::string>(
+        tcp::getProcessedString(toString(msg, m_format)));
+      m_socket.async_write_some(
+        boost::asio::buffer(*pMessage, pMessage.get()->size()),
+        [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
+      (*m_pMessages)[msg.msgId()] = {
+        msg, std::chrono::steady_clock::now() + std::chrono::seconds(10)};
+    }
+
+    template <class T>
+    void respond(T message, const std::string& msgId)
+    {
+      msg::BaseMsg msg;
+      msg.msg(msg::toString(message, m_format));
+      msg.type(T::name());
+      msg.msgId(msgId);
       auto pMessage = std::make_shared<std::string>(
         tcp::getProcessedString(toString(msg, m_format)));
       m_socket.async_write_some(
@@ -70,10 +92,17 @@ namespace tcp
 
     bool isConnected();
 
+    void checkMsgs();
+
+    void resend(const msg::BaseMsg& msg);
+
   private:
     boost::asio::io_context m_ctx;
     boost::optional<boost::asio::io_context::work> m_optCork;
     msg::FORMAT m_format;
+    std::string m_name;
+    boost::asio::steady_timer m_timer;
+    std::shared_ptr<std::map<std::string, msg::ResendMsg>> m_pMessages;
     std::thread m_ctxThread;
     boost::asio::ip::tcp::socket m_socket;
     std::vector<char> m_inputBuffer;

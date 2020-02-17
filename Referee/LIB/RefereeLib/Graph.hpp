@@ -30,6 +30,8 @@ namespace referee
 
     bool isDone();
 
+    std::vector<Target> getAllLeft();
+
   private:
     std::vector<Target> m_ready;
     std::vector<Target> m_notReady;
