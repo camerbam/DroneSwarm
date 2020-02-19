@@ -138,6 +138,7 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   auto mid = msg.getMid();
   if (m_mid != mid)
   {
+    std::cout << "detected: " << mid << std::endl;
     m_midSignal(mid);
     m_mid = mid;
   }

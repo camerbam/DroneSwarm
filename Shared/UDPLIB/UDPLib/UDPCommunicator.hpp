@@ -42,6 +42,8 @@ namespace udp
     Response receiveMessage(const boost::posix_time::time_duration& timeout =
                               boost::posix_time::seconds(10));
 
+    unsigned short getLocalPort() const;
+
   private:
     boost::asio::io_context m_ctx;
     boost::optional<boost::asio::io_context::work> m_optCork;

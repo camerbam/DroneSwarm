@@ -11,8 +11,10 @@ namespace drone
   {
   public:
     DroneSimulator(
+      unsigned short port,
       boost::posix_time::seconds timeout = boost::posix_time::seconds(15),
-      size_t startingBattery = 100);
+      size_t startingBattery = 100,
+      int startingY = 0);
 
     ~DroneSimulator();
 

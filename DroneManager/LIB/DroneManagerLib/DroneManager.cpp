@@ -37,7 +37,7 @@ namespace
         }
         x += xDiff;
       }
-      else if (xDiffAbs < 500)
+      else if (xDiffAbs < 120)
       {
         if (xDiff > 0)
           messages.push(messages::ForwardMessage(xDiffAbs));
@@ -45,31 +45,17 @@ namespace
           messages.push(messages::BackMessage(xDiffAbs));
         x += xDiff;
       }
-      else if (xDiffAbs < 520)
-      {
-        if (xDiff > 0)
-        {
-          messages.push(messages::ForwardMessage(xDiffAbs - 20));
-          messages.push(messages::ForwardMessage(20));
-        }
-        else
-        {
-          messages.push(messages::BackMessage(xDiffAbs - 20));
-          messages.push(messages::BackMessage(20));
-        }
-        x += xDiff;
-      }
       else
       {
         if (xDiff > 0)
         {
-          messages.push(messages::ForwardMessage(500));
-          x += 500;
+          messages.push(messages::ForwardMessage(100));
+          x += 100;
         }
         else
         {
-          messages.push(messages::BackMessage(500));
-          x -= 500;
+          messages.push(messages::BackMessage(100));
+          x -= 100;
         }
       }
     }
@@ -97,7 +83,7 @@ namespace
         }
         y += yDiff;
       }
-      else if (yDiffAbs < 500)
+      else if (yDiffAbs < 120)
       {
         if (yDiff > 0)
           messages.push(messages::RightMessage(yDiffAbs));
@@ -105,31 +91,17 @@ namespace
           messages.push(messages::LeftMessage(yDiffAbs));
         y += yDiff;
       }
-      else if (yDiffAbs < 520)
-      {
-        if (yDiff > 0)
-        {
-          messages.push(messages::RightMessage(yDiffAbs - 20));
-          messages.push(messages::RightMessage(20));
-        }
-        else
-        {
-          messages.push(messages::LeftMessage(yDiffAbs - 20));
-          messages.push(messages::LeftMessage(20));
-        }
-        y += yDiff;
-      }
       else
       {
         if (yDiff > 0)
         {
-          messages.push(messages::RightMessage(500));
-          y += 500;
+          messages.push(messages::RightMessage(100));
+          y += 100;
         }
         else
         {
-          messages.push(messages::LeftMessage(500));
-          y -= 500;
+          messages.push(messages::LeftMessage(100));
+          y -= 100;
         }
       }
     }
@@ -151,13 +123,14 @@ std::queue<messages::Message_t> drone::createFlightPath(
 }
 
 drone::DroneManager::DroneManager(const std::string& ipAddress,
+                                  const unsigned short& dronePort,
                                   const std::string& serverPort,
                                   const std::string& monitorPort,
                                   int startingY)
   : m_cv(),
     m_m(),
     m_logger("Drone Manager", "localhost", monitorPort),
-    m_controller(m_logger, ipAddress, startingY),
+    m_controller(m_logger, dronePort, ipAddress, startingY),
     m_client(boost::asio::ip::host_name(), serverPort),
     m_pathMutex(),
     m_flightPath(),

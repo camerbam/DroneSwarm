@@ -17,7 +17,7 @@ namespace
 {
   void startSimulator(boost::posix_time::seconds duration)
   {
-    drone::DroneSimulator simulator(duration);
+    drone::DroneSimulator simulator(8889, duration);
   }
 }
 

@@ -30,7 +30,8 @@ namespace
   }
 } // namespace
 
-drone::DroneSimulatorStateImpl::DroneSimulatorStateImpl(size_t startingBattery)
+drone::DroneSimulatorStateImpl::DroneSimulatorStateImpl(size_t startingBattery,
+                                                        int startingY)
   : m_flying(false),
     m_statusMutex(),
     m_currentLocation(),
@@ -40,7 +41,8 @@ drone::DroneSimulatorStateImpl::DroneSimulatorStateImpl(size_t startingBattery)
     m_isRunning(true),
     m_updateThread(),
     m_targets(GlobalRegistry::getRegistry().getTargets()),
-    m_lastTarget(0, 0, -1)
+    m_lastTarget(0, 0, -1),
+    m_startingY(startingY)
 {
   startUpdate();
 }
@@ -248,7 +250,7 @@ void drone::DroneSimulatorStateImpl::startUpdate()
         if (utils::checkWithin(
               target.getX(), m_currentLocation.getXCoordinate(), 5) &&
             utils::checkWithin(
-              target.getY(), m_currentLocation.getYCoordinate(), 5))
+              target.getY(), m_currentLocation.getYCoordinate() + m_startingY, 5))
         {
           if (target.getId() == m_lastTarget.getId()) break;
           m_lastTarget = Target(m_currentLocation.getXCoordinate(),

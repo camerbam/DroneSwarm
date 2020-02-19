@@ -3,22 +3,23 @@
 #include <iostream>
 #include <memory>
 
+#include "DroneMessagesLib/MessageFactory.hpp"
 #include "DroneSimulatorSDKState.hpp"
 #include "DroneSimulatorStateChanges.hpp"
 #include "DroneSimulatorStateImpl.hpp"
-#include "DroneMessagesLib/MessageFactory.hpp"
 
 drone::DroneSimulatorSDKState::DroneSimulatorSDKState(
   udp::UDPCommunicator& controlEndpoint,
   const boost::asio::ip::udp::endpoint& drone,
-  size_t startingBattery)
+  size_t startingBattery,
+  int startingY)
   : DroneSimulatorState(controlEndpoint),
-    m_pState(std::make_shared<DroneSimulatorStateImpl>(startingBattery)),
+    m_pState(std::make_shared<DroneSimulatorStateImpl>(startingBattery, startingY)),
     m_statusEndpoint(),
     m_commandCompleted(),
     m_remoteProcessForControl(drone),
     m_remoteProcessForStatus(drone),
-    m_statusThread([this]() {
+    m_statusThread([this, &controlEndpoint]() {
       m_remoteProcessForStatus.port(8890);
       while (m_pState)
       {
@@ -51,7 +52,6 @@ std::shared_ptr<drone::DroneSimulatorState> drone::DroneSimulatorSDKState::
   auto msg = response.getMessage();
   auto optToSend = boost::apply_visitor(
     drone::DroneSimulatorStateChanges(m_pState), messages::getMessage(msg));
-  if (optToSend)
-    m_sender.sendMessage(optToSend.get(), response.getEndpoint());
+  if (optToSend) m_sender.sendMessage(optToSend.get(), response.getEndpoint());
   return shared_from_this();
 }

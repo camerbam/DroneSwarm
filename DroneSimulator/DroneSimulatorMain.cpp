@@ -2,21 +2,21 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
-#include "RegistryLib/Registry.hpp"
 #include "DroneSimulatorLib/DroneSimulator.hpp"
+#include "RegistryLib/Registry.hpp"
 
 int main(int argc, char* argv[])
 {
   try
   {
-    boost::program_options::options_description desc{ "Options" };
+    boost::program_options::options_description desc{"Options"};
     desc.add_options()("help,h", "Help screen")(
-      "config,c",
-      boost::program_options::value<std::string>());
-      //("ip", boost::program_options::value<std::string>(), "IP Address for Drone");
+      "config,c", boost::program_options::value<std::string>())(
+      "port,p", boost::program_options::value<unsigned short>()->required())(
+      "y,y", boost::program_options::value<int>(), "Starting y position");
 
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -34,7 +34,14 @@ int main(int argc, char* argv[])
       GlobalRegistry::setRegistry(boost::filesystem::path(config));
     }
 
-    drone::DroneSimulator sim;
+    int y(0);
+    if (vm.count("y"))
+    {
+      y = vm["y"].as<int>();
+    }
+
+    drone::DroneSimulator sim(
+      vm["port"].as<unsigned short>(), boost::posix_time::seconds(15), 100, y);
   }
   catch (const boost::program_options::error& ex)
   {
