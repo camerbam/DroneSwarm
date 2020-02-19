@@ -143,13 +143,13 @@ BOOST_AUTO_TEST_CASE(DRONE_MANAGER_PATH_TEST)
   targets.push_back({0, 0});     // generates 2 msgs
   targets.push_back({10, 10});   // generates 4 msgs
   targets.push_back({0, 0});     // generates 4 msgs
-  targets.push_back({540, 540}); // generates 4 msgs
+  targets.push_back({140, 140}); // generates 4 msgs
   targets.push_back({0, 0});     // generates 4 msgs
-  targets.push_back({510, 510}); // generates 4 msgs
+  targets.push_back({110, 110}); // generates 4 msgs
   targets.push_back({0, 0});     // generates 4 msgs
   auto rsp = drone::createFlightPath(0, 0, targets);
 
-  BOOST_REQUIRE(rsp.size() == 28);
+  BOOST_REQUIRE(rsp.size() == 24);
   BOOST_CHECK(utils::compareTwoDoubles(
     boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 50));
   rsp.pop();
@@ -190,54 +190,42 @@ BOOST_AUTO_TEST_CASE(DRONE_MANAGER_PATH_TEST)
   rsp.pop();
 
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 500));
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 100));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
     boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 40));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 500));
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 100));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
     boost::get<messages::RightMessage>(rsp.front()).getArgument(), 40));
   rsp.pop();
 
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 500));
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 100));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
     boost::get<messages::BackMessage>(rsp.front()).getArgument(), 40));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 500));
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 100));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
     boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 40));
   rsp.pop();
 
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 490));
+    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 110));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::ForwardMessage>(rsp.front()).getArgument(), 20));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 490));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 20));
+    boost::get<messages::RightMessage>(rsp.front()).getArgument(), 110));
   rsp.pop();
 
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 490));
+    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 110));
   rsp.pop();
   BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::BackMessage>(rsp.front()).getArgument(), 20));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 490));
-  rsp.pop();
-  BOOST_CHECK(utils::compareTwoDoubles(
-    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 20));
+    boost::get<messages::LeftMessage>(rsp.front()).getArgument(), 110));
   rsp.pop();
 }

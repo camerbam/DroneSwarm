@@ -14,7 +14,8 @@ namespace drone
   public:
     DroneSimulatorSDKState(udp::UDPCommunicator& controlEndpoint,
                            const boost::asio::ip::udp::endpoint& drone,
-                           size_t startingBattery);
+                           size_t startingBattery,
+                           int m_startingY);
 
     ~DroneSimulatorSDKState();
 

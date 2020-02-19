@@ -16,14 +16,16 @@ namespace
 }
 
 drone::DroneController::DroneController(logger::MonitorLogger& logger,
+                                        unsigned short dronePort,
                                         const std::string& ipAddress,
                                         int startingY)
   : m_logger(logger),
     m_pState(std::make_shared<drone::DroneControllerState>(100, startingY)),
     m_running(true),
     m_controlCommunicator(),
-    m_controlEndpoint(boost::asio::ip::address::from_string(ipAddress), 8889),
-    m_statusCommunicator(8890),
+    m_controlEndpoint(
+      boost::asio::ip::address::from_string(ipAddress), dronePort),
+    m_statusCommunicator(dronePort + 1),
     m_connection(),
     m_cvStatus(),
     m_midSignal(),
@@ -56,9 +58,8 @@ drone::DroneController::DroneController(logger::MonitorLogger& logger,
     },
     boost::posix_time::seconds(8));
 
-  m_midConnection = m_pState->registerForMid([this](int id) {
-    m_mids.push_back(id);
-  });
+  m_midConnection =
+    m_pState->registerForMid([this](int id) { m_mids.push_back(id); });
 
   messages::Message_t command = messages::CommandMessage();
   sendMessage(command);

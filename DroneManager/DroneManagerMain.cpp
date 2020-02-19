@@ -60,6 +60,7 @@ int main(int argc, char* argv[])
   std::string ip;
   std::string sPort;
   std::string mPort;
+  unsigned short dPort;
   int startingY(0);
   try
   {
@@ -74,8 +75,11 @@ int main(int argc, char* argv[])
       "Port for the server")("monitorport,m",
                              boost::program_options::value<std::string>(),
                              "Port for the monitor")(
-      "y,y", boost::program_options::value<int>(), "Starting y position")(
-      "pretest,p", "Run pretest");
+      "droneport,d",
+      boost::program_options::value<unsigned short>(),
+      "Port for the drone")("y,y",
+                            boost::program_options::value<int>(),
+                            "Starting y position")("pretest,p", "Run pretest");
 
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -108,6 +112,12 @@ int main(int argc, char* argv[])
       std::cout << "Must specify monitor port" << std::endl;
       return 1;
     }
+    dPort = vm["droneport"].as<unsigned short>();
+    if (dPort == 0)
+    {
+      std::cout << "Must specify drone port" << std::endl;
+      return 1;
+    }
     if (vm.count("y")) startingY = vm["y"].as<int>();
 
     auto config = vm["config"].as<std::string>();
@@ -123,7 +133,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    drone::DroneManager manager(ip, sPort, mPort, startingY);
+    drone::DroneManager manager(ip, dPort, sPort, mPort, startingY);
   }
   catch (const std::runtime_error& error)
   {

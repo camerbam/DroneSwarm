@@ -15,27 +15,29 @@ namespace
 {
   void drone1(std::shared_ptr<tcp::TcpConnection> connection,
               std::vector<boost::signals2::connection>& connections,
-              std::vector<Target> targets,
+              std::vector<Target>& targets,
               std::condition_variable& cv)
   {
     connections.push_back(connection->registerHandler<msg::ZConfigRsp>(
-      [](const msg::ZConfigRsp&) {}));
+      [](const msg::ZConfigRsp&, const std::string&) {}));
 
-    connections.push_back(connection->registerHandler<msg::TargetMsg>(
-      [connection, &targets, &cv](const msg::TargetMsg& target) {
+    connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
+      [connection, &targets, &cv](
+        const msg::HitTargetMsg& target, const std::string&) {
         auto nextTarget = targets.front();
-        if (utils::compareTwoDoubles(nextTarget.getX(), target.point().x()) &&
-            utils::compareTwoDoubles(nextTarget.getY(), target.point().y()) &&
-            utils::compareTwoDoubles(nextTarget.getId(), target.id()))
+        if (nextTarget.getX() == target.target().x() &&
+            nextTarget.getY() == target.target().y() &&
+            nextTarget.getId() == target.id())
         {
           std::cout << "correct" << std::endl;
-          connection->send(msg::TargetRsp());
+          connection->send(msg::HitTargetRsp(true, false, {}, {}));
           targets.erase(targets.begin());
         }
         else
         {
+          std::cout << target.id() << " " << nextTarget.getId();
           std::cout << "wrong place" << std::endl;
-          connection->send(msg::TargetRsp("Wrong id, or wrong location"));
+          connection->send(msg::HitTargetRsp(false, false, {}, {}));
         }
 
         if (targets.empty())
@@ -49,37 +51,39 @@ namespace
   }
 
   void drone2(std::shared_ptr<tcp::TcpConnection> connection,
-    std::vector<boost::signals2::connection>& connections,
-    std::vector<Target> targets,
-    std::condition_variable& cv)
+              std::vector<boost::signals2::connection>& connections,
+              std::vector<Target>& targets,
+              std::condition_variable& cv)
   {
     connections.push_back(connection->registerHandler<msg::ZConfigRsp>(
-      [](const msg::ZConfigRsp&) {}));
+      [](const msg::ZConfigRsp&, const std::string&) {}));
 
-    connections.push_back(connection->registerHandler<msg::TargetMsg>(
-      [connection, &targets, &cv](const msg::TargetMsg& target) {
-      auto nextTarget = targets.front();
-      if (utils::compareTwoDoubles(nextTarget.getX(), target.point().x()) &&
-        utils::compareTwoDoubles(nextTarget.getY(), target.point().y()) &&
-        utils::compareTwoDoubles(nextTarget.getId(), target.id()))
-      {
-        std::cout << "correct" << std::endl;
-        connection->send(msg::TargetRsp());
-        targets.erase(targets.begin());
-      }
-      else
-      {
-        std::cout << "wrong place" << std::endl;
-        connection->send(msg::TargetRsp("Wrong id, or wrong location"));
-      }
+    connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
+      [connection, &targets, &cv](
+        const msg::HitTargetMsg& target, const std::string&) {
+        auto nextTarget = targets.front();
+        if (nextTarget.getX() == target.target().x() &&
+            nextTarget.getY() == target.target().y() &&
+            nextTarget.getId() == target.id())
+        {
+          std::cout << "correct" << std::endl;
+          connection->send(msg::HitTargetRsp(true, false, {}, {}));
+          targets.erase(targets.begin());
+        }
+        else
+        {
+          std::cout << target.id() << " " << nextTarget.getId();
+          std::cout << "wrong place" << std::endl;
+          connection->send(msg::HitTargetRsp(false, false, {}, {}));
+        }
 
-      if (targets.empty())
-      {
-        connection->send(msg::FinishMsg());
-        connection->close();
-        cv.notify_one();
-      }
-    }));
+        if (targets.empty())
+        {
+          connection->send(msg::FinishMsg());
+          connection->close();
+          cv.notify_one();
+        }
+      }));
     connection->ready();
   }
 }
@@ -89,7 +93,7 @@ int main()
   std::vector<boost::signals2::connection> connections;
   std::vector<std::shared_ptr<tcp::TcpConnection>> drones;
   GlobalRegistry::setRegistry();
-  tcp::TcpServer server(65000);
+  tcp::TcpServer server(65001);
 
   std::condition_variable cv;
   std::mutex m;
@@ -98,7 +102,6 @@ int main()
   targets.emplace_back(100, 0, 2);
   targets.emplace_back(100, 100, 3);
 
-<<<<<<< HEAD
   std::vector<Target> targets2;
   targets2.emplace_back(200, 100, 4);
   targets2.emplace_back(200, 0, 5);
@@ -106,53 +109,16 @@ int main()
   bool first(true);
 
   connections.push_back(server.registerConnection(
-    [&connections, &drones, &server, &cv, &targets, &targets2, first](
+    [&connections, &drones, &server, &cv, &targets, &targets2, &first](
       std::shared_ptr<tcp::TcpConnection> connection) {
       drones.push_back(connection);
       if (first)
+      {
         drone1(connection, connections, targets, cv);
+        first = false;
+      }
       else
         drone2(connection, connections, targets2, cv);
-=======
-  connections.push_back(
-    server.registerConnection([&connections, &drones, &server, &cv, &targets](
-      std::shared_ptr<tcp::TcpConnection> connection) {
-      drones.push_back(connection);
-
-      connections.push_back(connection->registerHandler<msg::ZConfigRsp>(
-        [](const msg::ZConfigRsp&, const std::string&) {
-          std::cout << "received" << std::endl;
-        }));
-
-      connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
-        [connection, &server, &targets, &cv](
-          const msg::HitTargetMsg& target, const std::string&) {
-          std::cout << "received" << std::endl;
-          auto nextTarget = targets.front();
-          if (utils::checkWithin(nextTarget.getX(), target.target().x(), 20) &&
-              utils::checkWithin(nextTarget.getY(), target.target().y(), 20) &&
-              nextTarget.getId() == target.id())
-          {
-            std::cout << "correct" << std::endl;
-            connection->send(msg::HitTargetRsp());
-            targets.erase(targets.begin());
-          }
-          else
-          {
-            std::cout << "wrong place" << std::endl;
-            connection->send(msg::HitTargetRsp(false, false, {}, {}));
-          }
-
-          if (targets.empty())
-          {
-            connection->send(msg::FinishMsg());
-            connection->close();
-            server.close();
-            cv.notify_all();
-          }
-        }));
-      connection->ready();
->>>>>>> cameron/development
     }));
 
   std::cout << "type ready when ready" << std::endl;
@@ -160,12 +126,16 @@ int main()
   while (line != "ready")
     std::getline(std::cin, line);
 
+  int height = 60;
   for (auto&& drone : drones)
   {
     std::cout << "sending" << std::endl;
-    drone->send(msg::ZConfigMsg(80));
-    drone->send(msg::FlightPathMsg({{100, 0}, {100, 100}, {200, 0}}));
+    drone->send(msg::ZConfigMsg(height));
+    height += 20;
   }
+
+  drones[0]->send(msg::FlightPathMsg({{100, 0}, {100, 100}}));
+  drones[1]->send(msg::FlightPathMsg({{200, 100}, {200, 0}}));
 
   {
     std::unique_lock<std::mutex> lock(m);

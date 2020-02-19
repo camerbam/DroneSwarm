@@ -1,0 +1,33 @@
+{
+  "ThreadCount": 1,
+  "Speed": 2,
+  "BatteryDecaySpeed": 1,
+  "Targets": [{
+    "x": 100,
+    "y": 0,
+    "id": 2,
+    "Dependents": []
+  },
+  {
+    "x": 100,
+    "y": 100,
+    "id": 3,
+    "Dependents": []
+  },
+  {
+    "x": 200,
+    "y": 100,
+    "id": 4,
+    "Dependents": []
+  },
+  {
+    "x": 200,
+    "y": 0,
+    "id": 5,
+    "Dependents": []
+  }],
+  "SkipLog": false,
+  "Pretest": 0,
+  "PrintToConsole": true,
+  "Format": "proto"
+}

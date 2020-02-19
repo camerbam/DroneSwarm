@@ -21,6 +21,7 @@ udp::UDPCommunicator::UDPCommunicator(const short localPort)
       boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), localPort)),
     m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); })
 {
+  std::cout << localPort << std::endl;
 }
 
 udp::UDPCommunicator::~UDPCommunicator()
@@ -74,4 +75,9 @@ udp::Response udp::UDPCommunicator::receiveMessage(
   response.setDidSucceed(false);
   response.setMessage("Receive Message timed out");
   return response;
+}
+
+unsigned short udp::UDPCommunicator::getLocalPort() const
+{
+  return m_socket.local_endpoint().port();
 }

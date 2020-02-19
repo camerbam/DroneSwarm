@@ -11,7 +11,8 @@ namespace drone
   {
   public:
     DroneSimulatorIdleState(udp::UDPCommunicator& controlEndpoint,
-                            size_t startingBattery = 100);
+                            size_t startingBattery = 100,
+                            int startingY = 0);
 
     ~DroneSimulatorIdleState();
 
@@ -20,6 +21,7 @@ namespace drone
 
   private:
     size_t m_startingBattery;
+    int m_startingY;
   };
 } // namespace drone
 

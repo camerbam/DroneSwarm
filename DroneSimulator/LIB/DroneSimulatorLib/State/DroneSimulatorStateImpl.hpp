@@ -20,7 +20,7 @@ namespace drone
   class DroneSimulatorStateImpl
   {
   public:
-    DroneSimulatorStateImpl(size_t startingBattery = 100);
+    DroneSimulatorStateImpl(size_t startingBattery = 100, int startingY = 0);
     ~DroneSimulatorStateImpl();
 
     std::string takeoff();
@@ -65,6 +65,7 @@ namespace drone
     std::thread m_updateThread;
     const std::vector<Target>& m_targets;
     Target m_lastTarget;
+    int m_startingY;
   };
 } // namespace drone
 

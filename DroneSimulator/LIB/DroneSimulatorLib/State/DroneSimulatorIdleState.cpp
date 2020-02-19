@@ -15,10 +15,12 @@ namespace
   public:
     DroneSimulatorIdleStateChanges(udp::UDPCommunicator& controlEndpoint,
                                    const udp::Response& response,
-                                   size_t startingBattery)
+                                   size_t startingBattery,
+                                   int startingY)
       : m_controlEndpoint(controlEndpoint),
         m_response(response),
-        m_startingBattery(startingBattery)
+        m_startingBattery(startingBattery),
+        m_startingY(startingY)
     {
     }
 
@@ -30,7 +32,7 @@ namespace
       {
       case 0:
         toReturn = std::make_shared<drone::DroneSimulatorSDKState>(
-          m_controlEndpoint, m_response.getEndpoint(), m_startingBattery);
+          m_controlEndpoint, m_response.getEndpoint(), m_startingBattery, m_startingY);
         break;
       case 1:
         toReturn = std::make_shared<drone::DroneSimulatorPretestState>(
@@ -63,12 +65,15 @@ namespace
     udp::UDPCommunicator& m_controlEndpoint;
     const udp::Response m_response;
     size_t m_startingBattery;
+    int m_startingY;
   };
 }
 
 drone::DroneSimulatorIdleState::DroneSimulatorIdleState(
-  udp::UDPCommunicator& controlEndpoint, size_t startingBattery)
-  : DroneSimulatorState(controlEndpoint), m_startingBattery(startingBattery)
+  udp::UDPCommunicator& controlEndpoint, size_t startingBattery, int startingY)
+  : DroneSimulatorState(controlEndpoint),
+    m_startingBattery(startingBattery),
+    m_startingY(startingY)
 {
 }
 
@@ -81,9 +86,10 @@ std::shared_ptr<drone::DroneSimulatorState> drone::DroneSimulatorIdleState::
 {
   if (!response.didSucceed()) return shared_from_this();
   auto msg = response.getMessage();
-  auto newState = boost::apply_visitor(
-    DroneSimulatorIdleStateChanges(m_sender, response, m_startingBattery),
-    messages::getMessage(msg));
+  auto newState =
+    boost::apply_visitor(DroneSimulatorIdleStateChanges(
+                           m_sender, response, m_startingBattery, m_startingY),
+                         messages::getMessage(msg));
   if (!newState) return shared_from_this();
   return newState;
 }
