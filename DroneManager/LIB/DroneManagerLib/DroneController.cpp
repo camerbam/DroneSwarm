@@ -25,7 +25,7 @@ drone::DroneController::DroneController(logger::MonitorLogger& logger,
     m_controlCommunicator(),
     m_controlEndpoint(
       boost::asio::ip::address::from_string(ipAddress), dronePort),
-    m_statusCommunicator(dronePort + 1),
+    m_statusCommunicator(8890),
     m_connection(),
     m_cvStatus(),
     m_midSignal(),

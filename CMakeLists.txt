@@ -28,5 +28,7 @@ set(random_srcs
   100Times.txt
   Effectiveness.txt
   Findexternprolite.cmake
+  config.json
+  TODO.txt
   )
 xpSourceListAppend(${random_srcs})

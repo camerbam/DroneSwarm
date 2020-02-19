@@ -20,7 +20,7 @@ drone::DroneSimulatorSDKState::DroneSimulatorSDKState(
     m_remoteProcessForControl(drone),
     m_remoteProcessForStatus(drone),
     m_statusThread([this, &controlEndpoint]() {
-      m_remoteProcessForStatus.port(controlEndpoint.getLocalPort() + 1);
+      m_remoteProcessForStatus.port(8890);
       while (m_pState)
       {
         auto status = m_pState->getStatusMessage();
