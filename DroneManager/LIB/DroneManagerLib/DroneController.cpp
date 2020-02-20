@@ -17,6 +17,7 @@ namespace
 
 drone::DroneController::DroneController(logger::MonitorLogger& logger,
                                         unsigned short dronePort,
+                                        unsigned short droneStatusPort,
                                         const std::string& ipAddress,
                                         int startingY)
   : m_logger(logger),
@@ -25,7 +26,7 @@ drone::DroneController::DroneController(logger::MonitorLogger& logger,
     m_controlCommunicator(),
     m_controlEndpoint(
       boost::asio::ip::address::from_string(ipAddress), dronePort),
-    m_statusCommunicator(8890),
+    m_statusCommunicator(droneStatusPort),
     m_connection(),
     m_cvStatus(),
     m_midSignal(),

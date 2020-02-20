@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
   logger::MonitorLogger logger("Drone Manager", "localhost", "13000");
 
   auto controller =
-    std::make_shared<drone::DroneController>(logger, 8889, "127.0.0.1");
+    std::make_shared<drone::DroneController>(logger, 8889, 8890, "127.0.0.1");
 
   messages::Message_t command = messages::CommandMessage();
   messages::Message_t takeoff = messages::TakeoffMessage();
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_UPDATE_STATE_TEST)
   logger::MonitorLogger logger("Drone Manager", "localhost", "13000");
 
   auto controller =
-    std::make_shared<drone::DroneController>(logger, 8889, "127.0.0.1");
+    std::make_shared<drone::DroneController>(logger, 8889, 8890, "127.0.0.1");
 
   messages::Message_t takeoff = messages::TakeoffMessage();
   messages::Message_t back = messages::BackMessage(25);

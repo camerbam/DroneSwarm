@@ -72,7 +72,9 @@ namespace
         }
         else
         {
-          std::cout << target.id() << " " << nextTarget.getId();
+          std::cout << target.id() << " " << nextTarget.getId() << std::endl;
+          std::cout << target.target().x() << " " << nextTarget.getX() << std::endl;
+          std::cout << target.target().y() << " " << nextTarget.getY() << std::endl;
           std::cout << "wrong place" << std::endl;
           connection->send(msg::HitTargetRsp(false, false, {}, {}));
         }
@@ -99,12 +101,12 @@ int main()
   std::mutex m;
 
   std::vector<Target> targets;
-  targets.emplace_back(100, 0, 2);
-  targets.emplace_back(100, 100, 3);
+  targets.emplace_back(100, 0, 1);
+  targets.emplace_back(100, 100, 2);
 
   std::vector<Target> targets2;
-  targets2.emplace_back(200, 100, 4);
-  targets2.emplace_back(200, 0, 5);
+  targets2.emplace_back(200, 100, 3);
+  targets2.emplace_back(200, 0, 4);
 
   bool first(true);
 
