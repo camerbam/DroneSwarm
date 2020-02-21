@@ -12,7 +12,6 @@
 int main(int argc, char* argv[])
 {
   std::string ports;
-  int startingY(0);
   try
   {
     boost::program_options::options_description desc{"Options"};
