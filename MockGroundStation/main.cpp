@@ -73,8 +73,10 @@ namespace
         else
         {
           std::cout << target.id() << " " << nextTarget.getId() << std::endl;
-          std::cout << target.target().x() << " " << nextTarget.getX() << std::endl;
-          std::cout << target.target().y() << " " << nextTarget.getY() << std::endl;
+          std::cout << target.target().x() << " " << nextTarget.getX()
+                    << std::endl;
+          std::cout << target.target().y() << " " << nextTarget.getY()
+                    << std::endl;
           std::cout << "wrong place" << std::endl;
           connection->send(msg::HitTargetRsp(false, false, {}, {}));
         }
@@ -88,7 +90,7 @@ namespace
       }));
     connection->ready();
   }
-}
+} // namespace
 
 int main()
 {

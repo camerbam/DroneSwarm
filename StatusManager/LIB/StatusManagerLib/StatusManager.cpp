@@ -23,7 +23,8 @@ drone::StatusManager::StatusManager(const std::string& ports)
       communicator.sendMessage(
         response.getMessage(),
         boost::asio::ip::udp::endpoint(
-          boost::asio::ip::address::from_string("127.0.0.1"), m_ports[end]));
+          boost::asio::ip::address::from_string("127.0.0.1"),
+          m_ports[end.substr(spot + 1)]));
     }
   });
 }
@@ -34,8 +35,7 @@ drone::StatusManager::~StatusManager()
   if (m_pThread) m_pThread->join();
 }
 
-void drone::StatusManager::parsePorts(
-  std::string ports)
+void drone::StatusManager::parsePorts(std::string ports)
 {
   std::vector<std::string> combinations;
   boost::split(combinations, ports, boost::algorithm::is_space());
