@@ -23,6 +23,7 @@ add_subdirectory(MockGroundStation)
 add_subdirectory(Monitor)
 add_subdirectory(Playground)
 add_subdirectory(Referee)
+add_subdirectory(StatusManager)
 ###########################################
 set(random_srcs
   100Times.txt

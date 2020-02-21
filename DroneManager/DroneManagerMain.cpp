@@ -61,25 +61,28 @@ int main(int argc, char* argv[])
   std::string sPort;
   std::string mPort;
   unsigned short dPort;
+  unsigned short statusPort;
   int startingY(0);
   try
   {
+    // clang-format off
     boost::program_options::options_description desc{"Options"};
-    desc.add_options()("help,h", "Help screen")(
-      "ip,i",
-      boost::program_options::value<std::string>()->required(),
-      "IP Address for Drone")(
-      "config,c", boost::program_options::value<std::string>()->required())(
-      "serverport,s",
-      boost::program_options::value<std::string>(),
-      "Port for the server")("monitorport,m",
-                             boost::program_options::value<std::string>(),
-                             "Port for the monitor")(
-      "droneport,d",
-      boost::program_options::value<unsigned short>(),
-      "Port for the drone")("y,y",
-                            boost::program_options::value<int>(),
-                            "Starting y position")("pretest,p", "Run pretest");
+    desc.add_options()
+      ("help,h", "Help screen")
+      ("ip,i", boost::program_options::value<std::string>()->required(),
+        "IP Address for Drone")
+      ("config,c", boost::program_options::value<std::string>()->required())
+      ("groundstation,g", boost::program_options::value<std::string>(), 
+        "Port for the ground station")
+      ("monitorport,m", boost::program_options::value<std::string>(),
+        "Port for the monitor")
+      ("droneport,d", boost::program_options::value<unsigned short>(),
+        "Port for the drone control")
+      ("dronestatusport,s", boost::program_options::value<unsigned short>(),
+          "Port for drone status")
+      ("y,y", boost::program_options::value<int>(),
+        "Starting y position")("pretest,p", "Run pretest");
+    // clang-format on
 
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -100,7 +103,7 @@ int main(int argc, char* argv[])
       return 0;
     }
 
-    sPort = vm["serverport"].as<std::string>();
+    sPort = vm["groundstation"].as<std::string>();
     if (sPort.empty())
     {
       std::cout << "Must specify server port" << std::endl;
@@ -118,6 +121,12 @@ int main(int argc, char* argv[])
       std::cout << "Must specify drone port" << std::endl;
       return 1;
     }
+    statusPort = vm["dronestatusport"].as<unsigned short>();
+    if (statusPort == 0)
+    {
+      std::cout << "Must specify drone port for status" << std::endl;
+      return 1;
+    }
     if (vm.count("y")) startingY = vm["y"].as<int>();
 
     auto config = vm["config"].as<std::string>();
@@ -133,7 +142,7 @@ int main(int argc, char* argv[])
 
   try
   {
-    drone::DroneManager manager(ip, dPort, sPort, mPort, startingY);
+    drone::DroneManager manager(ip, dPort, statusPort, sPort, mPort, startingY);
   }
   catch (const std::runtime_error& error)
   {

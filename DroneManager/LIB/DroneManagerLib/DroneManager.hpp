@@ -24,6 +24,7 @@ namespace drone
   public:
     DroneManager(const std::string& ipAddress,
                  const unsigned short& dronePort,
+                 const unsigned short& droneStatusPort,
                  const std::string& serverPort,
                  const std::string& monitorPort,
                  int startingY);

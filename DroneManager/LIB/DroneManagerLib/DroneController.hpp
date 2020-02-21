@@ -20,6 +20,7 @@ namespace drone
   public:
     DroneController(logger::MonitorLogger& logger,
                     unsigned short dronePort = 8889,
+                    unsigned short droneStatusPort = 8890,
                     const std::string& ipAddress = std::string("127.0.0.1"),
                     int startingY = 0);
 

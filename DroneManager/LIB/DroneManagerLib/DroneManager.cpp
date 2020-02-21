@@ -124,13 +124,14 @@ std::queue<messages::Message_t> drone::createFlightPath(
 
 drone::DroneManager::DroneManager(const std::string& ipAddress,
                                   const unsigned short& dronePort,
+                                  const unsigned short& droneStatusPort,
                                   const std::string& serverPort,
                                   const std::string& monitorPort,
                                   int startingY)
   : m_cv(),
     m_m(),
     m_logger("Drone Manager", "localhost", monitorPort),
-    m_controller(m_logger, dronePort, ipAddress, startingY),
+    m_controller(m_logger, dronePort, droneStatusPort, ipAddress, startingY),
     m_client(boost::asio::ip::host_name(), serverPort),
     m_pathMutex(),
     m_flightPath(),
