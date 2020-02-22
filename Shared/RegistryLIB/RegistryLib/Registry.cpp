@@ -54,11 +54,8 @@ namespace
       int f = 0;
       if (falseAfter != target.MemberEnd() && falseAfter->value.IsInt())
         f = falseAfter->value.GetInt();
-      toReturn.emplace_back(x->value.GetInt(),
-                            y->value.GetInt(),
-                            id->value.GetInt(),
-                            depends,
-                            f);
+      toReturn.emplace_back(
+        x->value.GetInt(), y->value.GetInt(), id->value.GetInt(), depends, f);
     }
     return toReturn;
   }
@@ -102,7 +99,8 @@ void GlobalRegistry::setRegistry(const std::string& config)
 void GlobalRegistry::setRegistry(double speed,
                                  double decaySpeed,
                                  const std::vector<Target>& targets,
-                                 bool skipLog)
+                                 bool skipLog,
+                                 bool encrypted)
 {
   rapidjson::Document doc(rapidjson::kObjectType);
   json::addNumberToDoc(doc, "ThreadCount", 1);
@@ -139,6 +137,7 @@ void GlobalRegistry::setRegistry(double speed,
     json::addArrayToDoc(doc, "Targets", targetsJson);
   }
   json::addBoolToDoc(doc, "SkipLog", skipLog);
+  json::addBoolToDoc(doc, "Encrypted", encrypted);
   setRegistry(json::jsonToString(doc));
 }
 
@@ -188,6 +187,11 @@ size_t GlobalRegistry::getPretest()
   return m_pInstance->m_pretest;
 }
 
+bool GlobalRegistry::isEncypted()
+{
+  return m_pInstance->m_encypted;
+}
+
 bool GlobalRegistry::parseConfig(const std::string& config)
 {
   rapidjson::Document doc;
@@ -204,6 +208,7 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   m_targets = validateTargets(doc);
   m_skipLog = json::getBool(doc, "SkipLog");
   m_pretest = json::getInt(doc, "Pretest");
+  m_encypted = json::getBool(doc, "Encrypted");
   m_printLog = json::getBool(doc, "PrintToConsole");
 
   return true;

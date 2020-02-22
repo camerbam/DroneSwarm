@@ -11,12 +11,14 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/optional.hpp>
 #include <boost/signals2.hpp>
+#include <openssl/rsa.h>
 
 #include "Handler.hpp"
 #include "MsgLib/BaseMsg.hpp"
 #include "MsgLib/MsgTypes.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
+#include "LoggerLib/Logger.hpp"
 
 #include "ACQLib/ACQ.hpp"
 
@@ -28,14 +30,34 @@ namespace tcp
     static std::shared_ptr<TcpConnection> create(
       std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
       int id,
-      msg::FORMAT format);
+      msg::FORMAT format,
+      const std::string& privateKey);
 
     template <class T>
     void send(T message)
     {
       static int count = 0;
       msg::BaseMsg msg;
-      msg.msg(msg::toString(message, m_format));
+      std::string toSend(msg::toString(message, m_format));
+
+      if (m_encrypted)
+      {
+        char* decrypted = new char[1024];
+        int ret = RSA_private_encrypt(static_cast<int>(toSend.size()),
+                                      (unsigned char*)toSend.c_str(),
+                                      (unsigned char*)decrypted,
+                                      m_pPrivateKey.get(),
+                                      RSA_PKCS1_PADDING);
+        if (ret < 0)
+        {
+          logger::logError("TCPConnection", "Failed to encrypt");
+          return;
+        }
+
+        toSend = std::string(decrypted, ret);
+        delete[] decrypted;
+      }
+      msg.msg(toSend);
       msg.type(T::name());
       msg.msgId(std::to_string(m_id) + ":" + std::to_string(count++));
       auto pMessage = std::make_shared<std::string>(
@@ -98,10 +120,13 @@ namespace tcp
   private:
     TcpConnection(std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
                   int id,
-                  msg::FORMAT format);
+                  msg::FORMAT format,
+                  const std::string& privateKey);
 
     void handleWrite(const boost::system::error_code& error, size_t bt);
 
+    bool m_encrypted;
+    std::shared_ptr<RSA> m_pPrivateKey;
     std::shared_ptr<boost::asio::ip::tcp::socket> m_pSocket;
     int m_id;
     msg::FORMAT m_format;

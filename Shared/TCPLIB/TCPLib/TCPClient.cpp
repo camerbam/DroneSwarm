@@ -3,7 +3,10 @@
 #include <iostream>
 
 #include <boost/asio/write.hpp>
+#include <openssl/pem.h>
+#include <openssl/rsa.h>
 
+#include "EncryptHelpers.hpp"
 #include "LoggerLib/Logger.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
@@ -11,8 +14,13 @@
 tcp::TcpClient::TcpClient(std::string hostname,
                           std::string port,
                           msg::FORMAT format,
-                          std::string name)
-  : m_ctx(),
+                          std::string name,
+                          bool encrypt)
+  : m_cv(),
+    m_m(),
+    m_encrypted(encrypt || GlobalRegistry::getRegistry().isEncypted()),
+    m_pKey(),
+    m_ctx(),
     m_optCork(m_ctx),
     m_format(format),
     m_name(name),
@@ -22,40 +30,69 @@ tcp::TcpClient::TcpClient(std::string hostname,
     m_socket(m_ctx),
     m_inputBuffer(1024),
     m_handlers(std::make_shared<tcp::HandlerMap>()),
-    m_acq(std::function<void(std::string)>(
-      [ m_handlers = m_handlers, format = m_format, m_pMessages = m_pMessages ](
-        std::string input) {
-        while (true)
-        {
-          auto optMsg = tcp::getNextStringMessage(input);
-          if (!optMsg) return;
-          GlobalRegistry::getRegistry().postToThreadPool(
-            [ msg = optMsg.get(), m_handlers, format, m_pMessages ]() {
-              msg::BaseMsg receivedMsg;
-              if (!parseString(receivedMsg, msg, format))
-              {
-                std::cout << "Could not parse msg" << std::endl;
-                return;
-              }
-              auto msgSent = m_pMessages->find(receivedMsg.msgId());
-              auto handle = m_handlers->get(receivedMsg.type());
-              if (handle)
-                handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
-              if (msgSent != m_pMessages->end())
-                m_pMessages->erase(msgSent);
-              if (!handle)
-                std::cout << "Received unknown message: " << receivedMsg.type()
-                          << std::endl;
-            });
-        }
-      }))
+    m_acq(std::function<void(std::string)>([
+      m_handlers = m_handlers,
+      format = m_format,
+      m_pMessages = m_pMessages,
+      m_encrypted = m_encrypted,
+      m_pKey = m_pKey
+    ](std::string input) {
+      while (true)
+      {
+        auto optMsg = tcp::getNextStringMessage(input);
+        if (!optMsg) return;
+        GlobalRegistry::getRegistry().postToThreadPool([
+          msg = optMsg.get(),
+          m_handlers,
+          format,
+          m_pMessages,
+          m_encrypted,
+          m_pKey
+        ]() {
+          msg::BaseMsg receivedMsg;
+          if (!parseString(receivedMsg, msg, format))
+          {
+            logger::logError("TCPClient", "Could not parse msg");
+            return;
+          }
+          if (m_encrypted)
+          {
+            char* decrypted = new char[1024];
+            int result = RSA_public_decrypt(static_cast<int>(msg.size()),
+                                            (unsigned char*)msg.c_str(),
+                                            (unsigned char*)decrypted,
+                                            m_pKey.get(),
+                                            RSA_PKCS1_PADDING);
+            if (result < 0)
+            {
+              logger::logError("TCPClient", "Failed to decypt message");
+              return;
+            }
+            receivedMsg.msg(std::string(decrypted, result));
+            delete[] decrypted;
+          }
+
+          auto msgSent = m_pMessages->find(receivedMsg.msgId());
+          auto handle = m_handlers->get(receivedMsg.type());
+          if (handle)
+            handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
+          if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
+          if (!handle)
+            std::cout << "Received unknown message: " << receivedMsg.type()
+                      << std::endl;
+        });
+      }
+    }))
 {
   boost::asio::ip::tcp::resolver r(m_ctx);
 
   startConnect(r.resolve(boost::asio::ip::tcp::resolver::query(
     boost::asio::ip::tcp::v4(), hostname, port)));
 
-  m_timer = boost::asio::steady_timer(m_ctx, boost::asio::chrono::seconds(1));
+  m_timer.expires_after(boost::asio::chrono::seconds(1));
+  m_timer.async_wait([this](const boost::system::error_code& e) {
+    if (!e) checkMsgs();
+  });
 }
 
 tcp::TcpClient::~TcpClient()
@@ -127,6 +164,14 @@ void tcp::TcpClient::handleConnect(
   {
     std::cout << "Connected to " << endpoint_iter->endpoint() << "\n";
 
+    if (m_encrypted)
+    {
+      auto read = m_socket.read_some(boost::asio::buffer(m_inputBuffer));
+      std::string toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + read);
+      RSA* rsa = tcp::createRSA((unsigned char*)toAdd.c_str(), true);
+      m_pKey.reset(rsa);
+    }
+    m_cv.notify_all();
     // Start the input actor.
     startRead();
   }
@@ -190,10 +235,11 @@ void tcp::TcpClient::resend(const msg::BaseMsg& msg)
 
 void tcp::TcpClient::checkMsgs()
 {
+  m_timer.expires_after(boost::asio::chrono::seconds(1));
   m_timer.async_wait([this](const boost::system::error_code& e) {
     if (!e) checkMsgs();
   });
   auto now = std::chrono::steady_clock::now();
   for (auto m : *m_pMessages)
-    if (m.second.expireTime < now) send<msg::BaseMsg>(m.second.msg);
+    if (m.second.expireTime < now) resend(m.second.msg);
 }

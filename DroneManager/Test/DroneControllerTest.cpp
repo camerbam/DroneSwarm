@@ -24,7 +24,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 {
-  GlobalRegistry::setRegistry(100, 20, {{30, 40, 2}});
+  GlobalRegistry::setRegistry(100, 20, {{30, 40, 2}}, true, false);
 
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
 

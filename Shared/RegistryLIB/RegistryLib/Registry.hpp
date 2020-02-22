@@ -21,7 +21,8 @@ public:
     double speed,
     double decaySpeed,
     const std::vector<Target>& targets = {},
-    bool skipLog = true);
+    bool skipLog = true,
+    bool encrypted = false);
 
   static GlobalRegistry& getRegistry();
 
@@ -41,6 +42,8 @@ public:
 
   size_t getPretest();
 
+  bool isEncypted();
+
 private:
   GlobalRegistry();
   GlobalRegistry(const GlobalRegistry&) = delete;
@@ -57,6 +60,7 @@ private:
   bool m_skipLog;
   bool m_printLog;
   size_t m_pretest;
+  bool m_encypted;
 };
 
 #endif
