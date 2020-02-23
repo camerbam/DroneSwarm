@@ -205,6 +205,17 @@ void drone::DroneManager::registerHandlers()
       m_client.send(msg::FinishRsp());
       m_toQuit = true;
     }));
+
+  m_connections.push_back(m_client.registerHandler<msg::FinishMsg>(
+    [this](const msg::FinishMsg&, const std::string&) {
+    m_logger.logInfo("DroneManager", "Received FinishMsg");
+    {
+      std::lock_guard<std::mutex> l(m_pathMutex);
+      m_flightPath.push(messages::LandMessage());
+    }
+    m_client.send(msg::FinishRsp());
+    m_toQuit = true;
+  }));
 }
 
 void drone::DroneManager::startMessages()
@@ -215,6 +226,7 @@ void drone::DroneManager::startMessages()
   m_controller.waitForStatusMsg();
   auto diff = m_zConfig - m_controller.getZ();
   if (diff > 20) m_controller.sendMessage(messages::UpMessage(diff));
+  if (diff < 20) m_controller.sendMessage(messages::DownMessage(-diff));
   m_sendThread = std::make_shared<std::thread>([this]() {
     while (!m_toQuit || !m_flightPath.empty())
     {

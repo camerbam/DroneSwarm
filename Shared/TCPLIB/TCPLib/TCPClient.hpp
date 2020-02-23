@@ -1,7 +1,9 @@
 #ifndef TCP_CLIENT_HPP
 #define TCP_CLIENT_HPP
 
+#include <condition_variable>
 #include <map>
+#include <mutex>
 #include <mutex>
 #include <thread>
 

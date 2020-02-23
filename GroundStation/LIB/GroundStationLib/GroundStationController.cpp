@@ -28,7 +28,11 @@ ground::GroundStationController::GroundStationController(std::string host,
     m_droneServer(65001),
     m_idleDrones(),
     m_busyDrones(),
-    m_toReferee(host, port, msg::FORMAT::PROTOBUF, NAME),
+    m_toReferee(host,
+                port,
+                msg::FORMAT::PROTOBUF,
+                NAME,
+                GlobalRegistry::getRegistry().isEncypted()),
     m_logger(NAME, "localhost", "13000")
 {
   createRefereeMsgHandlers();

@@ -1,6 +1,9 @@
 #include "GameManager.hpp"
 
 #include <iostream>
+#include <sstream>
+
+#include "LoggerLib/Logger.hpp"
 
 referee::GameManager::GameManager()
   : m_ready(false),
@@ -30,23 +33,25 @@ boost::optional<referee::GraphResponse> referee::GameManager::hitTarget(
 std::vector<Target> referee::GameManager::finish()
 {
   auto left = m_graph.getAllLeft();
-
+  std::stringstream ss;
   if (!left.empty())
   {
-    std::cout << "Missed targets: " << std::endl;
+    ss << "Missed targets: " << std::endl;
     for (auto&& t : left)
-      std::cout << t.getX() << " " << t.getY() << " " << t.getId() << std::endl;
+      ss << t.getX() << " " << t.getY() << " " << t.getId() << std::endl;
   }
 
-  std::cout << "Total time: "
+  ss << "Total time: "
             << std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::steady_clock::now() - m_start)
                  .count()
             << std::endl;
 
-  std::cout << "Messages Received: " << std::endl;
+  ss << "Messages Received: " << std::endl;
   for (auto&& m : m_messages)
-    std::cout << m.first << ": " << m.second << std::endl;
+    ss << m.first << ": " << m.second << std::endl;
+
+  logger::logInfo("GameManager", ss.str());
 
   return left;
 }

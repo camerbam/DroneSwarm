@@ -27,7 +27,7 @@ referee::RefereeController::RefereeController(unsigned short port,
   : m_pCtx(std::make_shared<boost::asio::io_context>()),
     m_optCork(*m_pCtx),
     m_timer(*m_pCtx),
-    m_server(port, format),
+    m_server(port, format, GlobalRegistry::getRegistry().isEncypted()),
     m_connections(),
     m_gameManagers(),
     m_iocThread([pCtx = m_pCtx]() { pCtx->run(); })
@@ -76,8 +76,8 @@ referee::RefereeController::RefereeController(unsigned short port,
           if (game.isDone())
           {
             toSend.complete(true);
-            logger::logInfo("RefereeController",
-              "successfully hit all targets");
+            logger::logInfo(
+              "RefereeController", "successfully hit all targets");
             game.finish();
           }
           toSend.badTargets(convertTargets(hit.get().targetsToAdd));

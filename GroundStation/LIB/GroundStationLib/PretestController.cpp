@@ -34,7 +34,11 @@ ground::PretestController::PretestController(std::string host, std::string port)
     m_cvs(4),
     m_ms(4),
     m_connections(),
-    m_toReferee(host, port, msg::FORMAT::PROTOBUF, NAME, true)
+    m_toReferee(host,
+                port,
+                msg::FORMAT::PROTOBUF,
+                NAME,
+                GlobalRegistry::getRegistry().getPretest() == 3)
 {
   createRefereeMsgHandlers();
   m_toReferee.ready();

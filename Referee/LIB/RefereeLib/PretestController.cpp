@@ -50,9 +50,12 @@ namespace
 referee::PretestController::PretestController(unsigned short port,
                                               msg::FORMAT format,
                                               size_t pretest)
-  : m_cv(), m_m(), m_server(port, format), m_connections(), m_msgs()
+  : m_cv(),
+    m_m(),
+    m_server(port, format, pretest == 3),
+    m_connections(),
+    m_msgs()
 {
-  if (pretest == 3) m_server.setEncrypted();
   m_msgs.emplace("ReadyMsg", MSG_STATUS::WAITING);
   m_msgs.emplace("ReadyRspRsp", MSG_STATUS::WAITING);
   m_msgs.emplace("HitTargetMsg", MSG_STATUS::WAITING);

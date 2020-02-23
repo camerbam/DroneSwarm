@@ -29,6 +29,14 @@ namespace Monitor
     private bool running;
     private List<Thread> Threads;
     private Proto.StringMsg msg;
+    private Proto.BaseMsg baseMsg;
+
+    public static string Reverse(string s)
+    {
+      char[] charArray = s.ToCharArray();
+      Array.Reverse(charArray);
+      return new string(charArray);
+    }
 
     private void ListenForMessages(TextBox boxToType, TcpClient client)
     {
@@ -48,7 +56,9 @@ namespace Monitor
             Int32 size = System.Convert.ToInt32(System.Text.Encoding.ASCII.GetString(bytes, 0, 5));
             if ((i = stream.Read(bytes, 0, size)) == 0) continue;
 
-            msg = StringMsg.Parser.ParseFrom(bytes, 0, size);
+            baseMsg = BaseMsg.Parser.ParseFrom(bytes, 0, size);
+            msg = StringMsg.Parser.ParseFrom(baseMsg.Msg.ToByteArray());
+            //string a = System.Text.Encoding.ASCII.GetString(bytes, 0, size);
             this.Dispatcher.Invoke(() =>
             {
               boxToType.Text += msg.Msg + "\n";
@@ -69,7 +79,7 @@ namespace Monitor
     private TcpListener Server;
     private void ListenForConnections()
     {
-      while(running)
+      while (running)
       {
         TcpClient client = Server.AcceptTcpClient();
 

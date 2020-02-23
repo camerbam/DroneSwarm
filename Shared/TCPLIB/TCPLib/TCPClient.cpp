@@ -19,8 +19,8 @@ tcp::TcpClient::TcpClient(std::string hostname,
                           bool encrypt)
   : m_cv(),
     m_m(),
-    m_encrypted(encrypt || GlobalRegistry::getRegistry().isEncypted()),
-  m_ready(false),
+    m_encrypted(encrypt),
+    m_ready(false),
     m_pKey(std::make_shared<std::shared_ptr<RSA>>()),
     m_ctx(),
     m_optCork(m_ctx),
@@ -60,11 +60,12 @@ tcp::TcpClient::TcpClient(std::string hostname,
           if (m_encrypted)
           {
             char* decrypted = new char[1024];
-            int result = RSA_public_decrypt(static_cast<int>(receivedMsg.msg().size()),
-                                            (unsigned char*)receivedMsg.msg().c_str(),
-                                            (unsigned char*)decrypted,
-                                            m_pKey->get(),
-                                            RSA_PKCS1_PADDING);
+            int result =
+              RSA_public_decrypt(static_cast<int>(receivedMsg.msg().size()),
+                                 (unsigned char*)receivedMsg.msg().c_str(),
+                                 (unsigned char*)decrypted,
+                                 m_pKey->get(),
+                                 RSA_PKCS1_PADDING);
             if (result < 0)
             {
               char buffer[120];

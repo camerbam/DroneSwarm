@@ -9,10 +9,7 @@
 
 BOOST_AUTO_TEST_CASE(TCPServerSendEncrypted)
 {
-  //GlobalRegistry::setRegistry(100, 20, {}, true, true);
-
-  tcp::TcpServer server(8080);
-  server.setEncrypted();
+  tcp::TcpServer server(8080, msg::FORMAT::PROTOBUF, true);
   std::vector<boost::signals2::scoped_connection> connections;
 
   connections.emplace_back(server.registerConnection(
@@ -29,8 +26,6 @@ BOOST_AUTO_TEST_CASE(TCPServerSendEncrypted)
       msg::StringMsg msg3(msgsToSend[2]);
       pConnection->send(msg3);
     }));
-
-  server.waitForReady();
 
   tcp::TcpClient client("localhost", "8080", msg::FORMAT::PROTOBUF, "", true);
 
@@ -59,8 +54,7 @@ BOOST_AUTO_TEST_CASE(TCPClientSendEncrypt)
 {
   std::vector<boost::signals2::scoped_connection> connections;
 
-  tcp::TcpServer server(8080);
-  server.setEncrypted();
+  tcp::TcpServer server(8080, msg::FORMAT::PROTOBUF, true);
 
   auto connection = server.registerConnection([&connections, &server](
     std::shared_ptr<tcp::TcpConnection> pConnection) {
@@ -80,8 +74,6 @@ BOOST_AUTO_TEST_CASE(TCPClientSendEncrypt)
       }));
     pConnection->ready();
   });
-
-  server.waitForReady();
 
   tcp::TcpClient client("localhost", "8080", msg::FORMAT::PROTOBUF, "", true);
   client.ready();

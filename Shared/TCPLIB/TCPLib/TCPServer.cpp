@@ -91,10 +91,10 @@ namespace
   }
 }
 
-tcp::TcpServer::TcpServer(unsigned short port, msg::FORMAT format)
-  : m_cv(),
-    m_m(),
-    m_encrypted(GlobalRegistry::getRegistry().isEncypted()),
+tcp::TcpServer::TcpServer(unsigned short port,
+                          msg::FORMAT format,
+                          bool encrypted)
+  : m_encrypted(encrypted),
     m_publicKey(),
     m_privateKey(),
     m_pCtx(std::make_shared<boost::asio::io_context>()),
@@ -108,10 +108,10 @@ tcp::TcpServer::TcpServer(unsigned short port, msg::FORMAT format)
     m_connectionHandler(),
     m_iocThread([pCtx = m_pCtx]() { pCtx->run(); })
 {
-  if (m_encrypted) 
+  if (m_encrypted)
   {
     generateKey(m_publicKey, m_privateKey);
-    m_cv.notify_one();
+    logger::logInfo("TCPServer", "Generated keys");
   }
   startAccept();
 }
@@ -165,19 +165,4 @@ void tcp::TcpServer::checkMsgs()
   auto now = std::chrono::steady_clock::now();
   for (auto m : m_connections)
     m.second->checkMsgs(now);
-}
-
-void tcp::TcpServer::setEncrypted()
-{
-  m_encrypted = true;
-  generateKey(m_publicKey, m_privateKey);
-  m_cv.notify_one();
-  logger::logInfo("TCPServer", "Generated keys");
-}
-
-void tcp::TcpServer::waitForReady()
-{
-  if(!m_privateKey.empty()) return;
-  std::unique_lock<std::mutex> lock(m_m);
-  m_cv.wait_for(lock, std::chrono::seconds(10));
 }

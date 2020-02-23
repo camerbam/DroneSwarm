@@ -1,10 +1,10 @@
 #ifndef TCP_SERVER_HPP
 #define TCP_SERVER_HPP
 
+#include <condition_variable>
 #include <iostream>
 #include <string>
 #include <thread>
-#include <condition_variable>
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
@@ -14,8 +14,8 @@
 
 #include "Handler.hpp"
 #include "MsgLib/BaseMsg.hpp"
-#include "TCPTools.hpp"
 #include "TCPConnection.hpp"
+#include "TCPTools.hpp"
 
 #include "ACQLib/ACQ.hpp"
 
@@ -24,7 +24,9 @@ namespace tcp
   class TcpServer
   {
   public:
-    TcpServer(unsigned short port, msg::FORMAT format=msg::FORMAT::PROTOBUF);
+    TcpServer(unsigned short port,
+              msg::FORMAT format = msg::FORMAT::PROTOBUF,
+              bool encrypted = false);
 
     ~TcpServer();
 
@@ -33,7 +35,7 @@ namespace tcp
     void handleAccept(std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
                       const boost::system::error_code& error);
 
-     boost::signals2::scoped_connection registerConnection(
+    boost::signals2::scoped_connection registerConnection(
       std::function<void(std::shared_ptr<TcpConnection>)> handler)
     {
       return m_connectionHandler.connect(handler);
@@ -52,13 +54,7 @@ namespace tcp
 
     void checkMsgs();
 
-    void setEncrypted();
-
-    void waitForReady();
-
   private:
-    std::condition_variable m_cv;
-    std::mutex m_m;
     bool m_encrypted;
     std::string m_privateKey;
     std::string m_publicKey;
