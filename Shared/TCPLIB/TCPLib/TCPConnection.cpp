@@ -27,8 +27,8 @@ tcp::TcpConnection::TcpConnection(
   int id,
   msg::FORMAT format,
   const std::string& privateKey)
-  : m_encrypted(GlobalRegistry::getRegistry().isEncypted()),
-    m_pPrivateKey(tcp::createRSA((unsigned char*)privateKey.c_str(), false)),
+  : m_encrypted(!privateKey.empty()),
+    m_pPrivateKey(tcp::createPrivateRSA(privateKey)),
     m_pSocket(pSocket),
     m_id(id),
     m_format(format),
@@ -65,8 +65,8 @@ tcp::TcpConnection::TcpConnection(
           if (m_encrypted)
           {
             char* decrypted = new char[1024];
-            int result = RSA_public_decrypt(static_cast<int>(msg.size()),
-                                            (unsigned char*)msg.c_str(),
+            int result = RSA_private_decrypt(static_cast<int>(receivedMsg.msg().size()),
+                                            (unsigned char*)receivedMsg.msg().c_str(),
                                             (unsigned char*)decrypted,
                                             m_pPrivateKey.get(),
                                             RSA_PKCS1_PADDING);

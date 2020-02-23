@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include <boost/asio/write.hpp>
+#include <openssl/err.h>
 #include <openssl/pem.h>
 #include <openssl/rsa.h>
 
@@ -19,7 +20,8 @@ tcp::TcpClient::TcpClient(std::string hostname,
   : m_cv(),
     m_m(),
     m_encrypted(encrypt || GlobalRegistry::getRegistry().isEncypted()),
-    m_pKey(),
+  m_ready(false),
+    m_pKey(std::make_shared<std::shared_ptr<RSA>>()),
     m_ctx(),
     m_optCork(m_ctx),
     m_format(format),
@@ -58,13 +60,16 @@ tcp::TcpClient::TcpClient(std::string hostname,
           if (m_encrypted)
           {
             char* decrypted = new char[1024];
-            int result = RSA_public_decrypt(static_cast<int>(msg.size()),
-                                            (unsigned char*)msg.c_str(),
+            int result = RSA_public_decrypt(static_cast<int>(receivedMsg.msg().size()),
+                                            (unsigned char*)receivedMsg.msg().c_str(),
                                             (unsigned char*)decrypted,
-                                            m_pKey.get(),
+                                            m_pKey->get(),
                                             RSA_PKCS1_PADDING);
             if (result < 0)
             {
+              char buffer[120];
+              ERR_error_string(ERR_get_error(), buffer);
+              printf("Error reading private key:%s\n", buffer);
               logger::logError("TCPClient", "Failed to decypt message");
               return;
             }
@@ -168,10 +173,12 @@ void tcp::TcpClient::handleConnect(
     {
       auto read = m_socket.read_some(boost::asio::buffer(m_inputBuffer));
       std::string toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + read);
-      RSA* rsa = tcp::createRSA((unsigned char*)toAdd.c_str(), true);
-      m_pKey.reset(rsa);
+      RSA* rsa = tcp::createPublicRSA(toAdd);
+      m_pKey->reset(rsa);
     }
+    m_ready = true;
     m_cv.notify_all();
+
     // Start the input actor.
     startRead();
   }

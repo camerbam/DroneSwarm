@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <condition_variable>
 
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/io_context.hpp>
@@ -53,7 +54,11 @@ namespace tcp
 
     void setEncrypted();
 
+    void waitForReady();
+
   private:
+    std::condition_variable m_cv;
+    std::mutex m_m;
     bool m_encrypted;
     std::string m_privateKey;
     std::string m_publicKey;

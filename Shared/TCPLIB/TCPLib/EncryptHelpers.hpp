@@ -11,7 +11,8 @@
 
 namespace tcp
 {
-  RSA* createRSA(unsigned char* key, bool pub);
+  RSA* createPrivateRSA(const std::string& key);
+  RSA* createPublicRSA(const std::string& key);
 } // namespace tcp
 
 #endif

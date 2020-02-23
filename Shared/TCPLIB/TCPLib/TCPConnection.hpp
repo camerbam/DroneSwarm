@@ -14,11 +14,11 @@
 #include <openssl/rsa.h>
 
 #include "Handler.hpp"
+#include "LoggerLib/Logger.hpp"
 #include "MsgLib/BaseMsg.hpp"
 #include "MsgLib/MsgTypes.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
-#include "LoggerLib/Logger.hpp"
 
 #include "ACQLib/ACQ.hpp"
 
@@ -73,7 +73,26 @@ namespace tcp
     void respond(T message, const std::string& msgId)
     {
       msg::BaseMsg msg;
-      msg.msg(msg::toString(message, m_format));
+      std::string toSend(msg::toString(message, m_format));
+
+      if (m_encrypted)
+      {
+        char* decrypted = new char[1024];
+        int ret = RSA_private_encrypt(static_cast<int>(toSend.size()),
+          (unsigned char*)toSend.c_str(),
+          (unsigned char*)decrypted,
+          m_pPrivateKey.get(),
+          RSA_PKCS1_PADDING);
+        if (ret < 0)
+        {
+          logger::logError("TCPConnection", "Failed to encrypt");
+          return;
+        }
+
+        toSend = std::string(decrypted, ret);
+        delete[] decrypted;
+      }
+      msg.msg(toSend);
       msg.type(T::name());
       msg.msgId(msgId);
       auto pMessage = std::make_shared<std::string>(
