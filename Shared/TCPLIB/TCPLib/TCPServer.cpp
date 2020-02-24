@@ -29,14 +29,6 @@ namespace
     int bits = 2048;
     unsigned long e = RSA_F4;
 
-    RSA* p_rsa = NULL;
-    RSA* pb_rsa = NULL;
-    EVP_PKEY* evp_pbkey = NULL;
-    EVP_PKEY* evp_pkey = NULL;
-
-    BIO* pbkeybio = NULL;
-    BIO* pkeybio = NULL;
-
     // 1. generate rsa key
     bne = BN_new();
     ret = BN_set_word(bne, e);
@@ -95,8 +87,8 @@ tcp::TcpServer::TcpServer(unsigned short port,
                           msg::FORMAT format,
                           bool encrypted)
   : m_encrypted(encrypted),
-    m_publicKey(),
     m_privateKey(),
+    m_publicKey(),
     m_pCtx(std::make_shared<boost::asio::io_context>()),
     m_optCork(*m_pCtx),
     m_format(format),

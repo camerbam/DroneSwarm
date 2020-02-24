@@ -59,14 +59,14 @@ ground::PretestController::~PretestController()
 void ground::PretestController::createRefereeMsgHandlers()
 {
   m_connections.push_back(m_toReferee.registerHandler<msg::ReadyRsp>(
-    [this](const msg::ReadyRsp& msg, const std::string&) {
+    [this](const msg::ReadyRsp&, const std::string&) {
       logger::logInfo("Referee Controller", "Received ReadyRsp");
       m_toReferee.send(msg::ReadyRspRsp());
       m_cvs[0].notify_one();
     }));
 
   m_connections.push_back(m_toReferee.registerHandler<msg::FinishRsp>(
-    [this](const msg::FinishRsp& msg, const std::string&) {
+    [this](const msg::FinishRsp&, const std::string&) {
       logger::logInfo("Referee Controller", "Received FinishRsp");
       m_cvs[2].notify_one();
     }));
@@ -77,11 +77,10 @@ void ground::PretestController::createRefereeMsgHandlers()
       logger::logInfo("Referee Controller", "Received Ping and responded");
       m_cvs[3].notify_one();
       m_pinged = true;
-      std::cout << "notify" << std::endl;
     }));
 
   m_connections.push_back(m_toReferee.registerHandler<msg::HitTargetRsp>(
-    [this](const msg::HitTargetRsp& msg, const std::string&) {
+    [this](const msg::HitTargetRsp&, const std::string&) {
       logger::logInfo("Referee Controller", "Received HitTargetRsp");
       m_cvs[1].notify_one();
     }));

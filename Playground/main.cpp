@@ -116,7 +116,7 @@ free_all:
   return (ret == 1);
 }
 
-int main(int argc, char* argv[])
+int main()
 {
   generate_key();
   return 0;

@@ -124,21 +124,21 @@ void referee::PretestController::pretest1()
       }));
 
     m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
-      [this](const msg::ReadyRspRsp& msg, const std::string&) {
+      [this](const msg::ReadyRspRsp&, const std::string&) {
         logger::logInfo("RefereeController", "received ReadyRspRsp");
         m_msgs["ReadyRspRsp"] = MSG_STATUS::RECEIVED;
       }));
 
     m_connections.push_back(
       connection->registerHandler<msg::HitTargetMsg>([this, connection](
-        const msg::HitTargetMsg& msg, const std::string& msgId) {
+        const msg::HitTargetMsg&, const std::string&) {
         logger::logInfo("RefereeController", "received HitTargetMsg");
         m_msgs["HitTargetMsg"] = MSG_STATUS::RECEIVED;
         connection->send(msg::HitTargetRsp());
       }));
 
     m_connections.push_back(connection->registerHandler<msg::FinishMsg>(
-      [this, connection](const msg::FinishMsg& msg, const std::string& msgId) {
+      [this, connection](const msg::FinishMsg&, const std::string&) {
         logger::logInfo("RefereeController", "received FinishMsg");
         m_msgs["FinishMsg"] = MSG_STATUS::RECEIVED;
         connection->send(msg::FinishRsp());
@@ -146,7 +146,7 @@ void referee::PretestController::pretest1()
       }));
 
     m_connections.push_back(connection->registerHandler<msg::PingRsp>(
-      [this, connection](const msg::PingRsp& msg, const std::string& msgId) {
+      [this, connection](const msg::PingRsp&, const std::string&) {
         logger::logInfo("RefereeController", "received PingRsp");
         m_msgs["PingRsp"] = MSG_STATUS::RECEIVED;
       }));
@@ -170,20 +170,20 @@ void referee::PretestController::pretest2()
       }));
 
     m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
-      [this](const msg::ReadyRspRsp& msg, const std::string&) {
+      [this](const msg::ReadyRspRsp&, const std::string&) {
         logger::logInfo("RefereeController", "received ReadyRspRsp");
         m_msgs["ReadyRspRsp"] = MSG_STATUS::RECEIVED;
       }));
 
     m_connections.push_back(
       connection->registerHandler<msg::HitTargetMsg>([this, connection](
-        const msg::HitTargetMsg& msg, const std::string& msgId) {
+        const msg::HitTargetMsg&, const std::string&) {
         logger::logInfo("RefereeController", "received HitTargetMsg");
         m_msgs["HitTargetMsg"] = handleMsg<msg::HitTargetRsp>(connection);
       }));
 
     m_connections.push_back(connection->registerHandler<msg::FinishMsg>(
-      [this, connection](const msg::FinishMsg& msg, const std::string& msgId) {
+      [this, connection](const msg::FinishMsg&, const std::string&) {
         logger::logInfo("RefereeController", "received FinishMsg");
         m_msgs["FinishMsg"] = MSG_STATUS::RECEIVED;
         connection->send(msg::FinishRsp());
@@ -191,7 +191,7 @@ void referee::PretestController::pretest2()
       }));
 
     m_connections.push_back(connection->registerHandler<msg::PingRsp>(
-      [this, connection](const msg::PingRsp& msg, const std::string& msgId) {
+      [this, connection](const msg::PingRsp&, const std::string&) {
         logger::logInfo("RefereeController", "received PingRsp");
         m_msgs["PingRsp"] = MSG_STATUS::RECEIVED;
       }));
