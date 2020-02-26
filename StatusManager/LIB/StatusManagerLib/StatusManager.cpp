@@ -5,11 +5,12 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+#include "LoggerLib/Logger.hpp"
 #include "UDPLib/Response.hpp"
 #include "UDPLib/UDPCommunicator.hpp"
 
 drone::StatusManager::StatusManager(const std::string& ports)
-  : m_pThread(), m_ports()
+  : m_running(true), m_pThread(), m_ports()
 {
   parsePorts(ports);
   m_pThread = std::make_shared<std::thread>([this]() {
@@ -20,6 +21,7 @@ drone::StatusManager::StatusManager(const std::string& ports)
       if (!response.didSucceed()) continue;
       auto end = response.getEndpoint().address().to_string();
       auto spot = end.find_last_of(".");
+      logger::logInfo("Status Manager", end.substr(spot + 1));
       communicator.sendMessage(
         response.getMessage(),
         boost::asio::ip::udp::endpoint(

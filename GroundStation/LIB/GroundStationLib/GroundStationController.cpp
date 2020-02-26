@@ -28,7 +28,11 @@ ground::GroundStationController::GroundStationController(std::string host,
     m_droneServer(65001),
     m_idleDrones(),
     m_busyDrones(),
-    m_toReferee(host, port, msg::FORMAT::PROTOBUF, NAME),
+    m_toReferee(host,
+                port,
+                msg::FORMAT::PROTOBUF,
+                NAME,
+                GlobalRegistry::getRegistry().isEncypted()),
     m_logger(NAME, "localhost", "13000")
 {
   createRefereeMsgHandlers();
@@ -63,7 +67,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
       m_gameId = msg.gameId();
       m_targets = msg.targets();
 
-      int start = 60;
+      int start = 80;
       for (auto&& drone : m_idleDrones)
       {
         drone->send(msg::ZConfigMsg(start));
@@ -169,11 +173,12 @@ void ground::GroundStationController::createDroneMsgHandlers(
 void ground::GroundStationController::assignTargets()
 {
   auto toRemove = m_targets.size();
+  size_t i = 0;
   for (auto&& drone : m_idleDrones)
   {
-    if (!m_targets.empty())
+    if (m_targets.size() > i)
     {
-      drone->send(msg::FlightPathMsg({m_targets[0]}));
+      drone->send(msg::FlightPathMsg({m_targets[i++]}));
       m_busyDrones.push_back(drone);
     }
   }

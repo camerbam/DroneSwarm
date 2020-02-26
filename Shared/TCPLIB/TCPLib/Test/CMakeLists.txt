@@ -1,6 +1,7 @@
 set(exe_name TCPTest)
 set(${exe_name}_srcs
   TCPTest.cpp
+  TCPEncryptTest.cpp
   )
 source_group("" FILES ${${exe_name}_srcs})
 add_executable(${exe_name} ${${exe_name}_srcs})

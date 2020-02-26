@@ -1,16 +1,16 @@
+#include "RefereeLib/PretestController.hpp"
 #include "RefereeLib/RefereeController.hpp"
 
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 int main(int argc, char* argv[])
 {
   try
   {
-    boost::program_options::options_description desc{ "Options" };
+    boost::program_options::options_description desc{"Options"};
     desc.add_options()("help,h", "Help screen")(
-      "config,c",
-      boost::program_options::value<std::string>());
+      "config,c", boost::program_options::value<std::string>());
 
     boost::program_options::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -26,6 +26,15 @@ int main(int argc, char* argv[])
       if (!boost::filesystem::exists(config))
         throw std::runtime_error("Cannot access config");
       GlobalRegistry::setRegistry(boost::filesystem::path(config));
+    }
+
+    auto pretest = GlobalRegistry::getRegistry().getPretest();
+    if (pretest > 0)
+    {
+      referee::PretestController controller(
+        65000, msg::FORMAT::PROTOBUF, pretest);
+
+      return controller.execute();
     }
 
     referee::RefereeController controller(65000, msg::FORMAT::PROTOBUF);

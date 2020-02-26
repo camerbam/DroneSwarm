@@ -21,7 +21,6 @@ udp::UDPCommunicator::UDPCommunicator(const short localPort)
       boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), localPort)),
     m_ctxThread([m_ctx = &m_ctx]() { m_ctx->run(); })
 {
-  std::cout << localPort << std::endl;
 }
 
 udp::UDPCommunicator::~UDPCommunicator()

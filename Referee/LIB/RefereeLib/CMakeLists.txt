@@ -4,6 +4,8 @@ set(${lib_name}_srcs
   GameManager.hpp
   Graph.cpp
   Graph.hpp
+  PretestController.cpp
+  PretestController.hpp
   RefereeController.cpp
   RefereeController.hpp
   )

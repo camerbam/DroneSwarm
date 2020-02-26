@@ -2,6 +2,8 @@ set(lib_name GroundStationLib)
 set(${lib_name}_srcs
   GroundStationController.cpp
   GroundStationController.hpp
+  PretestController.cpp
+  PretestController.hpp
   )
 source_group("" FILES ${${lib_name}_srcs})
 add_library(${lib_name} ${${lib_name}_srcs})

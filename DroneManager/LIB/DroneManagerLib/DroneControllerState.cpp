@@ -8,6 +8,7 @@
 #include <boost/algorithm/string/trim.hpp>
 
 #include "DroneMessagesLib/DroneStatusMessage.hpp"
+#include "LoggerLib/Logger.hpp"
 
 drone::DroneControllerState::DroneControllerState(size_t startBattery,
                                                   int startingY)
@@ -138,7 +139,7 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
   auto mid = msg.getMid();
   if (m_mid != mid)
   {
-    std::cout << "detected: " << mid << std::endl;
+    logger::logInfo("DroneControllerState", "detected: " + std::to_string(mid));
     m_midSignal(mid);
     m_mid = mid;
   }

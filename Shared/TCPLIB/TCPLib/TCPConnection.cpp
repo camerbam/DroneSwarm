@@ -1,11 +1,12 @@
 #include "TCPConnection.hpp"
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include <boost/asio.hpp>
 #include <boost/asio/write.hpp>
 
+#include "EncryptHelpers.hpp"
 #include "LoggerLib/Logger.hpp"
 #include "MsgLib/BaseMsg.hpp"
 #include "RegistryLib/Registry.hpp"
@@ -14,51 +15,81 @@
 std::shared_ptr<tcp::TcpConnection> tcp::TcpConnection::create(
   std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
   int id,
-  msg::FORMAT format)
+  msg::FORMAT format,
+  const std::string& privateKey)
 {
   return std::shared_ptr<tcp::TcpConnection>(
-    new tcp::TcpConnection(pSocket, id, format));
+    new tcp::TcpConnection(pSocket, id, format, privateKey));
 }
 
 tcp::TcpConnection::TcpConnection(
   std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
   int id,
-  msg::FORMAT format)
-  : m_pSocket(pSocket),
+  msg::FORMAT format,
+  const std::string& privateKey)
+  : m_encrypted(!privateKey.empty()),
+    m_pPrivateKey(tcp::createPrivateRSA(privateKey)),
+    m_pSocket(pSocket),
     m_id(id),
     m_format(format),
     m_closedSignal(),
     m_inputBuffer(1024),
     m_handlers(std::make_shared<tcp::HandlerMap>()),
     m_pMessages(std::make_shared<std::map<std::string, msg::ResendMsg>>()),
-    m_acq(std::function<void(std::string)>(
-      [ handlers = m_handlers, format = m_format, m_pMessages = m_pMessages ](
-        std::string input) {
-        while (true)
-        {
-          auto optMsg = tcp::getNextStringMessage(input);
-          if (!optMsg) return;
-          GlobalRegistry::getRegistry().postToThreadPool(
-            [optMsg, handlers, format, m_pMessages]() {
-              msg::BaseMsg receivedMsg;
-              auto msg = optMsg.get();
-              if (!msg::parseString(receivedMsg, msg, format))
-              {
-                std::cout << "Could not parse msg" << std::endl;
-                return;
-              }
-              auto msgSent = m_pMessages->find(receivedMsg.msgId());
-              auto handle = handlers->get(receivedMsg.type());
-              if (handle)
-                handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
-              if (msgSent != m_pMessages->end())
-                m_pMessages->erase(msgSent);
-              if (!handle)
-                std::cout << "Received unknown message: " << receivedMsg.type()
-                          << std::endl;
-            });
-        }
-      }))
+    m_acq(std::function<void(std::string)>([
+      handlers = m_handlers,
+      format = m_format,
+      m_pMessages = m_pMessages,
+      m_pPrivateKey = m_pPrivateKey,
+      m_encrypted = m_encrypted
+    ](std::string input) {
+      while (true)
+      {
+        auto optMsg = tcp::getNextStringMessage(input);
+        if (!optMsg) return;
+        GlobalRegistry::getRegistry().postToThreadPool([
+          optMsg,
+          handlers,
+          format,
+          m_pMessages,
+          m_pPrivateKey,
+          m_encrypted = m_encrypted
+        ]() {
+          msg::BaseMsg receivedMsg;
+          auto msg = optMsg.get();
+          if (!msg::parseString(receivedMsg, msg, format))
+          {
+            std::cout << "Could not parse msg" << std::endl;
+            return;
+          }
+          if (m_encrypted)
+          {
+            char* decrypted = new char[1024];
+            int result = RSA_private_decrypt(static_cast<int>(receivedMsg.msg().size()),
+                                            (unsigned char*)receivedMsg.msg().c_str(),
+                                            (unsigned char*)decrypted,
+                                            m_pPrivateKey.get(),
+                                            RSA_PKCS1_PADDING);
+            if (result < 0)
+            {
+              logger::logError("TCPClient", "Failed to decypt message");
+              return;
+            }
+            receivedMsg.msg(std::string(decrypted, result));
+            delete[] decrypted;
+          }
+
+          auto msgSent = m_pMessages->find(receivedMsg.msgId());
+          auto handle = handlers->get(receivedMsg.type());
+          if (handle)
+            handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
+          if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
+          if (!handle)
+            std::cout << "Received unknown message: " << receivedMsg.type()
+                      << std::endl;
+        });
+      }
+    }))
 {
 }
 

@@ -56,6 +56,8 @@ drone::DroneController::DroneController(logger::MonitorLogger& logger,
       m_logger.logInfo(DRONE_CONTROLLER, battery->toString());
       auto response = m_controlCommunicator.sendMessage(
         battery->toString(), m_controlEndpoint);
+      if (response.didSucceed())
+        m_logger.logInfo(DRONE_CONTROLLER, response.getMessage());
     },
     boost::posix_time::seconds(8));
 
