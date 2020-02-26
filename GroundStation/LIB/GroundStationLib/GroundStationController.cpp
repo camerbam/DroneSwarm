@@ -173,7 +173,7 @@ void ground::GroundStationController::createDroneMsgHandlers(
 void ground::GroundStationController::assignTargets()
 {
   auto toRemove = m_targets.size();
-  int i = 0;
+  size_t i = 0;
   for (auto&& drone : m_idleDrones)
   {
     if (m_targets.size() > i)
