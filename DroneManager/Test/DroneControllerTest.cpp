@@ -11,7 +11,6 @@
 #include "DroneMessagesLib/Messages/TakeoffMessage.hpp"
 #include "DroneSimulatorLib/DroneSimulator.hpp"
 #include "MonitorLoggerLib/MonitorLogger.hpp"
-#include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
 
 namespace
@@ -24,8 +23,6 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DRONE_CONTROLLER_TEST)
 {
-  GlobalRegistry::setRegistry(100, 20, {{30, 40, 2}}, true, false);
-
   std::thread t1(startSimulator, boost::posix_time::seconds(1), 100);
 
   logger::MonitorLogger logger("Drone Manager", "localhost", "13000");

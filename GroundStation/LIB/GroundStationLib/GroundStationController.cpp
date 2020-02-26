@@ -67,7 +67,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
       m_gameId = msg.gameId();
       m_targets = msg.targets();
 
-      int start = 60;
+      int start = 80;
       for (auto&& drone : m_idleDrones)
       {
         drone->send(msg::ZConfigMsg(start));
@@ -173,11 +173,12 @@ void ground::GroundStationController::createDroneMsgHandlers(
 void ground::GroundStationController::assignTargets()
 {
   auto toRemove = m_targets.size();
+  int i = 0;
   for (auto&& drone : m_idleDrones)
   {
-    if (!m_targets.empty())
+    if (m_targets.size() > i)
     {
-      drone->send(msg::FlightPathMsg({m_targets[0]}));
+      drone->send(msg::FlightPathMsg({m_targets[i++]}));
       m_busyDrones.push_back(drone);
     }
   }

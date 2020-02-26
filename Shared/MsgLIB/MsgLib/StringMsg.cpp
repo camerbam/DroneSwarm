@@ -68,8 +68,6 @@ std::string msg::StringMsg::toProtoString() const
 {
   proto::StringMsg msg;
   msg.set_msg(m_msg);
-  std::cout << msg.SerializeAsString().size() << std::endl;
-  std::cout << m_msg << std::endl;
   return msg.SerializeAsString();
 }
 

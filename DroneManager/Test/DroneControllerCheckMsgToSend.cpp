@@ -2,6 +2,7 @@
 
 #include "DroneManagerLib/DroneControllerCheckMsgToSend.hpp"
 #include "DroneMessagesLib/Message_t.hpp"
+#include "RegistryLib/Registry.hpp"
 
 namespace
 {
@@ -16,6 +17,8 @@ namespace
 
 BOOST_AUTO_TEST_CASE(DroneControllerCheckMsgToSendTest)
 {
+  GlobalRegistry::setRegistry(100, 20, {{30, 40, 2}}, true, false);
+
   auto pDroneState = std::make_shared<drone::DroneControllerState>();
 
   // Grounded

@@ -137,7 +137,7 @@ void GlobalRegistry::setRegistry(double speed,
     json::addArrayToDoc(doc, "Targets", targetsJson);
   }
   json::addBoolToDoc(doc, "SkipLog", skipLog);
-  json::addBoolToDoc(doc, "Encrypted", encrypted);
+  json::addBoolToDoc(doc, "Encrypt", encrypted);
   setRegistry(json::jsonToString(doc));
 }
 
@@ -208,7 +208,7 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   m_targets = validateTargets(doc);
   m_skipLog = json::getBool(doc, "SkipLog");
   m_pretest = json::getInt(doc, "Pretest");
-  m_encypted = json::getBool(doc, "Encrypted");
+  m_encypted = json::getBool(doc, "Encrypt");
   m_printLog = json::getBool(doc, "PrintToConsole");
 
   return true;
