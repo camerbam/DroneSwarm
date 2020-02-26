@@ -25,6 +25,7 @@ ground::GroundStationController::GroundStationController(std::string host,
     m_gameId(),
     m_connections(),
     m_targets(),
+    m_assignedTargets(),
     m_droneServer(65001),
     m_idleDrones(),
     m_busyDrones(),
@@ -103,39 +104,50 @@ void ground::GroundStationController::createRefereeMsgHandlers()
       m_logger.logInfo("Referee Controller", "Received Ping and responded");
     }));
 
-  m_connections.push_back(m_toReferee.registerHandler<msg::HitTargetRsp>(
-    [this](const msg::HitTargetRsp& msg, const std::string&) {
-      m_logger.logInfo("Referee Controller", "Received HitTargetRsp");
-      if (msg.complete())
-      {
-        for (auto&& drone : m_idleDrones)
-          drone->send(msg::FinishMsg());
-        for (auto&& drone : m_busyDrones)
-          drone->send(msg::FinishMsg());
-        m_connections.clear();
-        m_toReferee.close();
-        m_cv.notify_one();
-        return;
-      }
-      auto newTargets = msg.newTargets();
-      if (!newTargets.empty())
-      {
-        m_targets.insert(m_targets.end(), newTargets.begin(), newTargets.end());
-      }
+  m_connections.push_back(m_toReferee.registerHandler<msg::HitTargetRsp>([this](
+    const msg::HitTargetRsp& msg, const std::string&) {
+    m_logger.logInfo("Referee Controller", "Received HitTargetRsp");
+    if (msg.complete())
+    {
+      for (auto&& drone : m_idleDrones)
+        drone->send(msg::FinishMsg());
+      for (auto&& drone : m_busyDrones)
+        drone->send(msg::FinishMsg());
+      m_connections.clear();
+      m_toReferee.close();
+      m_cv.notify_one();
+      return;
+    }
+    auto newTargets = msg.newTargets();
+    if (!newTargets.empty())
+    {
+      m_targets.insert(m_targets.end(), newTargets.begin(), newTargets.end());
+    }
 
-      for (auto&& target : msg.badTargets())
+    for (auto&& target : msg.badTargets())
+    {
+      auto val =
+        std::find_if(m_targets.begin(),
+                     m_targets.end(),
+                     [&target](const msg::TargetMsg& msg) {
+                       return msg.x() == target.x() && msg.y() == target.y();
+                     });
+      if (val != m_targets.end())
+        m_targets.erase(val);
+      else
       {
-        auto val =
-          std::find_if(m_targets.begin(),
-                       m_targets.end(),
+        auto val1 =
+          std::find_if(m_assignedTargets.begin(),
+                       m_assignedTargets.end(),
                        [&target](const msg::TargetMsg& msg) {
                          return msg.x() == target.x() && msg.y() == target.y();
                        });
-        if (val != m_targets.end()) m_targets.erase(val);
+        if (val1 != m_assignedTargets.end()) m_assignedTargets.erase(val1);
       }
+    }
 
-      assignTargets();
-    }));
+    assignTargets();
+  }));
 }
 
 void ground::GroundStationController::createDroneMsgHandlers(
@@ -144,16 +156,20 @@ void ground::GroundStationController::createDroneMsgHandlers(
   m_connections.push_back(drone->registerHandler<msg::HitTargetMsg>(
     [this, drone](const msg::HitTargetMsg& msg, const std::string&) {
       m_logger.logInfo("Referee Controller", "Received HitTargetMsg");
-      for (auto target = m_targets.begin(); target != m_targets.end(); target++)
+      for (auto target = m_assignedTargets.begin();
+           target != m_assignedTargets.end();
+           target++)
       {
         if (utils::checkWithin(msg.target().x(), target->x(), 20) &&
             utils::checkWithin(msg.target().y(), target->y(), 20))
         {
           m_toReferee.send(msg::HitTargetMsg(m_gameId, msg.id(), *target));
-          m_targets.erase(target);
+          m_assignedTargets.erase(target);
           if (!m_targets.empty())
           {
             drone->send(msg::FlightPathMsg({m_targets[0]}));
+            m_assignedTargets.push_back(m_targets[0]);
+            m_targets.erase(m_targets.begin());
           }
           else
           {
@@ -173,12 +189,13 @@ void ground::GroundStationController::createDroneMsgHandlers(
 void ground::GroundStationController::assignTargets()
 {
   auto toRemove = m_targets.size();
-  size_t i = 0;
   for (auto&& drone : m_idleDrones)
   {
-    if (m_targets.size() > i)
+    if (!m_targets.empty())
     {
-      drone->send(msg::FlightPathMsg({m_targets[i++]}));
+      drone->send(msg::FlightPathMsg({m_targets[0]}));
+      m_assignedTargets.push_back(m_targets[0]);
+      m_targets.erase(m_targets.begin());
       m_busyDrones.push_back(drone);
     }
   }

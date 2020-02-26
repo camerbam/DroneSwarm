@@ -34,6 +34,7 @@ namespace ground
     int m_gameId;
     std::vector<boost::signals2::scoped_connection> m_connections;
     std::vector<msg::TargetMsg> m_targets;
+    std::vector<msg::TargetMsg> m_assignedTargets;
     tcp::TcpServer m_droneServer;
     std::vector<std::shared_ptr<tcp::TcpConnection>> m_idleDrones;
     std::vector<std::shared_ptr<tcp::TcpConnection>> m_busyDrones;

@@ -240,7 +240,11 @@ void drone::DroneSimulatorStateImpl::startUpdate()
     while (m_isRunning)
     {
       auto now = std::chrono::steady_clock::now();
-      m_configuration.update(now);
+      if (!m_configuration.update(now))
+      {
+        m_isRunning = false;
+        return;
+      }
       auto succeeded =
         m_pUpdater &&
         m_pUpdater->updateState(m_currentLocation, m_configuration);
@@ -249,8 +253,9 @@ void drone::DroneSimulatorStateImpl::startUpdate()
       {
         if (utils::checkWithin(
               target.getX(), m_currentLocation.getXCoordinate(), 5) &&
-            utils::checkWithin(
-              target.getY(), m_currentLocation.getYCoordinate() + m_startingY, 5))
+            utils::checkWithin(target.getY(),
+                               m_currentLocation.getYCoordinate() + m_startingY,
+                               5))
         {
           if (target.getId() == m_lastTarget.getId()) break;
           m_lastTarget = Target(m_currentLocation.getXCoordinate(),
