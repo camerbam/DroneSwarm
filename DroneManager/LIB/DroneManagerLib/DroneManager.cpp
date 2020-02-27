@@ -174,7 +174,13 @@ void drone::DroneManager::registerHandlers()
   m_connections.push_back(m_client.registerHandler<msg::FlightPathMsg>(
     [this](const msg::FlightPathMsg& msg, const std::string&) {
       m_logger.logInfo("DroneManager", "Received FlightPathMsg");
-
+      std::stringstream ss;
+      ss << "received" << std::endl;
+      for (auto&& t : msg.targets())
+      {
+        ss << t.x() << " " << t.y() << std::endl;
+      }
+      m_logger.logInfo("DroneManager", ss.str());
       auto path = createFlightPath(
         m_controller.getX(), m_controller.getY(), msg.targets());
       {

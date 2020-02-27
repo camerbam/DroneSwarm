@@ -23,9 +23,7 @@ referee::Graph::Graph() : m_ready(), m_notReady()
   }
 }
 
-referee::Graph::~Graph()
-{
-}
+referee::Graph::~Graph() {}
 
 bool referee::Graph::canPlaceTarget(const Target& target) const
 {
@@ -54,9 +52,9 @@ bool referee::Graph::validateTarget(const Target& target) const
 {
   for (auto&& t : m_ready)
   {
-    if (utils::checkWithinDouble(target.getX(), t.getX(), 10) &&
-        utils::checkWithinDouble(target.getY(), t.getY(), 10) &&
-        utils::checkWithinDouble(target.getId(), t.getId(), 10))
+    if (utils::checkWithin(target.getX(), t.getX(), 10) &&
+        utils::checkWithin(target.getY(), t.getY(), 10) &&
+        target.getId() == t.getId())
       return true;
   }
   return false;
