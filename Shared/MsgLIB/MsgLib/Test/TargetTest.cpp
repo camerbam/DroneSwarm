@@ -35,6 +35,7 @@ BOOST_AUTO_TEST_CASE(TargetTest)
 
     BOOST_CHECK_EQUAL(target.x(), 3);
     BOOST_CHECK_EQUAL(target.y(), 2);
+    delete tTarget;
   }
   {
     msg::TargetMsg target(3, 2);
