@@ -123,7 +123,7 @@ namespace
     void printMsg()
     {
       std::stringstream ss;
-      ss << "************* RESULTS *************" << std::endl;
+      ss << std::endl << "************* RESULTS *************" << std::endl;
       for (auto&& m : m_messagesReceived)
       {
         ss << std::setw(40) << std::left << m.first << std::setw(25)
@@ -281,10 +281,10 @@ std::shared_ptr<drone::DroneSimulatorState> drone::DroneSimulatorPretestState::
     auto toExit = boost::apply_visitor(pretest, messages::getMessage(msg));
     if (toExit) return nullptr;
   }
-  catch (std::exception& ex)
+  catch (...)
   {
-    std::cout << ex.what() << std::endl;
-    return nullptr;
+    logger::logError("Pretest", "Received invalid message: " + msg);
+    return shared_from_this();
   }
   return shared_from_this();
 }

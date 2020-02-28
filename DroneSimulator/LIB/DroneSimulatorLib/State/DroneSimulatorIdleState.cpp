@@ -5,6 +5,7 @@
 #include "DroneMessagesLib/MessageFactory.hpp"
 #include "DroneSimulatorPretestState.hpp"
 #include "DroneSimulatorSDKState.hpp"
+#include "LoggerLib/Logger.hpp"
 #include "RegistryLib/Registry.hpp"
 
 namespace
@@ -32,7 +33,10 @@ namespace
       {
       case 0:
         toReturn = std::make_shared<drone::DroneSimulatorSDKState>(
-          m_controlEndpoint, m_response.getEndpoint(), m_startingBattery, m_startingY);
+          m_controlEndpoint,
+          m_response.getEndpoint(),
+          m_startingBattery,
+          m_startingY);
         break;
       case 1:
         toReturn = std::make_shared<drone::DroneSimulatorPretestState>(
@@ -86,10 +90,18 @@ std::shared_ptr<drone::DroneSimulatorState> drone::DroneSimulatorIdleState::
 {
   if (!response.didSucceed()) return shared_from_this();
   auto msg = response.getMessage();
-  auto newState =
-    boost::apply_visitor(DroneSimulatorIdleStateChanges(
-                           m_sender, response, m_startingBattery, m_startingY),
-                         messages::getMessage(msg));
-  if (!newState) return shared_from_this();
-  return newState;
+  try
+  {
+    auto newState = boost::apply_visitor(
+      DroneSimulatorIdleStateChanges(
+        m_sender, response, m_startingBattery, m_startingY),
+      messages::getMessage(msg));
+    if (!newState) return shared_from_this();
+    return newState;
+  }
+  catch (...)
+  {
+    logger::logWarning("DroneSimulatorIdleStateChanges", "Invalid Message");
+    return shared_from_this();
+  }
 }
