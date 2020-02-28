@@ -27,7 +27,7 @@ namespace drone
     void decreaseBattery();
     void increaseTime();
 
-    void update(const std::chrono::steady_clock::time_point& now);
+    bool update(const std::chrono::steady_clock::time_point& now);
 
     boost::optional<std::string> enableDetection(
       messages::DETECTION_DIRECTION direction);

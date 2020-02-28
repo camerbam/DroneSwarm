@@ -8,7 +8,7 @@ drone::DroneConfiguration::DroneConfiguration(size_t startingBattery)
     m_battery(startingBattery),
     m_startBattery(startingBattery),
     m_time(0),
-  m_detectionDirection(messages::DETECTION_DIRECTION::NONE),
+    m_detectionDirection(messages::DETECTION_DIRECTION::NONE),
     m_startPoint(std::chrono::steady_clock::now())
 {
 }
@@ -58,16 +58,23 @@ void drone::DroneConfiguration::increaseTime()
   m_time++;
 }
 
-void drone::DroneConfiguration::update(
+bool drone::DroneConfiguration::update(
   const std::chrono::steady_clock::time_point& now)
 {
   m_time = static_cast<size_t>(
     std::chrono::duration_cast<std::chrono::microseconds>(now - m_startPoint)
       .count() *
     GlobalRegistry::getRegistry().getSpeedRatio() / 1000000);
+  auto time = m_time / GlobalRegistry::getRegistry().getBatteryDecaySpeed();
+  if (m_startBattery < time)
+  {
+    m_battery = 0;
+    return false;
+  }
   m_battery = static_cast<size_t>(
     m_startBattery -
     m_time / GlobalRegistry::getRegistry().getBatteryDecaySpeed());
+  return true;
 }
 
 boost::optional<std::string> drone::DroneConfiguration::enableDetection(
