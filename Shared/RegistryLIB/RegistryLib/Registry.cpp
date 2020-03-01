@@ -192,6 +192,11 @@ bool GlobalRegistry::isEncypted()
   return m_pInstance->m_encypted;
 }
 
+std::string GlobalRegistry::getFormat()
+{
+  return m_pInstance->m_format;
+}
+
 bool GlobalRegistry::parseConfig(const std::string& config)
 {
   rapidjson::Document doc;
@@ -210,6 +215,7 @@ bool GlobalRegistry::parseConfig(const std::string& config)
   m_pretest = json::getInt(doc, "Pretest");
   m_encypted = json::getBool(doc, "Encrypt");
   m_printLog = json::getBool(doc, "PrintToConsole");
+  m_format = json::getString(doc, "Format");
 
   return true;
 }

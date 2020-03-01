@@ -44,6 +44,8 @@ public:
 
   bool isEncypted();
 
+  std::string getFormat();
+
 private:
   GlobalRegistry();
   GlobalRegistry(const GlobalRegistry&) = delete;
@@ -61,6 +63,7 @@ private:
   bool m_printLog;
   size_t m_pretest;
   bool m_encypted;
+  std::string m_format;
 };
 
 #endif

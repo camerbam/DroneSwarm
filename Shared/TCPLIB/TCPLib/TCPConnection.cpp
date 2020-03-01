@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 
+#include <openssl/err.h>
 #include <boost/asio.hpp>
 #include <boost/asio/write.hpp>
 
@@ -57,26 +58,31 @@ tcp::TcpConnection::TcpConnection(
         ]() {
           msg::BaseMsg receivedMsg;
           auto msg = optMsg.get();
+          if (m_encrypted)
+          {
+            char* decrypted = new char[1024];
+            int result = RSA_private_decrypt(static_cast<int>(msg.size()),
+                                             (unsigned char*)msg.c_str(),
+                                             (unsigned char*)decrypted,
+                                             m_pPrivateKey.get(),
+                                             RSA_PKCS1_PADDING);
+            if (result < 0)
+            {
+              char* e = new char[1024];
+              ERR_error_string(1024, e);
+              std::cout << e << std::endl;
+              logger::logError("TCPClient", "Failed to decypt message");
+              delete e;
+              return;
+            }
+            msg = std::string(decrypted, result);
+            delete[] decrypted;
+          }
+
           if (!msg::parseString(receivedMsg, msg, format))
           {
             std::cout << "Could not parse msg" << std::endl;
             return;
-          }
-          if (m_encrypted)
-          {
-            char* decrypted = new char[1024];
-            int result = RSA_private_decrypt(static_cast<int>(receivedMsg.msg().size()),
-                                            (unsigned char*)receivedMsg.msg().c_str(),
-                                            (unsigned char*)decrypted,
-                                            m_pPrivateKey.get(),
-                                            RSA_PKCS1_PADDING);
-            if (result < 0)
-            {
-              logger::logError("TCPClient", "Failed to decypt message");
-              return;
-            }
-            receivedMsg.msg(std::string(decrypted, result));
-            delete[] decrypted;
           }
 
           auto msgSent = m_pMessages->find(receivedMsg.msgId());

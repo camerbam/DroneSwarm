@@ -25,16 +25,21 @@ namespace
     std::cout << randomNumber << std::endl;
     if (randomNumber > 80)
     {
+      logger::logInfo("Pretest", "Sending Duplicates");
       connection->send(Rsp());
       connection->send(Rsp());
       return referee::MSG_STATUS::RECEIVED;
     }
     else if (randomNumber > 60)
     {
+      logger::logInfo("Pretest", "Not going to respond");
       return referee::MSG_STATUS::WAITING;
     }
     else if (randomNumber > 40)
     {
+      logger::logInfo(
+        "Pretest",
+        "Responding in " + std::to_string(randomNumber % 10) + " seconds");
       std::this_thread::sleep_for(std::chrono::seconds(randomNumber % 10));
       connection->send(Rsp());
       return referee::MSG_STATUS::RECEIVED;
@@ -112,90 +117,88 @@ int referee::PretestController::execute()
 
 void referee::PretestController::pretest1()
 {
-  m_connections.push_back(m_server.registerConnection([this](
-    std::shared_ptr<tcp::TcpConnection> connection) {
-    connection->send(msg::PingMsg());
-    logger::logInfo("RefereeController", "New connection");
-    m_connections.push_back(connection->registerHandler<msg::ReadyMsg>(
-      [this, connection](const msg::ReadyMsg&, const std::string&) {
-        logger::logInfo("RefereeController", "received ReadyMsg");
-        m_msgs["ReadyMsg"] = MSG_STATUS::RECEIVED;
-        connection->send(msg::ReadyRsp());
-      }));
+  m_connections.push_back(m_server.registerConnection(
+    [this](std::shared_ptr<tcp::TcpConnection> connection) {
+      connection->send(msg::PingMsg());
+      logger::logInfo("RefereeController", "New connection");
+      m_connections.push_back(connection->registerHandler<msg::ReadyMsg>(
+        [this, connection](const msg::ReadyMsg&, const std::string&) {
+          logger::logInfo("RefereeController", "received ReadyMsg");
+          m_msgs["ReadyMsg"] = MSG_STATUS::RECEIVED;
+          connection->send(msg::ReadyRsp());
+        }));
 
-    m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
-      [this](const msg::ReadyRspRsp&, const std::string&) {
-        logger::logInfo("RefereeController", "received ReadyRspRsp");
-        m_msgs["ReadyRspRsp"] = MSG_STATUS::RECEIVED;
-      }));
+      m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
+        [this](const msg::ReadyRspRsp&, const std::string&) {
+          logger::logInfo("RefereeController", "received ReadyRspRsp");
+          m_msgs["ReadyRspRsp"] = MSG_STATUS::RECEIVED;
+        }));
 
-    m_connections.push_back(
-      connection->registerHandler<msg::HitTargetMsg>([this, connection](
-        const msg::HitTargetMsg&, const std::string&) {
-        logger::logInfo("RefereeController", "received HitTargetMsg");
-        m_msgs["HitTargetMsg"] = MSG_STATUS::RECEIVED;
-        connection->send(msg::HitTargetRsp());
-      }));
+      m_connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
+        [this, connection](const msg::HitTargetMsg&, const std::string&) {
+          logger::logInfo("RefereeController", "received HitTargetMsg");
+          m_msgs["HitTargetMsg"] = MSG_STATUS::RECEIVED;
+          connection->send(msg::HitTargetRsp());
+        }));
 
-    m_connections.push_back(connection->registerHandler<msg::FinishMsg>(
-      [this, connection](const msg::FinishMsg&, const std::string&) {
-        logger::logInfo("RefereeController", "received FinishMsg");
-        m_msgs["FinishMsg"] = MSG_STATUS::RECEIVED;
-        connection->send(msg::FinishRsp());
-        m_cv.notify_one();
-      }));
+      m_connections.push_back(connection->registerHandler<msg::FinishMsg>(
+        [this, connection](const msg::FinishMsg&, const std::string&) {
+          logger::logInfo("RefereeController", "received FinishMsg");
+          m_msgs["FinishMsg"] = MSG_STATUS::RECEIVED;
+          connection->send(msg::FinishRsp());
+          m_cv.notify_one();
+        }));
 
-    m_connections.push_back(connection->registerHandler<msg::PingRsp>(
-      [this, connection](const msg::PingRsp&, const std::string&) {
-        logger::logInfo("RefereeController", "received PingRsp");
-        m_msgs["PingRsp"] = MSG_STATUS::RECEIVED;
-      }));
+      m_connections.push_back(connection->registerHandler<msg::PingRsp>(
+        [this, connection](const msg::PingRsp&, const std::string&) {
+          logger::logInfo("RefereeController", "received PingRsp");
+          m_msgs["PingRsp"] = MSG_STATUS::RECEIVED;
+        }));
 
-    connection->ready();
-  }));
+      connection->ready();
+    }));
 }
 
 void referee::PretestController::pretest2()
 {
-  m_connections.push_back(m_server.registerConnection([this](
-    std::shared_ptr<tcp::TcpConnection> connection) {
-    connection->send(msg::PingMsg());
-    srand((unsigned int)time(NULL));
-    logger::logInfo("RefereeController", "New connection");
-    m_connections.push_back(connection->registerHandler<msg::ReadyMsg>(
-      [this, connection](const msg::ReadyMsg&, const std::string&) {
-        logger::logInfo("RefereeController", "received ReadyMsg");
-        m_msgs["ReadyMsg"] = handleMsg<msg::ReadyRsp>(connection);
+  m_connections.push_back(m_server.registerConnection(
+    [this](std::shared_ptr<tcp::TcpConnection> connection) {
+      connection->send(msg::PingMsg());
+      srand((unsigned int)time(NULL));
+      logger::logInfo("RefereeController", "New connection");
+      m_connections.push_back(connection->registerHandler<msg::ReadyMsg>(
+        [this, connection](const msg::ReadyMsg&, const std::string&) {
+          logger::logInfo("RefereeController", "received ReadyMsg");
+          m_msgs["ReadyMsg"] = handleMsg<msg::ReadyRsp>(connection);
 
-      }));
+        }));
 
-    m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
-      [this](const msg::ReadyRspRsp&, const std::string&) {
-        logger::logInfo("RefereeController", "received ReadyRspRsp");
-        m_msgs["ReadyRspRsp"] = MSG_STATUS::RECEIVED;
-      }));
+      m_connections.push_back(connection->registerHandler<msg::ReadyRspRsp>(
+        [this](const msg::ReadyRspRsp&, const std::string&) {
+          logger::logInfo("RefereeController", "received ReadyRspRsp");
+          m_msgs["ReadyRspRsp"] = MSG_STATUS::RECEIVED;
+        }));
 
-    m_connections.push_back(
-      connection->registerHandler<msg::HitTargetMsg>([this, connection](
-        const msg::HitTargetMsg&, const std::string&) {
-        logger::logInfo("RefereeController", "received HitTargetMsg");
-        m_msgs["HitTargetMsg"] = handleMsg<msg::HitTargetRsp>(connection);
-      }));
+      m_connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
+        [this, connection](const msg::HitTargetMsg&, const std::string&) {
+          logger::logInfo("RefereeController", "received HitTargetMsg");
+          m_msgs["HitTargetMsg"] = handleMsg<msg::HitTargetRsp>(connection);
+        }));
 
-    m_connections.push_back(connection->registerHandler<msg::FinishMsg>(
-      [this, connection](const msg::FinishMsg&, const std::string&) {
-        logger::logInfo("RefereeController", "received FinishMsg");
-        m_msgs["FinishMsg"] = MSG_STATUS::RECEIVED;
-        connection->send(msg::FinishRsp());
-        m_cv.notify_one();
-      }));
+      m_connections.push_back(connection->registerHandler<msg::FinishMsg>(
+        [this, connection](const msg::FinishMsg&, const std::string&) {
+          logger::logInfo("RefereeController", "received FinishMsg");
+          m_msgs["FinishMsg"] = MSG_STATUS::RECEIVED;
+          connection->send(msg::FinishRsp());
+          m_cv.notify_one();
+        }));
 
-    m_connections.push_back(connection->registerHandler<msg::PingRsp>(
-      [this, connection](const msg::PingRsp&, const std::string&) {
-        logger::logInfo("RefereeController", "received PingRsp");
-        m_msgs["PingRsp"] = MSG_STATUS::RECEIVED;
-      }));
+      m_connections.push_back(connection->registerHandler<msg::PingRsp>(
+        [this, connection](const msg::PingRsp&, const std::string&) {
+          logger::logInfo("RefereeController", "received PingRsp");
+          m_msgs["PingRsp"] = MSG_STATUS::RECEIVED;
+        }));
 
-    connection->ready();
-  }));
+      connection->ready();
+    }));
 }

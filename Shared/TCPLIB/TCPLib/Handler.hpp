@@ -30,7 +30,8 @@ namespace tcp
 
       T msg;
       bool success = msg::parseString(msg, data, format);
-      if (!success) std::cout << "Could not parse data" << std::endl;
+      if (!success)
+        std::cout << "Could not parse data" << std::endl;
       m_signal(msg, msgId);
     }
 

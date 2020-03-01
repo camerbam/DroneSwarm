@@ -1,6 +1,7 @@
 #include "BaseMsg.hpp"
 
 #include <iostream>
+#include <fstream>
 #include <string>
 
 #include <rapidjson/document.h>
@@ -37,10 +38,20 @@ msg::BaseMsg::BaseMsg() : m_msgId(), m_type(), m_msg()
 bool msg::BaseMsg::parseFromJson(const std::string& msg)
 {
   rapidjson::Document json(rapidjson::kObjectType);
-  json.Parse(msg.c_str());
+  std::ofstream fout("test.txt");
+  fout << msg << std::endl;
+  json.Parse(msg.c_str(), msg.size());
   m_msgId = json::getString(json, N_ID);
   m_type = json::getString(json, N_TYPE);
   m_msg = json::getString(json, N_MSG);
+  if (m_msg.empty())
+  {
+    auto t = json::getObjectOrArray(json, N_MSG);
+    if (t)
+      m_msg = json::jsonToString(t.get());
+    else
+      return false;
+  }
   return true;
 }
 
