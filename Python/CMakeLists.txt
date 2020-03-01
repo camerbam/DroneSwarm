@@ -1,6 +1,7 @@
 set(exe_name Python)
 ###################################
 set(${exe_name}_srcs
+  .vscode/launch.json
   UDP.py
   TCP.py
   )

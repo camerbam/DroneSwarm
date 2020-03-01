@@ -32,12 +32,15 @@ int main(int argc, char* argv[])
     if (pretest > 0)
     {
       referee::PretestController controller(
-        65000, msg::FORMAT::PROTOBUF, pretest);
+        65000,
+        msg::stringToFormat(GlobalRegistry::getRegistry().getFormat()),
+        pretest);
 
       return controller.execute();
     }
 
-    referee::RefereeController controller(65000, msg::FORMAT::PROTOBUF);
+    referee::RefereeController controller(
+      65000, msg::stringToFormat(GlobalRegistry::getRegistry().getFormat()));
 
     std::cout << "Enter exit to finish" << std::endl;
     std::string line;

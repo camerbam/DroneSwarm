@@ -44,7 +44,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
         auto optMsg = tcp::getNextStringMessage(input);
         if (!optMsg) return;
         GlobalRegistry::getRegistry().postToThreadPool([
-          msg = optMsg.get(),
+          optMsg,
           m_handlers,
           format,
           m_pMessages,
@@ -52,20 +52,15 @@ tcp::TcpClient::TcpClient(std::string hostname,
           m_pKey
         ]() {
           msg::BaseMsg receivedMsg;
-          if (!parseString(receivedMsg, msg, format))
-          {
-            logger::logError("TCPClient", "Could not parse msg");
-            return;
-          }
+          auto msg = optMsg.get();
           if (m_encrypted)
           {
             char* decrypted = new char[1024];
-            int result =
-              RSA_public_decrypt(static_cast<int>(receivedMsg.msg().size()),
-                                 (unsigned char*)receivedMsg.msg().c_str(),
-                                 (unsigned char*)decrypted,
-                                 m_pKey->get(),
-                                 RSA_PKCS1_PADDING);
+            int result = RSA_public_decrypt(static_cast<int>(msg.size()),
+                                            (unsigned char*)msg.c_str(),
+                                            (unsigned char*)decrypted,
+                                            m_pKey->get(),
+                                            RSA_PKCS1_PADDING);
             if (result < 0)
             {
               char buffer[120];
@@ -74,8 +69,13 @@ tcp::TcpClient::TcpClient(std::string hostname,
               logger::logError("TCPClient", "Failed to decypt message");
               return;
             }
-            receivedMsg.msg(std::string(decrypted, result));
+            msg = std::string(decrypted, result);
             delete[] decrypted;
+          }
+          if (!parseString(receivedMsg, msg, format))
+          {
+            logger::logError("TCPClient", "Could not parse msg");
+            return;
           }
 
           auto msgSent = m_pMessages->find(receivedMsg.msgId());

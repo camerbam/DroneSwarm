@@ -59,7 +59,10 @@ namespace tcp
       }
       static int c = 0;
       msg::BaseMsg msg;
-      std::string toSend(msg::toString(message, m_format));
+      msg.msg(msg::toString(message, m_format));
+      msg.type(T::name());
+      msg.msgId(m_name + std::to_string(c++));
+      std::string toSend(msg::toString(msg, m_format));
 
       if (m_encrypted)
       {
@@ -78,12 +81,8 @@ namespace tcp
         toSend = std::string(decrypted, ret);
         delete[] decrypted;
       }
-
-      msg.msg(toSend);
-      msg.type(T::name());
-      msg.msgId(m_name + std::to_string(c++));
-      auto pMessage = std::make_shared<std::string>(
-        tcp::getProcessedString(toString(msg, m_format)));
+      auto pMessage =
+        std::make_shared<std::string>(tcp::getProcessedString(toSend));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });

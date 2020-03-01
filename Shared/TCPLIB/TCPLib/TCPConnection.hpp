@@ -38,8 +38,10 @@ namespace tcp
     {
       static int count = 0;
       msg::BaseMsg msg;
-      std::string toSend(msg::toString(message, m_format));
-
+      msg.msg(msg::toString(message, m_format));
+      msg.type(T::name());
+      msg.msgId(std::to_string(m_id) + ":" + std::to_string(count++));
+      std::string toSend(msg::toString(msg, m_format));
       if (m_encrypted)
       {
         char* decrypted = new char[1024];
@@ -57,11 +59,8 @@ namespace tcp
         toSend = std::string(decrypted, ret);
         delete[] decrypted;
       }
-      msg.msg(toSend);
-      msg.type(T::name());
-      msg.msgId(std::to_string(m_id) + ":" + std::to_string(count++));
-      auto pMessage = std::make_shared<std::string>(
-        tcp::getProcessedString(msg::toString(msg, m_format)));
+      auto pMessage =
+        std::make_shared<std::string>(tcp::getProcessedString(toSend));
       m_pSocket->async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
@@ -79,10 +78,10 @@ namespace tcp
       {
         char* decrypted = new char[1024];
         int ret = RSA_private_encrypt(static_cast<int>(toSend.size()),
-          (unsigned char*)toSend.c_str(),
-          (unsigned char*)decrypted,
-          m_pPrivateKey.get(),
-          RSA_PKCS1_PADDING);
+                                      (unsigned char*)toSend.c_str(),
+                                      (unsigned char*)decrypted,
+                                      m_pPrivateKey.get(),
+                                      RSA_PKCS1_PADDING);
         if (ret < 0)
         {
           logger::logError("TCPConnection", "Failed to encrypt");

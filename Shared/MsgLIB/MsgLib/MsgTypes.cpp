@@ -12,6 +12,11 @@ namespace
                                            {'P', msg::FORMAT::PROTOBUF},
                                            {'X', msg::FORMAT::XML}};
 
+  std::map<std::string, msg::FORMAT> stringToChar{
+    {"json", msg::FORMAT::JSON},
+    {"protobuf", msg::FORMAT::PROTOBUF},
+    {"xml", msg::FORMAT::XML}};
+
 } // namespace
 
 char msg::formatToChar(const FORMAT format)
@@ -19,3 +24,7 @@ char msg::formatToChar(const FORMAT format)
   return ::formatToChar[format];
 }
 
+msg::FORMAT msg::stringToFormat(const std::string& format)
+{
+  return ::stringToChar[format];
+}

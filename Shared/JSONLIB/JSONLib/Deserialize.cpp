@@ -1,6 +1,7 @@
 #include "Deserialize.hpp"
 
 #include <functional>
+#include <iostream>
 
 namespace
 {
