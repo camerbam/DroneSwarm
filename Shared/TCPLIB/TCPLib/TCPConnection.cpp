@@ -150,7 +150,7 @@ void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
       m_inputBuffer.begin(), m_inputBuffer.begin() + bytes_transferred);
     m_acq.add(toAdd);
     m_inputBuffer.clear();
-    m_inputBuffer.resize(1024);
+    m_inputBuffer.resize(2048);
 
     startRead();
   }
