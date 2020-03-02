@@ -70,7 +70,7 @@ namespace tcp
         int ret = RSA_public_encrypt(static_cast<int>(toSend.size()),
                                      (unsigned char*)toSend.c_str(),
                                      (unsigned char*)decrypted,
-                                     m_pKey->get(),
+                                     m_pKey.get(),
                                      RSA_PKCS1_PADDING);
         if (ret < 0)
         {
@@ -102,7 +102,7 @@ namespace tcp
         int ret = RSA_public_encrypt(static_cast<int>(toSend.size()),
                                      (unsigned char*)toSend.c_str(),
                                      (unsigned char*)decrypted,
-                                     m_pKey->get(),
+                                     m_pKey.get(),
                                      RSA_PKCS1_PADDING);
         if (ret < 0)
         {
@@ -150,7 +150,7 @@ namespace tcp
     std::mutex m_m;
     bool m_encrypted;
     bool m_ready;
-    std::shared_ptr<std::shared_ptr<RSA>> m_pKey;
+    std::shared_ptr<RSA> m_pKey;
     boost::asio::io_context m_ctx;
     boost::optional<boost::asio::io_context::work> m_optCork;
     msg::FORMAT m_format;

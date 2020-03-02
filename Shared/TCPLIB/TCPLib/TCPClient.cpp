@@ -21,7 +21,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
     m_m(),
     m_encrypted(encrypt),
     m_ready(false),
-    m_pKey(std::make_shared<std::shared_ptr<RSA>>()),
+    m_pKey(std::make_shared<RSA>()),
     m_ctx(),
     m_optCork(m_ctx),
     m_format(format),
@@ -37,7 +37,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
       format = m_format,
       m_pMessages = m_pMessages,
       m_encrypted = m_encrypted,
-      m_pKey = m_pKey
+      m_pKey = &m_pKey
     ](std::string input) {
       while (true)
       {
@@ -175,7 +175,7 @@ void tcp::TcpClient::handleConnect(
       auto read = m_socket.read_some(boost::asio::buffer(m_inputBuffer));
       std::string toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + read);
       RSA* rsa = tcp::createPublicRSA(toAdd);
-      m_pKey->reset(rsa);
+      m_pKey.reset(rsa);
     }
     m_ready = true;
     m_cv.notify_all();
