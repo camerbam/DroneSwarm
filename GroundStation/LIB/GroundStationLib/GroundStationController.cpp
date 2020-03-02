@@ -107,8 +107,9 @@ void ground::GroundStationController::createRefereeMsgHandlers()
   m_connections.push_back(m_toReferee.registerHandler<msg::HitTargetRsp>(
     [this](const msg::HitTargetRsp& msg, const std::string&) {
       m_logger.logInfo("Referee Controller", "Received HitTargetRsp");
-      if (msg.complete())
+      if(!msg.success() || msg.complete())
       {
+        m_toReferee.send(msg::FinishMsg(m_gameId));
         for (auto&& drone : m_idleDrones)
           drone->send(msg::FinishMsg());
         for (auto&& drone : m_busyDrones)

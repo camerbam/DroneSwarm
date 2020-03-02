@@ -33,7 +33,17 @@ boost::optional<referee::GraphResponse> referee::GameManager::hitTarget(
 std::vector<Target> referee::GameManager::finish()
 {
   auto left = m_graph.getAllLeft();
+  auto done = m_graph.getAllDone();
+
   std::stringstream ss;
+  if (!done.empty())
+  {
+    ss << "Targets hit successfully: " << std::endl;
+    for (auto&& t : done)
+      ss << t.getX() << " " << t.getY() << " " << t.getId() << std::endl;
+  }
+
+
   if (!left.empty())
   {
     ss << "Missed targets: " << std::endl;

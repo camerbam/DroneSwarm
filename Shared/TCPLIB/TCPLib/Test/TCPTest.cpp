@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE TCPTest
 #include <boost/test/unit_test.hpp>
 
 #include "TCPLib/TCPClient.hpp"
@@ -7,32 +6,6 @@
 
 #include "MsgLib/StringMsg.hpp"
 #include "RegistryLib/Registry.hpp"
-
-std::shared_ptr<std::thread> startClientToRecieve()
-{
-  return std::make_shared<std::thread>([]() {
-    std::vector<boost::signals2::scoped_connection> connections;
-
-    tcp::TcpClient client("localhost", "8080");
-
-    connections.push_back(client.registerHandler<msg::StringMsg>(
-      [&client](msg::StringMsg msg, const std::string&) {
-        static std::vector<std::string> msgsToGet{
-          "json test", "protobuf test", "xml test"};
-        static size_t msgsLeft = 3;
-
-        msgsLeft--;
-        std::vector<std::string>::iterator found =
-          std::find(msgsToGet.begin(), msgsToGet.end(), msg.msg());
-        BOOST_CHECK(found != msgsToGet.end());
-        msgsToGet.erase(std::remove(msgsToGet.begin(), msgsToGet.end(), *found),
-                        msgsToGet.end());
-        BOOST_CHECK(msgsLeft == msgsToGet.size());
-        if (msgsLeft == 0) client.close();
-      }));
-    client.ready();
-  });
-}
 
 BOOST_AUTO_TEST_CASE(TCPServerSend)
 {
@@ -55,30 +28,29 @@ BOOST_AUTO_TEST_CASE(TCPServerSend)
       pConnection->send(msg3);
 
     });
-  auto pThread = startClientToRecieve();
-  pThread->join();
+
+  std::vector<boost::signals2::scoped_connection> connections;
+
+  tcp::TcpClient client("localhost", "8080");
+
+  connections.push_back(client.registerHandler<msg::StringMsg>(
+    [&client](msg::StringMsg msg, const std::string&) {
+    static std::vector<std::string> msgsToGet{
+      "json test", "protobuf test", "xml test" };
+    static size_t msgsLeft = 3;
+
+    msgsLeft--;
+    std::vector<std::string>::iterator found =
+      std::find(msgsToGet.begin(), msgsToGet.end(), msg.msg());
+    BOOST_CHECK(found != msgsToGet.end());
+    msgsToGet.erase(std::remove(msgsToGet.begin(), msgsToGet.end(), *found),
+      msgsToGet.end());
+    BOOST_CHECK(msgsLeft == msgsToGet.size());
+    if (msgsLeft == 0) client.close();
+  }));
+  client.ready();
+
   server.close();
-}
-
-std::shared_ptr<std::thread> startClientToSend()
-{
-  return std::make_shared<std::thread>([]() {
-
-    tcp::TcpClient client("localhost", "8080");
-    client.ready();
-
-    std::vector<std::string> msgsToSend{
-      "json test", "protobuf test", "xml test"};
-
-    msg::StringMsg msg1(msgsToSend[0]);
-    client.send(msg1);
-    msg::StringMsg msg2(msgsToSend[1]);
-    client.send(msg2);
-    msg::StringMsg msg3(msgsToSend[2]);
-    client.send(msg3);
-
-    client.close();
-  });
 }
 
 BOOST_AUTO_TEST_CASE(TCPClientSend)
@@ -106,7 +78,20 @@ BOOST_AUTO_TEST_CASE(TCPClientSend)
     pConnection->ready();
   });
 
-  auto pThread = startClientToSend();
+  tcp::TcpClient client("localhost", "8080");
+  client.ready();
+
+  std::vector<std::string> msgsToSend{
+    "json test", "protobuf test", "xml test" };
+
+  msg::StringMsg msg1(msgsToSend[0]);
+  client.send(msg1);
+  msg::StringMsg msg2(msgsToSend[1]);
+  client.send(msg2);
+  msg::StringMsg msg3(msgsToSend[2]);
+  client.send(msg3);
+
+  client.close();
+
   server.close();
-  pThread->join();
 }

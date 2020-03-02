@@ -17,6 +17,36 @@ namespace
   }
 }
 
+BOOST_AUTO_TEST_CASE(GraphDependTest)
+{
+  std::vector<Target> targets;
+  targets.emplace_back(0, 20, 1);
+  targets.emplace_back(0, 40, 2, std::set<int>{1});
+  targets.emplace_back(0, 60, 3, std::set<int>{2});
+  targets.emplace_back(0, 80, 4, std::set<int>{3});
+  GlobalRegistry::setRegistry(1, 2, targets);
+
+  referee::Graph graph;
+  auto available = graph.getAvailable();
+  BOOST_REQUIRE(available.size() == 1);
+  BOOST_CHECK_EQUAL(available[0].getId(), 1);
+
+  auto newTargets = graph.hitTarget(targets[0]);
+  BOOST_REQUIRE(newTargets.targetsToAdd.size() == 1);
+  BOOST_CHECK_EQUAL(newTargets.targetsToAdd[0].getId(), 2);
+
+  newTargets = graph.hitTarget(targets[1]);
+  BOOST_REQUIRE(available.size() == 1);
+  BOOST_CHECK_EQUAL(newTargets.targetsToAdd[0].getId(), 3);
+
+  newTargets = graph.hitTarget(targets[2]);
+  BOOST_REQUIRE(available.size() == 1);
+  BOOST_CHECK_EQUAL(newTargets.targetsToAdd[0].getId(), 4);
+
+  newTargets = graph.hitTarget(targets[3]);
+  BOOST_REQUIRE(newTargets.targetsToAdd.size() == 0);
+}
+
 BOOST_AUTO_TEST_CASE(GraphTest)
 {
   std::vector<Target> targets;

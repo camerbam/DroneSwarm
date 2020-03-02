@@ -7,7 +7,7 @@ namespace
 {
   void testMsg(const msg::FORMAT& format, std::string answer)
   {
-    msg::PingRsp msg;
+    msg::PingRsp msg(3);
 
     msg::PingRsp answerMsg;
     auto msgAsString = msg::toString(msg, format);
@@ -19,7 +19,7 @@ namespace
 
 BOOST_AUTO_TEST_CASE(PingRspTest)
 {
-  testMsg(msg::FORMAT::JSON, "{}");
+  testMsg(msg::FORMAT::JSON, R"({"gameId":3})");
   testMsg(msg::FORMAT::PROTOBUF, "");
-  testMsg(msg::FORMAT::XML, "\n");
+  testMsg(msg::FORMAT::XML, "<gameId>3</gameId>\n\n");
 }

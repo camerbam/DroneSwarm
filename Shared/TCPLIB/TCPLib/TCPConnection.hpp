@@ -1,6 +1,8 @@
 #ifndef TCP_CONNECTION_HPP
 #define TCP_CONNECTION_HPP
 
+#include <atomic>
+#include <condition_variable>
 #include <iostream>
 #include <string>
 #include <thread>
@@ -143,6 +145,9 @@ namespace tcp
 
     void handleWrite(const boost::system::error_code& error, size_t bt);
 
+    std::atomic<int>* m_pSending;
+    std::condition_variable m_cv;
+    std::mutex m_m;
     bool m_encrypted;
     std::shared_ptr<RSA> m_pPrivateKey;
     std::shared_ptr<boost::asio::ip::tcp::socket> m_pSocket;

@@ -3,9 +3,9 @@
 #include <fstream>
 #include <iostream>
 
-#include <openssl/err.h>
 #include <boost/asio.hpp>
 #include <boost/asio/write.hpp>
+#include <openssl/err.h>
 
 #include "EncryptHelpers.hpp"
 #include "LoggerLib/Logger.hpp"
@@ -28,7 +28,10 @@ tcp::TcpConnection::TcpConnection(
   int id,
   msg::FORMAT format,
   const std::string& privateKey)
-  : m_encrypted(!privateKey.empty()),
+  : m_cv(),
+    m_m(),
+    m_pSending(new std::atomic<int>(0)),
+    m_encrypted(!privateKey.empty()),
     m_pPrivateKey(tcp::createPrivateRSA(privateKey)),
     m_pSocket(pSocket),
     m_id(id),
@@ -42,19 +45,24 @@ tcp::TcpConnection::TcpConnection(
       format = m_format,
       m_pMessages = m_pMessages,
       m_pPrivateKey = m_pPrivateKey,
-      m_encrypted = m_encrypted
+      m_encrypted = m_encrypted,
+      m_pSending = m_pSending,
+      m_cv = &m_cv
     ](std::string input) {
       while (true)
       {
         auto optMsg = tcp::getNextStringMessage(input);
         if (!optMsg) return;
+        (*m_pSending)++;
         GlobalRegistry::getRegistry().postToThreadPool([
           optMsg,
           handlers,
           format,
           m_pMessages,
           m_pPrivateKey,
-          m_encrypted = m_encrypted
+          m_encrypted = m_encrypted,
+          m_pSending,
+          m_cv
         ]() {
           msg::BaseMsg receivedMsg;
           auto msg = optMsg.get();
@@ -93,6 +101,8 @@ tcp::TcpConnection::TcpConnection(
           if (!handle)
             std::cout << "Received unknown message: " << receivedMsg.type()
                       << std::endl;
+          (*m_pSending)--;
+          m_cv->notify_one();
         });
       }
     }))
@@ -121,7 +131,14 @@ void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
 
 void tcp::TcpConnection::close()
 {
-  m_pSocket->close();
+  if (m_pSocket->is_open()) m_pSocket->close();
+  if (m_pSending)
+  {
+    std::unique_lock<std::mutex> lock(m_m);
+    m_cv.wait(lock, [m_pSending = m_pSending]() { return *m_pSending == 0; });
+    delete m_pSending;
+    m_pSending = nullptr;
+  }
 }
 
 void tcp::TcpConnection::checkMsgs(

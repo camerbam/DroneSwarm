@@ -111,6 +111,11 @@ tcp::TcpServer::TcpServer(unsigned short port,
 tcp::TcpServer::~TcpServer()
 {
   m_optCork = boost::none;
+  for(auto&& con : m_connections)
+  {
+    con.second->close();
+  }
+
   if (m_iocThread.joinable()) m_iocThread.join();
 }
 

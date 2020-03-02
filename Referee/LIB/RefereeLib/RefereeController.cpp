@@ -56,6 +56,12 @@ referee::RefereeController::RefereeController(unsigned short port,
           m_gameManagers[msg.gameId()].addMsg(msg::ReadyRspRsp::name());
         }));
 
+      m_connections.push_back(connection->registerHandler<msg::PingRsp>(
+        [this](const msg::PingRsp& msg, const std::string&) {
+        logger::logInfo("RefereeController", "received PingRsp");
+        m_gameManagers[msg.gameId()].addMsg(msg::PingRsp::name());
+      }));
+
       m_connections.push_back(connection->registerHandler<msg::HitTargetMsg>(
         [this, connection](
           const msg::HitTargetMsg& msg, const std::string& msgId) {
