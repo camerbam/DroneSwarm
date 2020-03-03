@@ -176,7 +176,7 @@ void tcp::TcpClient::handleConnect(
       auto read = m_socket.read_some(boost::asio::buffer(m_inputBuffer));
       std::string toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + read);
       RSA* rsa = tcp::createPublicRSA(toAdd);
-      m_pKey = std::shared_ptr<RSA>(rsa);
+      m_pKey = std::shared_ptr<RSA>(rsa, [](RSA* p){ free(p); });
     }
     m_ready = true;
     m_cv.notify_all();

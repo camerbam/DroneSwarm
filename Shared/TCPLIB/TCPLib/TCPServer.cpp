@@ -15,12 +15,13 @@
 namespace
 {
   // https://stackoverflow.com/questions/50363097/c-openssl-generate-rsa-keypair-and-read
-  bool generateKey(std::string& pubk, RSA* prik)
+  RSA* generateKey(std::string& pubk)
   {
     int pub_len;   // Length of public key
     char* pub_key; // Public key in PEM
 
     int ret = 0;
+    RSA* prik = NULL;
     BIGNUM* bne = NULL;
     BIO *bp_public = NULL, *bp_private = NULL;
     int bits = 2048;
@@ -64,7 +65,7 @@ namespace
     BIO_free_all(bp_private);
     BN_free(bne);
 
-    return (ret == 1);
+    return ret == 1 ? prik : nullptr;
   }
 }
 
@@ -87,7 +88,7 @@ tcp::TcpServer::TcpServer(unsigned short port,
 {
   if (m_encrypted)
   {
-    generateKey(m_publicKey, m_privateKey.get());
+    m_privateKey = std::shared_ptr<RSA>(generateKey(m_publicKey), [](RSA* p){RSA_free(p);});
     logger::logInfo("TCPServer", "Generated keys");
   }
   startAccept();

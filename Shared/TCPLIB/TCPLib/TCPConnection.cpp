@@ -28,9 +28,9 @@ tcp::TcpConnection::TcpConnection(
   int id,
   msg::FORMAT format,
   std::shared_ptr<RSA> privateKey)
-  : m_cv(),
+  :  m_pSending(new std::atomic<int>(0)),
+   m_cv(),
     m_m(),
-    m_pSending(new std::atomic<int>(0)),
     m_encrypted(privateKey),
     m_pPrivateKey(privateKey),
     m_pSocket(pSocket),
