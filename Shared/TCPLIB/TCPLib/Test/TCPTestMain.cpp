@@ -9,9 +9,7 @@
 struct Fixture
 {
   Fixture() {}
-  ~Fixture() {
-    google::protobuf::ShutdownProtobufLibrary(); 
-  }
+  ~Fixture() { google::protobuf::ShutdownProtobufLibrary(); }
 };
 
 BOOST_GLOBAL_FIXTURE(Fixture);

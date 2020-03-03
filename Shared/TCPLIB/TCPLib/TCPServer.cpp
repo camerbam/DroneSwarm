@@ -15,15 +15,12 @@
 namespace
 {
   // https://stackoverflow.com/questions/50363097/c-openssl-generate-rsa-keypair-and-read
-  bool generateKey(std::string& pubk, std::string& prik)
+  bool generateKey(std::string& pubk, RSA* prik)
   {
-    int pri_len;   // Length of private key
     int pub_len;   // Length of public key
-    char* pri_key; // Private key in PEM
     char* pub_key; // Public key in PEM
 
     int ret = 0;
-    RSA* r = NULL;
     BIGNUM* bne = NULL;
     BIO *bp_public = NULL, *bp_private = NULL;
     int bits = 2048;
@@ -34,14 +31,14 @@ namespace
     ret = BN_set_word(bne, e);
     if (ret == 1)
     {
-      r = RSA_new();
-      ret = RSA_generate_key_ex(r, bits, bne, NULL);
+      prik = RSA_new();
+      ret = RSA_generate_key_ex(prik, bits, bne, NULL);
       if (ret == 1)
       {
         // 2. save public key
         // bp_public = BIO_new_file("public.pem", "w+");
         bp_public = BIO_new(BIO_s_mem());
-        ret = PEM_write_bio_RSAPublicKey(bp_public, r);
+        ret = PEM_write_bio_RSAPublicKey(bp_public, prik);
         if (ret == 1)
         {
 
@@ -49,25 +46,14 @@ namespace
           // bp_private = BIO_new_file("private.pem", "w+");
           bp_private = BIO_new(BIO_s_mem());
           ret = PEM_write_bio_RSAPrivateKey(
-            bp_private, r, NULL, NULL, 0, NULL, NULL);
+            bp_private, prik, NULL, NULL, 0, NULL, NULL);
 
           // 4. Get the keys are PEM formatted strings
-          pri_len = BIO_pending(bp_private);
           pub_len = BIO_pending(bp_public);
-
-          pri_key = (char*)malloc(pri_len + 1);
           pub_key = (char*)malloc(pub_len + 1);
-
-          BIO_read(bp_private, pri_key, pri_len);
           BIO_read(bp_public, pub_key, pub_len);
-
-          pri_key[pri_len] = '\0';
           pub_key[pub_len] = '\0';
-
-          prik = std::string(pri_key, pri_len);
           pubk = std::string(pub_key, pub_len);
-
-          free(pri_key);
           free(pub_key);
         }
       }
@@ -76,7 +62,6 @@ namespace
     // 4. free
     BIO_free_all(bp_public);
     BIO_free_all(bp_private);
-    RSA_free(r);
     BN_free(bne);
 
     return (ret == 1);
@@ -102,7 +87,7 @@ tcp::TcpServer::TcpServer(unsigned short port,
 {
   if (m_encrypted)
   {
-    generateKey(m_publicKey, m_privateKey);
+    generateKey(m_publicKey, m_privateKey.get());
     logger::logInfo("TCPServer", "Generated keys");
   }
   startAccept();

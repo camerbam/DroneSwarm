@@ -33,7 +33,7 @@ namespace tcp
       std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
       int id,
       msg::FORMAT format,
-      const std::string& privateKey);
+      std::shared_ptr<RSA> privateKey);
 
     template <class T>
     void send(T message)
@@ -141,7 +141,7 @@ namespace tcp
     TcpConnection(std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
                   int id,
                   msg::FORMAT format,
-                  const std::string& privateKey);
+      std::shared_ptr<RSA> privateKey);
 
     void handleWrite(const boost::system::error_code& error, size_t bt);
 

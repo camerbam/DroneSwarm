@@ -17,7 +17,7 @@ std::shared_ptr<tcp::TcpConnection> tcp::TcpConnection::create(
   std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
   int id,
   msg::FORMAT format,
-  const std::string& privateKey)
+  std::shared_ptr<RSA> privateKey)
 {
   return std::shared_ptr<tcp::TcpConnection>(
     new tcp::TcpConnection(pSocket, id, format, privateKey));
@@ -27,12 +27,12 @@ tcp::TcpConnection::TcpConnection(
   std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
   int id,
   msg::FORMAT format,
-  const std::string& privateKey)
+  std::shared_ptr<RSA> privateKey)
   : m_cv(),
     m_m(),
     m_pSending(new std::atomic<int>(0)),
-    m_encrypted(!privateKey.empty()),
-    m_pPrivateKey(tcp::createPrivateRSA(privateKey)),
+    m_encrypted(privateKey),
+    m_pPrivateKey(privateKey),
     m_pSocket(pSocket),
     m_id(id),
     m_format(format),
@@ -131,7 +131,11 @@ void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
 
 void tcp::TcpConnection::close()
 {
-  if (m_pSocket->is_open()) m_pSocket->close();
+  boost::system::error_code ec;
+
+  if (m_pSocket->is_open()) m_pSocket->close(ec);
+  if(ec)
+    std::cout << ec.message() << std::endl;
   if (m_pSending)
   {
     std::unique_lock<std::mutex> lock(m_m);
