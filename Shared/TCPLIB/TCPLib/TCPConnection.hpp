@@ -139,7 +139,6 @@ namespace tcp
   
     ~TcpConnection()
     {
-  std::cout << "dclose" << std::endl;
     }
 
   private:

@@ -28,8 +28,8 @@ tcp::TcpConnection::TcpConnection(
   int id,
   msg::FORMAT format,
   std::shared_ptr<RSA> privateKey)
-  :  m_pSending(new std::atomic<int>(0)),
-   m_cv(),
+  : m_pSending(new std::atomic<int>(0)),
+    m_cv(),
     m_m(),
     m_encrypted(privateKey),
     m_pPrivateKey(privateKey),
@@ -78,8 +78,8 @@ tcp::TcpConnection::TcpConnection(
             {
               char* e = new char[1024];
               ERR_error_string(1024, e);
-              std::cout << e << std::endl;
-              logger::logError("TCPClient", "Failed to decypt message");
+              logger::logError(
+                "TCPClient", "Failed to decypt message: " + std::string(e));
               delete e;
               return;
             }
@@ -114,7 +114,6 @@ void tcp::TcpConnection::startRead()
   m_pSocket->async_read_some(
     boost::asio::buffer(m_inputBuffer),
     [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {
-      std::cout << "here" << std::endl;
       handleRead(ec, bytes_transferred);
     });
 }
@@ -133,12 +132,13 @@ void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
 void tcp::TcpConnection::close()
 {
   m_pSocket->cancel();
-  std::cout << "close" << std::endl;
   if (m_pSocket->is_open()) m_pSocket->close();
   if (m_pSending)
   {
     std::unique_lock<std::mutex> lock(m_m);
-    m_cv.wait(lock, [m_pSending = m_pSending]() { return !m_pSending || *m_pSending == 0; });
+    m_cv.wait(lock, [m_pSending = m_pSending]() {
+      return !m_pSending || *m_pSending == 0;
+    });
     delete m_pSending;
     m_pSending = nullptr;
   }
