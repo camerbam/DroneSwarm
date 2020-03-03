@@ -136,6 +136,11 @@ namespace tcp
       m_handlers->add(T::name(), pHandle);
       return pHandle->signal().connect(slot);
     }
+  
+    ~TcpConnection()
+    {
+  std::cout << "dclose" << std::endl;
+    }
 
   private:
     TcpConnection(std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,

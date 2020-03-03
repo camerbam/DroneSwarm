@@ -114,6 +114,7 @@ void tcp::TcpConnection::startRead()
   m_pSocket->async_read_some(
     boost::asio::buffer(m_inputBuffer),
     [this](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+      std::cout << "here" << std::endl;
       handleRead(ec, bytes_transferred);
     });
 }
@@ -131,15 +132,13 @@ void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
 
 void tcp::TcpConnection::close()
 {
-  boost::system::error_code ec;
-
-  if (m_pSocket->is_open()) m_pSocket->close(ec);
-  if(ec)
-    std::cout << ec.message() << std::endl;
+  m_pSocket->cancel();
+  std::cout << "close" << std::endl;
+  if (m_pSocket->is_open()) m_pSocket->close();
   if (m_pSending)
   {
     std::unique_lock<std::mutex> lock(m_m);
-    m_cv.wait(lock, [m_pSending = m_pSending]() { return *m_pSending == 0; });
+    m_cv.wait(lock, [m_pSending = m_pSending]() { return !m_pSending || *m_pSending == 0; });
     delete m_pSending;
     m_pSending = nullptr;
   }
@@ -170,8 +169,6 @@ void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
     std::string toAdd(
       m_inputBuffer.begin(), m_inputBuffer.begin() + bytes_transferred);
     m_acq.add(toAdd);
-    m_inputBuffer.clear();
-    m_inputBuffer.resize(2048);
 
     startRead();
   }
