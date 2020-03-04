@@ -131,7 +131,8 @@ void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
 
 void tcp::TcpConnection::close()
 {
-  m_pSocket->cancel();
+  boost::system::error_code ec;
+  m_pSocket->cancel(ec);
   if (m_pSocket->is_open()) m_pSocket->close();
   if (m_pSending)
   {

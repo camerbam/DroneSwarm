@@ -94,7 +94,10 @@ namespace tcp
     void respond(T message, const std::string& msgId)
     {
       msg::BaseMsg msg;
-      std::string toSend(msg::toString(message, m_format));
+      msg.msg(msg::toString(message, m_format));
+      msg.type(T::name());
+      msg.msgId(msgId);
+      std::string toSend(msg::toString(msg, m_format));
 
       if (m_encrypted)
       {
@@ -114,11 +117,8 @@ namespace tcp
         delete[] decrypted;
       }
 
-      msg.msg(toSend);
-      msg.type(T::name());
-      msg.msgId(msgId);
-      auto pMessage = std::make_shared<std::string>(
-        tcp::getProcessedString(toString(msg, m_format)));
+      auto pMessage =
+        std::make_shared<std::string>(tcp::getProcessedString(toSend));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });

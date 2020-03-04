@@ -74,7 +74,10 @@ namespace tcp
     void respond(T message, const std::string& msgId)
     {
       msg::BaseMsg msg;
-      std::string toSend(msg::toString(message, m_format));
+      msg.msg(msg::toString(message, m_format));
+      msg.type(T::name());
+      msg.msgId(msgId);
+      std::string toSend(msg::toString(msg, m_format));
 
       if (m_encrypted)
       {
@@ -93,11 +96,9 @@ namespace tcp
         toSend = std::string(decrypted, ret);
         delete[] decrypted;
       }
-      msg.msg(toSend);
-      msg.type(T::name());
-      msg.msgId(msgId);
-      auto pMessage = std::make_shared<std::string>(
-        tcp::getProcessedString(msg::toString(msg, m_format)));
+
+      auto pMessage =
+        std::make_shared<std::string>(tcp::getProcessedString(toSend));
       m_pSocket->async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
@@ -136,16 +137,14 @@ namespace tcp
       m_handlers->add(T::name(), pHandle);
       return pHandle->signal().connect(slot);
     }
-  
-    ~TcpConnection()
-    {
-    }
+
+    ~TcpConnection() {}
 
   private:
     TcpConnection(std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
                   int id,
                   msg::FORMAT format,
-      std::shared_ptr<RSA> privateKey);
+                  std::shared_ptr<RSA> privateKey);
 
     void handleWrite(const boost::system::error_code& error, size_t bt);
 

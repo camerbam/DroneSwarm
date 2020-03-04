@@ -97,6 +97,7 @@ tcp::TcpServer::TcpServer(unsigned short port,
 tcp::TcpServer::~TcpServer()
 {
   m_optCork = boost::none;
+  m_pCtx->stop();
   for(auto&& con : m_connections)
   {
     con.second->close();

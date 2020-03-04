@@ -100,16 +100,17 @@ void ground::GroundStationController::createRefereeMsgHandlers()
 
   m_connections.push_back(m_toReferee.registerHandler<msg::PingMsg>(
     [this](const msg::PingMsg&, const std::string& msgId) {
-      m_toReferee.respond(msg::PingRsp(), msgId);
+      m_toReferee.respond(msg::PingRsp(m_gameId), msgId);
       m_logger.logInfo("Referee Controller", "Received Ping and responded");
     }));
 
   m_connections.push_back(m_toReferee.registerHandler<msg::HitTargetRsp>(
     [this](const msg::HitTargetRsp& msg, const std::string&) {
       m_logger.logInfo("Referee Controller", "Received HitTargetRsp");
-      if(!msg.success() || msg.complete())
+      if (!msg.success()) m_toReferee.send(msg::FinishMsg(m_gameId));
+
+      if (!msg.success() || msg.complete())
       {
-        m_toReferee.send(msg::FinishMsg(m_gameId));
         for (auto&& drone : m_idleDrones)
           drone->send(msg::FinishMsg());
         for (auto&& drone : m_busyDrones)
