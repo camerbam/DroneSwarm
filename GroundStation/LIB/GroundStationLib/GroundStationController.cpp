@@ -68,7 +68,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
       m_gameId = msg.gameId();
       m_targets = msg.targets();
 
-      int start = 80;
+      int start = 100;
       for (auto&& drone : m_idleDrones)
       {
         drone->send(msg::ZConfigMsg(start));
