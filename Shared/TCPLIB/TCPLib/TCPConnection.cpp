@@ -37,7 +37,7 @@ tcp::TcpConnection::TcpConnection(
     m_id(id),
     m_format(format),
     m_closedSignal(),
-    m_inputBuffer(1024),
+    m_inputBuffer(2048),
     m_handlers(std::make_shared<tcp::HandlerMap>()),
     m_pMessages(std::make_shared<std::map<std::string, msg::ResendMsg>>()),
     m_acq(std::function<void(std::string)>([
@@ -79,7 +79,7 @@ tcp::TcpConnection::TcpConnection(
               char* e = new char[1024];
               ERR_error_string(1024, e);
               logger::logError(
-                "TCPClient", "Failed to decypt message: " + std::string(e));
+                "TCPConnection", "Failed to decypt message: " + std::string(e));
               delete e;
               return;
             }
@@ -89,7 +89,7 @@ tcp::TcpConnection::TcpConnection(
 
           if (!msg::parseString(receivedMsg, msg, format))
           {
-            std::cout << "Could not parse msg" << std::endl;
+            logger::logError("TCPConnection", "Could not parse msg");
             return;
           }
 
@@ -99,8 +99,8 @@ tcp::TcpConnection::TcpConnection(
             handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
           if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
           if (!handle)
-            std::cout << "Received unknown message: " << receivedMsg.type()
-                      << std::endl;
+            logger::logError("TCPConnection",
+                             "Received unknown message: " + receivedMsg.type());
           (*m_pSending)--;
           m_cv->notify_one();
         });
@@ -133,7 +133,7 @@ void tcp::TcpConnection::close()
 {
   boost::system::error_code ec;
   m_pSocket->cancel(ec);
-  if (m_pSocket->is_open()) m_pSocket->close();
+  if (m_pSocket->is_open()) m_pSocket->close(ec);
   if (m_pSending)
   {
     std::unique_lock<std::mutex> lock(m_m);
@@ -175,7 +175,7 @@ void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
   }
   else
   {
-    std::cout << "Closing socket: " << ec.message() << "\n";
+    logger::logError("TCPConnection", "Closing socket");
     m_closedSignal(m_id);
   }
 }

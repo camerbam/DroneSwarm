@@ -49,3 +49,8 @@ void drone::StatusManager::parsePorts(std::string ports)
       str.substr(0, spot), (unsigned short)stoul(str.substr(spot + 1)));
   }
 }
+
+std::map<std::string, unsigned short>  drone::StatusManager::getPorts()
+{
+  return m_ports;
+}

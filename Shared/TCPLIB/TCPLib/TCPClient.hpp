@@ -15,7 +15,6 @@
 #include "Handler.hpp"
 #include "LoggerLib/Logger.hpp"
 #include "MsgLib/BaseMsg.hpp"
-#include "MsgLib/SerializeDeserialize.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
 

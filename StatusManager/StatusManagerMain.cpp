@@ -5,6 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
+#include "LoggerLib/Logger.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "StatusManagerLib/StatusManager.hpp"
 #include "UDPLib/Response.hpp"
@@ -55,7 +56,7 @@ int main(int argc, char* argv[])
   }
   catch (const std::runtime_error& error)
   {
-    std::cout << error.what() << std::endl;
+    logger::logError("StatusManager", error.what());
     return 1;
   }
 

@@ -43,7 +43,7 @@ std::vector<Target> referee::GameManager::finish()
       ss << t.getX() << " " << t.getY() << " " << t.getId() << std::endl;
   }
 
-  std::cout << std::endl;
+  ss << std::endl;
   if (!left.empty())
   {
     ss << "Missed targets: " << std::endl;
@@ -51,7 +51,7 @@ std::vector<Target> referee::GameManager::finish()
       ss << t.getX() << " " << t.getY() << " " << t.getId() << std::endl;
   }
 
-  std::cout << std::endl;
+  ss << std::endl;
   ss << "Total time: "
             << std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::steady_clock::now() - m_start)

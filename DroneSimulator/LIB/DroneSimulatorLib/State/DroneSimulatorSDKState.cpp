@@ -7,6 +7,7 @@
 #include "DroneSimulatorSDKState.hpp"
 #include "DroneSimulatorStateChanges.hpp"
 #include "DroneSimulatorStateImpl.hpp"
+#include "LoggerLib/Logger.hpp"
 
 drone::DroneSimulatorSDKState::DroneSimulatorSDKState(
   udp::UDPCommunicator& controlEndpoint,
@@ -14,13 +15,14 @@ drone::DroneSimulatorSDKState::DroneSimulatorSDKState(
   size_t startingBattery,
   int startingY)
   : DroneSimulatorState(controlEndpoint),
-    m_pState(std::make_shared<DroneSimulatorStateImpl>(startingBattery, startingY)),
+    m_pState(
+      std::make_shared<DroneSimulatorStateImpl>(startingBattery, startingY)),
     m_statusEndpoint(),
     m_commandCompleted(),
     m_remoteProcessForControl(drone),
     m_remoteProcessForStatus(drone),
     m_statusThread([this, &controlEndpoint]() {
-      m_remoteProcessForStatus.port(controlEndpoint.getLocalPort() + 1);
+      m_remoteProcessForStatus.port(8890);
       while (m_pState)
       {
         auto status = m_pState->getStatusMessage();
@@ -46,7 +48,8 @@ std::shared_ptr<drone::DroneSimulatorState> drone::DroneSimulatorSDKState::
 {
   if (!response.didSucceed())
   {
-    std::cout << "No messages recieved within timeout, exiting" << std::endl;
+    logger::logError(
+      "DroneSimulatorSDKState", "No messages recieved within timeout, exiting");
     return nullptr;
   }
   auto msg = response.getMessage();
