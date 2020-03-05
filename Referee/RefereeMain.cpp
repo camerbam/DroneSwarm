@@ -4,6 +4,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
+#include "LoggerLib/Logger.hpp"
+
 int main(int argc, char* argv[])
 {
   try
@@ -42,7 +44,7 @@ int main(int argc, char* argv[])
     referee::RefereeController controller(
       65000, msg::stringToFormat(GlobalRegistry::getRegistry().getFormat()));
 
-    std::cout << "Enter exit to finish" << std::endl;
+    logger::logInfo("Referee", "Enter exit to finish");
     std::string line;
 
     while (std::getline(std::cin, line) && line != "exit")

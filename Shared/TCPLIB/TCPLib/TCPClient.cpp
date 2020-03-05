@@ -21,7 +21,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
     m_m(),
     m_encrypted(encrypt),
     m_ready(false),
-    m_pKey(std::make_shared<std::shared_ptr<RSA>>()),
+    m_pKey(std::make_shared<RSA>()),
     m_ctx(),
     m_optCork(m_ctx),
     m_format(format),
@@ -37,56 +37,50 @@ tcp::TcpClient::TcpClient(std::string hostname,
       format = m_format,
       m_pMessages = m_pMessages,
       m_encrypted = m_encrypted,
-      m_pKey = m_pKey
+      m_pKey = &m_pKey
     ](std::string input) {
       while (true)
       {
         auto optMsg = tcp::getNextStringMessage(input);
         if (!optMsg) return;
-        GlobalRegistry::getRegistry().postToThreadPool([
-          optMsg,
-          m_handlers,
-          format,
-          m_pMessages,
-          m_encrypted,
-          m_pKey
-        ]() {
-          msg::BaseMsg receivedMsg;
-          auto msg = optMsg.get();
-          if (m_encrypted)
-          {
-            char* decrypted = new char[1024];
-            int result = RSA_public_decrypt(static_cast<int>(msg.size()),
-                                            (unsigned char*)msg.c_str(),
-                                            (unsigned char*)decrypted,
-                                            m_pKey->get(),
-                                            RSA_PKCS1_PADDING);
-            if (result < 0)
+        GlobalRegistry::getRegistry().postToThreadPool(
+          [optMsg, m_handlers, format, m_pMessages, m_encrypted, m_pKey]() {
+            msg::BaseMsg receivedMsg;
+            auto msg = optMsg.get();
+            if (m_encrypted)
             {
-              char buffer[120];
-              ERR_error_string(ERR_get_error(), buffer);
-              printf("Error reading private key:%s\n", buffer);
-              logger::logError("TCPClient", "Failed to decypt message");
+              char* decrypted = new char[1024];
+              int result = RSA_public_decrypt(static_cast<int>(msg.size()),
+                                              (unsigned char*)msg.c_str(),
+                                              (unsigned char*)decrypted,
+                                              m_pKey->get(),
+                                              RSA_PKCS1_PADDING);
+              if (result < 0)
+              {
+                char buffer[120];
+                ERR_error_string(ERR_get_error(), buffer);
+                printf("Error reading private key:%s\n", buffer);
+                logger::logError("TCPClient", "Failed to decypt message");
+                return;
+              }
+              msg = std::string(decrypted, result);
+              delete[] decrypted;
+            }
+            if (!parseString(receivedMsg, msg, format))
+            {
+              logger::logError("TCPClient", "Could not parse msg");
               return;
             }
-            msg = std::string(decrypted, result);
-            delete[] decrypted;
-          }
-          if (!parseString(receivedMsg, msg, format))
-          {
-            logger::logError("TCPClient", "Could not parse msg");
-            return;
-          }
 
-          auto msgSent = m_pMessages->find(receivedMsg.msgId());
-          auto handle = m_handlers->get(receivedMsg.type());
-          if (handle)
-            handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
-          if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
-          if (!handle)
-            std::cout << "Received unknown message: " << receivedMsg.type()
-                      << std::endl;
-        });
+            auto msgSent = m_pMessages->find(receivedMsg.msgId());
+            auto handle = m_handlers->get(receivedMsg.type());
+            if (handle)
+              handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
+            if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
+            if (!handle)
+              logger::logError(
+                "TCPClient", "Received unknown message: " + receivedMsg.type());
+          });
       }
     }))
 {
@@ -104,6 +98,7 @@ tcp::TcpClient::TcpClient(std::string hostname,
 tcp::TcpClient::~TcpClient()
 {
   m_optCork = boost::none;
+  m_ctx.stop();
   if (m_ctxThread.joinable()) m_ctxThread.join();
 }
 
@@ -112,8 +107,6 @@ void tcp::TcpClient::startConnect(
 {
   if (endpoint_iter != boost::asio::ip::tcp::resolver::iterator())
   {
-    std::cout << "Trying " << endpoint_iter->endpoint() << "...\n";
-
     // Start the asynchronous connect operation.
     m_socket.async_connect(
       endpoint_iter->endpoint(),
@@ -123,7 +116,7 @@ void tcp::TcpClient::startConnect(
   }
   else
   {
-    std::cout << "No more endpoints to try" << std::endl;
+    logger::logError("TCPClient", "Could not connect to endpoint");
     close();
   }
 }
@@ -146,8 +139,6 @@ void tcp::TcpClient::handleConnect(
   // the timeout handler must have run first.
   if (!m_socket.is_open())
   {
-    std::cout << "Connect timed out\n";
-
     // Try the next available endpoint.
     startConnect(++endpoint_iter);
   }
@@ -155,8 +146,6 @@ void tcp::TcpClient::handleConnect(
   // Check if the connect operation failed before the deadline expired.
   else if (ec)
   {
-    std::cout << "Connect error: " << ec.message() << "\n";
-
     // We need to close the socket used in the previous connection attempt
     // before starting a new one.
     m_socket.close();
@@ -168,14 +157,16 @@ void tcp::TcpClient::handleConnect(
   // Otherwise we have successfully established a connection.
   else
   {
-    std::cout << "Connected to " << endpoint_iter->endpoint() << "\n";
+    std::stringstream ss;
+    ss << "Connected to " << endpoint_iter->endpoint();
+    logger::logInfo("TCPClient", ss.str());
 
     if (m_encrypted)
     {
       auto read = m_socket.read_some(boost::asio::buffer(m_inputBuffer));
       std::string toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + read);
-      RSA* rsa = tcp::createPublicRSA(toAdd);
-      m_pKey->reset(rsa);
+      m_pKey = std::shared_ptr<RSA>(
+        tcp::createPublicRSA(toAdd), [](RSA* p) { RSA_free(p); });
     }
     m_ready = true;
     m_cv.notify_all();
@@ -199,14 +190,12 @@ void tcp::TcpClient::handleRead(const boost::system::error_code& ec,
   {
     std::string toAdd(m_inputBuffer.begin(), m_inputBuffer.begin() + bt);
     m_acq.add(toAdd);
-    m_inputBuffer.clear();
-    m_inputBuffer.resize(1024);
 
     startRead();
   }
   else
   {
-    std::cout << "Error on receive: " << ec.message() << "\n";
+    logger::logError("TcpClient", "Socket is closing");
 
     close();
   }

@@ -31,7 +31,7 @@ namespace tcp
       T msg;
       bool success = msg::parseString(msg, data, format);
       if (!success)
-        std::cout << "Could not parse data" << std::endl;
+        logger::logError("TCPLib", "Could not parse data");
       m_signal(msg, msgId);
     }
 

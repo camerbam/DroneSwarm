@@ -21,9 +21,7 @@ BUFFER_SIZE = 1024
 messages = [
   '{"msgId":"referee:3","type":"ReadyMsg","msg":{}}',
   '{"msgId":"referee:3","type":"ReadyRspRsp","msg":{"gameId":4}}',
-  '{"msgId":"referee:3","type":"HitTargetMsg","msg":{"gameId":2,"id":1,"target":{"x":2,"y":3}}}',
-  '{"msgId":"referee:3","type":"PingRsp","msg":{"gameId":4}}',
-  '{"msgId":"referee:3","type":"FinishMsg","msg":{"gameId":4}}'
+  '{"msgId":"referee:3","type":"HitTargetMsg","msg":{"gameId":2,"id":1,"target":{"x":2,"y":3}}}'
   ]
 
 sock = socket.socket(socket.AF_INET, # Internet
@@ -37,5 +35,8 @@ cipher = Cipher_PKCS1_v1_5.new(key)
 
 for message in messages:
   sock.send(createEncryptedMessage(message, cipher))
+  recv = sock.recv(2048)
 
-time.sleep(1)
+sock.send(createEncryptedMessage('{"msgId":"referee:3","type":"PingRsp","msg":{"gameId":4}}', cipher))
+sock.send(createEncryptedMessage('{"msgId":"referee:3","type":"FinishMsg","msg":{"gameId":4}}', cipher))
+recv = sock.recv(2048)

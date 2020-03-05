@@ -50,6 +50,7 @@ RSA* tcp::createPublicRSA(const std::string& key)
   EVP_PKEY_assign_RSA(evp_pbkey, pb_rsa);
 
   BIO_free(pbkeybio);
+  free(evp_pbkey);
 
   return pb_rsa;
 }

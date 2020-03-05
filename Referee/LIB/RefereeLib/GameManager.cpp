@@ -33,7 +33,17 @@ boost::optional<referee::GraphResponse> referee::GameManager::hitTarget(
 std::vector<Target> referee::GameManager::finish()
 {
   auto left = m_graph.getAllLeft();
+  auto done = m_graph.getAllDone();
+
   std::stringstream ss;
+  if (!done.empty())
+  {
+    ss << "Targets hit successfully: " << std::endl;
+    for (auto&& t : done)
+      ss << t.getX() << " " << t.getY() << " " << t.getId() << std::endl;
+  }
+
+  ss << std::endl;
   if (!left.empty())
   {
     ss << "Missed targets: " << std::endl;
@@ -41,6 +51,7 @@ std::vector<Target> referee::GameManager::finish()
       ss << t.getX() << " " << t.getY() << " " << t.getId() << std::endl;
   }
 
+  ss << std::endl;
   ss << "Total time: "
             << std::chrono::duration_cast<std::chrono::seconds>(
                  std::chrono::steady_clock::now() - m_start)

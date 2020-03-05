@@ -14,7 +14,7 @@ namespace
 
 std::string tcp::getProcessedString(std::string msg)
 {
-  if(msg.size() > MAX_SIZE)
+  if (msg.size() > MAX_SIZE)
   {
     std::cout << "Cannot send a message of that size" << std::endl;
     return "";
@@ -35,7 +35,7 @@ boost::optional<std::string> tcp::getNextStringMessage(std::string& buffer)
   }
   catch (...)
   {
-    std::cout << "Unable to get message size, dropping packets" << std::endl;
+    logger::logError("TCPLib", "Unable to get message size, dropping packets");
     buffer.erase(0, tcp::SIZE_OF_HEADER);
     return boost::none;
   }

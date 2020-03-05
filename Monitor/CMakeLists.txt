@@ -54,6 +54,7 @@ if(WIN32)
   set_property(TARGET ${exe_name} 
     PROPERTY VS_PACKAGE_REFERENCES "Google.Protobuf_3.11.4"
     )	
+  install(TARGETS ${exe_name} DESTINATION dist)
 endif()
 xpSourceListAppend("${${exe_name}_libsrcs}")
 

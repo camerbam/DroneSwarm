@@ -8,6 +8,7 @@
 #include "MsgLib/HitTargetMsg.hpp"
 #include "MsgLib/HitTargetRsp.hpp"
 #include "MsgLib/ZConfigMsg.hpp"
+#include "LoggerLib/Logger.hpp"
 #include "MsgLib/ZConfigRsp.hpp"
 #include "UtilsLib/Utils.hpp"
 
@@ -29,14 +30,13 @@ namespace
             nextTarget.getY() == target.target().y() &&
             nextTarget.getId() == target.id())
         {
-          std::cout << "correct" << std::endl;
+          logger::logInfo("MockGroundStation", "correct");
           connection->send(msg::HitTargetRsp(true, false, {}, {}));
           targets.erase(targets.begin());
         }
         else
         {
-          std::cout << target.id() << " " << nextTarget.getId();
-          std::cout << "wrong place" << std::endl;
+          logger::logInfo("MockGroundStation", "wrong target");
           connection->send(msg::HitTargetRsp(false, false, {}, {}));
         }
 
@@ -66,18 +66,13 @@ namespace
             nextTarget.getY() == target.target().y() &&
             nextTarget.getId() == target.id())
         {
-          std::cout << "correct" << std::endl;
+          logger::logInfo("MockGroundStation", "correct");
           connection->send(msg::HitTargetRsp(true, false, {}, {}));
           targets.erase(targets.begin());
         }
         else
         {
-          std::cout << target.id() << " " << nextTarget.getId() << std::endl;
-          std::cout << target.target().x() << " " << nextTarget.getX()
-                    << std::endl;
-          std::cout << target.target().y() << " " << nextTarget.getY()
-                    << std::endl;
-          std::cout << "wrong place" << std::endl;
+          logger::logInfo("MockGroundStation", "Wrong Target");
           connection->send(msg::HitTargetRsp(false, false, {}, {}));
         }
 
@@ -125,7 +120,7 @@ int main()
         drone2(connection, connections, targets2, cv);
     }));
 
-  std::cout << "type ready when ready" << std::endl;
+  logger::logInfo("GroundStation", "type ready when ready");
   std::string line;
   while (line != "ready")
     std::getline(std::cin, line);
@@ -133,7 +128,6 @@ int main()
   int height = 60;
   for (auto&& drone : drones)
   {
-    std::cout << "sending" << std::endl;
     drone->send(msg::ZConfigMsg(height));
     height += 20;
   }

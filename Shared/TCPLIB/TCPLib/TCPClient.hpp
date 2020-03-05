@@ -15,7 +15,6 @@
 #include "Handler.hpp"
 #include "LoggerLib/Logger.hpp"
 #include "MsgLib/BaseMsg.hpp"
-#include "MsgLib/SerializeDeserialize.hpp"
 #include "RegistryLib/Registry.hpp"
 #include "TCPTools.hpp"
 
@@ -70,7 +69,7 @@ namespace tcp
         int ret = RSA_public_encrypt(static_cast<int>(toSend.size()),
                                      (unsigned char*)toSend.c_str(),
                                      (unsigned char*)decrypted,
-                                     m_pKey->get(),
+                                     m_pKey.get(),
                                      RSA_PKCS1_PADDING);
         if (ret < 0)
         {
@@ -94,7 +93,10 @@ namespace tcp
     void respond(T message, const std::string& msgId)
     {
       msg::BaseMsg msg;
-      std::string toSend(msg::toString(message, m_format));
+      msg.msg(msg::toString(message, m_format));
+      msg.type(T::name());
+      msg.msgId(msgId);
+      std::string toSend(msg::toString(msg, m_format));
 
       if (m_encrypted)
       {
@@ -102,7 +104,7 @@ namespace tcp
         int ret = RSA_public_encrypt(static_cast<int>(toSend.size()),
                                      (unsigned char*)toSend.c_str(),
                                      (unsigned char*)decrypted,
-                                     m_pKey->get(),
+                                     m_pKey.get(),
                                      RSA_PKCS1_PADDING);
         if (ret < 0)
         {
@@ -114,11 +116,8 @@ namespace tcp
         delete[] decrypted;
       }
 
-      msg.msg(toSend);
-      msg.type(T::name());
-      msg.msgId(msgId);
-      auto pMessage = std::make_shared<std::string>(
-        tcp::getProcessedString(toString(msg, m_format)));
+      auto pMessage =
+        std::make_shared<std::string>(tcp::getProcessedString(toSend));
       m_socket.async_write_some(
         boost::asio::buffer(*pMessage, pMessage.get()->size()),
         [this, pMessage](auto a, auto b) { this->handleWrite(a, b); });
@@ -150,7 +149,7 @@ namespace tcp
     std::mutex m_m;
     bool m_encrypted;
     bool m_ready;
-    std::shared_ptr<std::shared_ptr<RSA>> m_pKey;
+    std::shared_ptr<RSA> m_pKey;
     boost::asio::io_context m_ctx;
     boost::optional<boost::asio::io_context::work> m_optCork;
     msg::FORMAT m_format;

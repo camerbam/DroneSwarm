@@ -60,8 +60,9 @@ namespace
     template <class T>
     std::shared_ptr<drone::DroneSimulatorState> operator()(const T&) const
     {
-      std::cout << "Cannot receive messages other than command in Idle mode"
-                << std::endl;
+      logger::logError(
+        "DroneSimulatorState",
+        "Cannot receive messages other than command in Idle mode");
       return nullptr;
     }
 

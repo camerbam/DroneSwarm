@@ -32,9 +32,12 @@ namespace referee
 
     std::vector<Target> getAllLeft();
 
+    std::vector<Target> getAllDone();
+
   private:
     std::vector<Target> m_ready;
     std::vector<Target> m_notReady;
+    std::vector<Target> m_done;
   };
 } // namespace drone
 

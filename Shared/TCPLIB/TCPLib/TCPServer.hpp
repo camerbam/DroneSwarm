@@ -56,7 +56,7 @@ namespace tcp
 
   private:
     bool m_encrypted;
-    std::string m_privateKey;
+    std::shared_ptr<RSA> m_privateKey;
     std::string m_publicKey;
     std::shared_ptr<boost::asio::io_context> m_pCtx;
     boost::optional<boost::asio::io_context::work> m_optCork;

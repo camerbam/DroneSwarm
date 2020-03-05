@@ -231,8 +231,6 @@ void drone::DroneManager::startMessages()
   m_controller.sendMessage(messages::TakeoffMessage());
   m_controller.waitForStatusMsg();
   auto diff = 100 - m_zConfig;
-  std::cout << "z" << m_controller.getZ();
-  std::cout << "diff" << diff << std::endl;
   if (diff <= -20) m_controller.sendMessage(messages::UpMessage(-diff));
   if (diff >= 20) m_controller.sendMessage(messages::DownMessage(diff));
   m_sendThread = std::make_shared<std::thread>([this]() {

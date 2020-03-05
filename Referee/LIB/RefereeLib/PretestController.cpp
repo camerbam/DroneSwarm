@@ -22,7 +22,6 @@ namespace
     const std::shared_ptr<tcp::TcpConnection>& connection)
   {
     auto randomNumber = rand() % 100;
-    std::cout << randomNumber << std::endl;
     if (randomNumber > 80)
     {
       logger::logInfo("Pretest", "Sending Duplicates");
@@ -85,7 +84,7 @@ int referee::PretestController::execute()
     std::unique_lock<std::mutex> lock(m_m);
     m_cv.wait_for(lock, std::chrono::minutes(1));
     if (start + std::chrono::minutes(1) < std::chrono::steady_clock::now())
-      std::cout << "Exiting as timeout reached" << std::endl;
+      logger::logError("PretestController", "Exiting as timeout reached");
   }
   // TODO: Hacky
   std::this_thread::sleep_for(std::chrono::milliseconds(100));

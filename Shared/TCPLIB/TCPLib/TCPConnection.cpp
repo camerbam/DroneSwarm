@@ -3,9 +3,9 @@
 #include <fstream>
 #include <iostream>
 
-#include <openssl/err.h>
 #include <boost/asio.hpp>
 #include <boost/asio/write.hpp>
+#include <openssl/err.h>
 
 #include "EncryptHelpers.hpp"
 #include "LoggerLib/Logger.hpp"
@@ -17,7 +17,7 @@ std::shared_ptr<tcp::TcpConnection> tcp::TcpConnection::create(
   std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
   int id,
   msg::FORMAT format,
-  const std::string& privateKey)
+  std::shared_ptr<RSA> privateKey)
 {
   return std::shared_ptr<tcp::TcpConnection>(
     new tcp::TcpConnection(pSocket, id, format, privateKey));
@@ -27,14 +27,17 @@ tcp::TcpConnection::TcpConnection(
   std::shared_ptr<boost::asio::ip::tcp::socket> pSocket,
   int id,
   msg::FORMAT format,
-  const std::string& privateKey)
-  : m_encrypted(!privateKey.empty()),
-    m_pPrivateKey(tcp::createPrivateRSA(privateKey)),
+  std::shared_ptr<RSA> privateKey)
+  : m_pSending(new std::atomic<int>(0)),
+    m_cv(),
+    m_m(),
+    m_encrypted(privateKey),
+    m_pPrivateKey(privateKey),
     m_pSocket(pSocket),
     m_id(id),
     m_format(format),
     m_closedSignal(),
-    m_inputBuffer(1024),
+    m_inputBuffer(2048),
     m_handlers(std::make_shared<tcp::HandlerMap>()),
     m_pMessages(std::make_shared<std::map<std::string, msg::ResendMsg>>()),
     m_acq(std::function<void(std::string)>([
@@ -42,19 +45,24 @@ tcp::TcpConnection::TcpConnection(
       format = m_format,
       m_pMessages = m_pMessages,
       m_pPrivateKey = m_pPrivateKey,
-      m_encrypted = m_encrypted
+      m_encrypted = m_encrypted,
+      m_pSending = m_pSending,
+      m_cv = &m_cv
     ](std::string input) {
       while (true)
       {
         auto optMsg = tcp::getNextStringMessage(input);
         if (!optMsg) return;
+        (*m_pSending)++;
         GlobalRegistry::getRegistry().postToThreadPool([
           optMsg,
           handlers,
           format,
           m_pMessages,
           m_pPrivateKey,
-          m_encrypted = m_encrypted
+          m_encrypted = m_encrypted,
+          m_pSending,
+          m_cv
         ]() {
           msg::BaseMsg receivedMsg;
           auto msg = optMsg.get();
@@ -70,8 +78,8 @@ tcp::TcpConnection::TcpConnection(
             {
               char* e = new char[1024];
               ERR_error_string(1024, e);
-              std::cout << e << std::endl;
-              logger::logError("TCPClient", "Failed to decypt message");
+              logger::logError(
+                "TCPConnection", "Failed to decypt message: " + std::string(e));
               delete e;
               return;
             }
@@ -81,7 +89,7 @@ tcp::TcpConnection::TcpConnection(
 
           if (!msg::parseString(receivedMsg, msg, format))
           {
-            std::cout << "Could not parse msg" << std::endl;
+            logger::logError("TCPConnection", "Could not parse msg");
             return;
           }
 
@@ -91,8 +99,10 @@ tcp::TcpConnection::TcpConnection(
             handle->execute(receivedMsg.msg(), format, receivedMsg.msgId());
           if (msgSent != m_pMessages->end()) m_pMessages->erase(msgSent);
           if (!handle)
-            std::cout << "Received unknown message: " << receivedMsg.type()
-                      << std::endl;
+            logger::logError("TCPConnection",
+                             "Received unknown message: " + receivedMsg.type());
+          (*m_pSending)--;
+          m_cv->notify_one();
         });
       }
     }))
@@ -121,7 +131,18 @@ void tcp::TcpConnection::handleWrite(const boost::system::error_code& ec,
 
 void tcp::TcpConnection::close()
 {
-  m_pSocket->close();
+  boost::system::error_code ec;
+  m_pSocket->cancel(ec);
+  if (m_pSocket->is_open()) m_pSocket->close(ec);
+  if (m_pSending)
+  {
+    std::unique_lock<std::mutex> lock(m_m);
+    m_cv.wait(lock, [m_pSending = m_pSending]() {
+      return !m_pSending || *m_pSending == 0;
+    });
+    delete m_pSending;
+    m_pSending = nullptr;
+  }
 }
 
 void tcp::TcpConnection::checkMsgs(
@@ -149,14 +170,12 @@ void tcp::TcpConnection::handleRead(const boost::system::error_code& ec,
     std::string toAdd(
       m_inputBuffer.begin(), m_inputBuffer.begin() + bytes_transferred);
     m_acq.add(toAdd);
-    m_inputBuffer.clear();
-    m_inputBuffer.resize(2048);
 
     startRead();
   }
   else
   {
-    std::cout << "Closing socket: " << ec.message() << "\n";
+    logger::logError("TCPConnection", "Closing socket");
     m_closedSignal(m_id);
   }
 }

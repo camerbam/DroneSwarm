@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+#include "LoggerLib/Logger.hpp"
+
 namespace msg
 {
   enum class FORMAT
@@ -25,7 +27,7 @@ namespace msg
     case msg::FORMAT::XML:
       return msg.toXMLString();
     default:
-      std::cout << "Unrecgnized format" << std::endl;
+      logger::logError("MsgLib", "Unrecgnized format");
       return "";
     }
   }
@@ -42,7 +44,7 @@ namespace msg
     case msg::FORMAT::XML:
       return msg.parseFromXml(data);
     default:
-      std::cout << "Unrecgnized format" << std::endl;
+      logger::logError("MsgLib", "Unrecgnized format");
       return "";
     }
   }

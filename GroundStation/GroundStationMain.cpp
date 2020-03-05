@@ -1,5 +1,6 @@
 #include "GroundStationLib/GroundStationController.hpp"
 #include "GroundStationLib/PretestController.hpp"
+#include "LoggerLib/Logger.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
     }
     ground::GroundStationController ground("localhost", "65000");
 
-    std::cout << "Enter ready to start" << std::endl;
+    logger::logInfo("GroundStationController", "Enter ready to start");
     std::string line;
 
     while (std::getline(std::cin, line) && line != "ready")
@@ -48,11 +49,11 @@ int main(int argc, char* argv[])
   }
   catch (const boost::program_options::error& ex)
   {
-    std::cerr << ex.what() << '\n';
+    logger::logError("GroundStationController", ex.what());
   }
   catch (const std::runtime_error& ex)
   {
-    std::cerr << ex.what() << '\n';
+    logger::logError("GroundStationController", ex.what());
   }
 
   return 0;

@@ -6,7 +6,7 @@
 #include "RegistryLib/Registry.hpp"
 #include "UtilsLib/Utils.hpp"
 
-referee::Graph::Graph() : m_ready(), m_notReady()
+referee::Graph::Graph() : m_ready(), m_notReady(), m_done()
 {
   auto& targets = GlobalRegistry::getRegistry().getTargets();
   for (auto&& t : targets)
@@ -23,7 +23,9 @@ referee::Graph::Graph() : m_ready(), m_notReady()
   }
 }
 
-referee::Graph::~Graph() {}
+referee::Graph::~Graph()
+{
+}
 
 bool referee::Graph::canPlaceTarget(const Target& target) const
 {
@@ -106,6 +108,7 @@ referee::GraphResponse referee::Graph::hitTarget(const Target& target)
     }
   }
 
+  m_done.emplace_back(target);
   return toReturn;
 }
 
@@ -121,4 +124,9 @@ std::vector<Target> referee::Graph::getAllLeft()
   toReturn.insert(toReturn.end(), m_notReady.begin(), m_notReady.end());
   toReturn.insert(toReturn.end(), m_ready.begin(), m_ready.end());
   return toReturn;
+}
+
+std::vector<Target> referee::Graph::getAllDone()
+{
+  return m_done;
 }

@@ -15,6 +15,8 @@ namespace drone
 
     ~StatusManager();
 
+    std::map<std::string, unsigned short> getPorts();
+
   private:
     void parsePorts(std::string ports);
 
