@@ -229,6 +229,7 @@ void drone::DroneManager::startMessages()
   static bool running(false);
   if (running) return;
   m_controller.sendMessage(messages::TakeoffMessage());
+  m_controller.sendMessage(messages::MonMessage());
   m_controller.waitForStatusMsg();
   auto diff = 100 - m_zConfig;
   if (diff <= -20) m_controller.sendMessage(messages::UpMessage(-diff));

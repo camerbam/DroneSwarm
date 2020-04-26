@@ -4,6 +4,7 @@
 #include "MsgLib/FinishMsg.hpp"
 #include "MsgLib/FinishRsp.hpp"
 #include "MsgLib/FlightPathMsg.hpp"
+#include "MsgLib/FlightPathRsp.hpp"
 #include "MsgLib/HitTargetMsg.hpp"
 #include "MsgLib/HitTargetRsp.hpp"
 #include "MsgLib/PingMsg.hpp"
@@ -68,7 +69,7 @@ void ground::GroundStationController::createRefereeMsgHandlers()
       m_gameId = msg.gameId();
       m_targets = msg.targets();
 
-      int start = 100;
+      int start = 80;
       for (auto&& drone : m_idleDrones)
       {
         drone->send(msg::ZConfigMsg(start));
@@ -156,8 +157,8 @@ void ground::GroundStationController::createDroneMsgHandlers(
   std::shared_ptr<tcp::TcpConnection> drone)
 {
   m_connections.push_back(drone->registerHandler<msg::HitTargetMsg>(
-    [this, drone](const msg::HitTargetMsg& msg, const std::string&) {
-      m_logger.logInfo("Referee Controller", "Received HitTargetMsg");
+    [this, drone](const msg::HitTargetMsg& msg, const std::string& msgId) {
+      m_logger.logInfo("RefereeController", "Received HitTargetMsg");
       for (auto target = m_assignedTargets.begin();
            target != m_assignedTargets.end();
            target++)
@@ -182,7 +183,22 @@ void ground::GroundStationController::createDroneMsgHandlers(
           break;
         }
       }
-      drone->send(msg::HitTargetRsp());
+      drone->respond(msg::HitTargetRsp(), msgId);
+    }));
+
+  m_connections.push_back(drone->registerHandler<msg::FlightPathRsp>(
+    [this, drone](const msg::FlightPathRsp&, const std::string&) {
+      m_logger.logInfo("RefereeController", "Received FlightPathRsp");
+    }));
+
+  m_connections.push_back(drone->registerHandler<msg::FinishRsp>(
+    [this, drone](const msg::FinishRsp&, const std::string&) {
+      m_logger.logInfo("RefereeController", "Received FinishRsp");
+    }));
+
+  m_connections.push_back(drone->registerHandler<msg::FinishMsg>(
+    [this, drone](const msg::FinishMsg&, const std::string&) {
+      m_logger.logInfo("RefereeController", "Received FinishMsg");
     }));
 
   m_idleDrones.push_back(drone);
