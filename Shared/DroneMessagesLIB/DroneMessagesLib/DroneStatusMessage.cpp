@@ -79,7 +79,7 @@ void messages::DroneStatusMessage::fromString(std::string message)
   m_yCoordinate = values["y"];
   m_zCoordinate = values["h"];
   m_angle = values["yaw"];
-  m_timeOfFlight = values["tof"];
+  m_timeOfFlight = (size_t)values["tof"];
 }
 
 int messages::DroneStatusMessage::getMid()

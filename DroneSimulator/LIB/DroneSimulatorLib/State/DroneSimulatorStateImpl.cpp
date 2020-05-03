@@ -202,12 +202,12 @@ std::string drone::DroneSimulatorStateImpl::getStatusMessage()
   messages::DroneStatusMessage msg;
   auto targets = GlobalRegistry::getRegistry().getTargets();
   std::lock_guard<std::mutex> lock(m_statusMutex);
-  return msg.toString(m_currentLocation.getMid(),
+  return msg.toString(static_cast<int>(m_currentLocation.getMid()),
                       getX() - m_lastTarget.getX(),
                       getY() - m_lastTarget.getY(),
                       getZ(),
                       getAngle(),
-                      getTimeOfFlight(),
+                      static_cast<size_t>(getTimeOfFlight()),
                       getBattery(),
                       getTime());
 }
@@ -225,7 +225,7 @@ void drone::DroneSimulatorStateImpl::disableDetection()
 
 int drone::DroneSimulatorStateImpl::getMid()
 {
-  return m_currentLocation.getMid();
+  return static_cast<int>(m_currentLocation.getMid());
 }
 
 boost::signals2::scoped_connection drone::DroneSimulatorStateImpl::
@@ -245,21 +245,20 @@ void drone::DroneSimulatorStateImpl::startUpdate()
         m_isRunning = false;
         return;
       }
-      auto succeeded =
-        m_pUpdater &&
-        m_pUpdater->updateState(m_currentLocation, m_configuration);
+      auto succeeded = m_pUpdater && m_pUpdater->updateState(
+                                       m_currentLocation, m_configuration);
 
       for (auto&& target : m_targets)
       {
         if (utils::checkWithin(
-              target.getX(), m_currentLocation.getXCoordinate(), 5) &&
+              target.getX(), static_cast<int>(m_currentLocation.getXCoordinate()), 5) &&
             utils::checkWithin(target.getY(),
-                               m_currentLocation.getYCoordinate() + m_startingY,
+                               static_cast<int>(m_currentLocation.getYCoordinate()) + m_startingY,
                                5))
         {
           if (target.getId() == m_lastTarget.getId()) break;
-          m_lastTarget = Target(m_currentLocation.getXCoordinate(),
-                                m_currentLocation.getYCoordinate(),
+          m_lastTarget = Target(static_cast<int>(m_currentLocation.getXCoordinate()),
+                                static_cast<int>(m_currentLocation.getYCoordinate()),
                                 target.getId());
           m_currentLocation.setMid(target.getId());
           break;

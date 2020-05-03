@@ -135,7 +135,7 @@ bool drone::DroneControllerState::updateStatus(const std::string& statusMessage)
     m_battery = newBattery;
     m_batterySignal(m_battery);
   }
-  m_timeOfFlight = msg.getTimeOfFlight();
+  m_timeOfFlight = static_cast<double>(msg.getTimeOfFlight());
   auto mid = msg.getMid();
   if (m_mid != mid)
   {
