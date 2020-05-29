@@ -33,4 +33,30 @@ set(random_srcs
   config.json
   TODO.txt
   )
+###########################################
+include(FindGit)
+if(NOT GIT_FOUND)
+  message(FATAL_ERROR "Could not find git")
+endif()
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
+  message(FATAL_ERROR "Must be a git repo")
+endif()
+execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_REV
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+if(UNIX)
+  set(CPACK_GENERATOR STGZ)
+elseif(WIN32)
+  set(CPACK_GENERATOR TXZ)
+endif()
+set(CPACK_PACKAGE_NAME "DALP")
+set(CPACK_PACKAGE_VENDOR "Cameron Frandsen")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PACKAGE_NAME} Revision ${GIT_REV}")
+#set(CPACK_PACKAGE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/License.txt)
+set(CPACK_PACKAGE_FIlE_NAME "DALP-${GIT_REV}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "DALP")
+set(CPACK_PACKAGE_VERSION ${GIT_REV})
+include(CPack)
 xpSourceListAppend(${random_srcs})
