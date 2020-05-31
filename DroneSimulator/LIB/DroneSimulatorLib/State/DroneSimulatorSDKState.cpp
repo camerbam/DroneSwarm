@@ -53,8 +53,16 @@ std::shared_ptr<drone::DroneSimulatorState> drone::DroneSimulatorSDKState::
     return nullptr;
   }
   auto msg = response.getMessage();
-  auto optToSend = boost::apply_visitor(
-    drone::DroneSimulatorStateChanges(m_pState), messages::getMessage(msg));
-  if (optToSend) m_sender.sendMessage(optToSend.get(), response.getEndpoint());
+  try
+  {
+    auto optToSend = boost::apply_visitor(
+      drone::DroneSimulatorStateChanges(m_pState), messages::getMessage(msg));
+    if (optToSend)
+      m_sender.sendMessage(optToSend.get(), response.getEndpoint());
+  }
+  catch (const std::exception& ex)
+  {
+    std::cout << ex.what() << std::endl;
+  }
   return shared_from_this();
 }
