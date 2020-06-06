@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package proto;
-
-message FinishMsg {
-  int32 gameId = 1;
-}

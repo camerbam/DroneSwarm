@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package proto;
-
-import "Target.proto";
-
-message FlightPathMsg {
-  repeated Target targets = 1;
-}

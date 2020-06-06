@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package proto;
-
-message ReadyRspRsp {
-  int32 gameid = 1;
-}
